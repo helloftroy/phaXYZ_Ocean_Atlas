@@ -138,6 +138,18 @@ class FamilyAssignment(Base):
     assigned_at: Mapped[dt.datetime] = mapped_column(DateTime, nullable=False, default=_now)
     updated_at: Mapped[dt.datetime] = mapped_column(DateTime, nullable=False, default=_now, onupdate=_now)
 
+    # Populated by `pha-reference cluster95` (pipeline/cluster95.py), scoped
+    # to this (protein, family) row rather than to `protein` directly --
+    # the one protein that legitimately belongs to two families (an
+    # unresolved phaR hit, see ingest_phaR_disambiguation) can land in two
+    # different clusters, one per family's own MMseqs2 run. NULL for any
+    # row whose protein has no sequence (a BRENDA-only, no-accession
+    # record) or that predates the first clustering run -- never backfilled
+    # by deleting/recreating rows, only ever updated in place.
+    cluster95_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    cluster95_representative: Mapped[str | None] = mapped_column(String, nullable=True)  # protein_id of the cluster representative
+    cluster95_size: Mapped[int | None] = mapped_column(Integer, nullable=True)
+
     protein: Mapped["Protein"] = relationship(back_populates="family_assignments")
 
 

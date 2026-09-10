@@ -1,0 +1,3 @@
+filename	source_url	size_bytes	checksum_algo	checksum	checksum_status	downloaded_at
+OMDBv2.0_data.tsv.gz	https://sunagawalab.ethz.ch/share/microbiomics/ocean/db/2.0/data/catalogs/OMDBv2.0_data.tsv.gz	7494693	md5	c1b5f14c9b7899f7300ccf41e62f8681	verified_against_published	2026-09-10T20:02:22Z
+OMDBv2.0_data.tsv.gz	https://sunagawalab.ethz.ch/share/microbiomics/ocean/db/2.0/data/catalogs/OMDBv2.0_data.tsv.gz	7494693	md5	c1b5f14c9b7899f7300ccf41e62f8681	verified_against_published	2026-09-10T20:02:30Z

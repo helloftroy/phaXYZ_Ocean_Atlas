@@ -13,6 +13,7 @@ from phaatlas.config_loader import DEFAULT_FAMILY_CONFIG_PATH, load_family_defin
 from phaatlas.db.models import FamilyAssignment, FamilyDefinitionRow, Phenotype, Protein, RetrievalRun, SourceEvidence
 from phaatlas.db.session import get_db_path, init_db, session_scope
 from phaatlas.pipeline import export as export_pipeline
+from phaatlas.pipeline.cluster95 import MMseqsNotFoundError, cluster_family
 from phaatlas.pipeline.ingest_brenda import ingest_brenda_for_family
 from phaatlas.pipeline.ingest_uniprot import ingest_phaR_disambiguation, ingest_uniprot_for_family
 from phaatlas.sources import brenda as brenda_source
@@ -144,6 +145,50 @@ def export_cmd():
     n_seqs = export_pipeline.export_fasta(db_path, faa_path)
     console.print(f"[green]{csv_path}: {n_rows} rows[/green]")
     console.print(f"[green]{faa_path}: {n_seqs} sequences[/green]")
+
+
+@app.command("cluster95")
+def cluster95_cmd(
+    family: str = typer.Option("all", help="family_id, comma-separated list, or 'all'"),
+    min_seq_id: float = typer.Option(0.95, help="MMseqs2 --min-seq-id"),
+    min_cov: float = typer.Option(0.90, help="MMseqs2 -c (coverage, --cov-mode 0 i.e. bidirectional)"),
+    mmseqs_bin: str = typer.Option("mmseqs", help="mmseqs binary name or full path"),
+    threads: int = typer.Option(None, help="MMseqs2 --threads (default: mmseqs' own default)"),
+):
+    """Exact-dedups sequences then clusters WITHIN each family at
+    min_seq_id/min_cov with MMseqs2, writing cluster95_id/
+    cluster95_representative/cluster95_size back onto family_assignment.
+    Never deletes rows -- only ADD COLUMN migrations + in-place UPDATEs.
+    Run `export` afterward to regenerate the master CSV with these columns,
+    or `export-cluster95` for the all/nr95/cluster-tsv bundle.
+    """
+    families = _resolve_families(family)
+    with session_scope() as session:
+        for fam in families:
+            try:
+                summary = cluster_family(
+                    session, fam.family_id, min_seq_id=min_seq_id, min_cov=min_cov, mmseqs_bin=mmseqs_bin, threads=threads
+                )
+            except MMseqsNotFoundError as exc:
+                console.print(f"[red]{exc}[/red]")
+                raise typer.Exit(code=2)
+            console.print(json.dumps(summary))
+
+
+@app.command("export-cluster95")
+def export_cluster95_cmd():
+    """Writes exports/pha_reference_all.faa, pha_reference_nr95.faa, and
+    pha_reference_cluster95.tsv from the SQLite database. Run `cluster95`
+    first -- pha_reference_nr95.faa is empty for any family that hasn't
+    been clustered yet."""
+    db_path = get_db_path()
+    exports_dir = db_path.parent / "exports"
+    n_all = export_pipeline.export_fasta_all(db_path, exports_dir / "pha_reference_all.faa")
+    n_nr95 = export_pipeline.export_fasta_nr95(db_path, exports_dir / "pha_reference_nr95.faa")
+    n_tsv = export_pipeline.export_cluster95_tsv(db_path, exports_dir / "pha_reference_cluster95.tsv")
+    console.print(f"[green]{exports_dir / 'pha_reference_all.faa'}: {n_all} sequences[/green]")
+    console.print(f"[green]{exports_dir / 'pha_reference_nr95.faa'}: {n_nr95} sequences (cluster representatives)[/green]")
+    console.print(f"[green]{exports_dir / 'pha_reference_cluster95.tsv'}: {n_tsv} rows[/green]")
 
 
 @app.command("status")

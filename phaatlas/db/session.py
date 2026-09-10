@@ -37,10 +37,34 @@ def get_engine(db_path: Path | None = None):
     return engine
 
 
+# Additive-only, idempotent column migrations. `Base.metadata.create_all`
+# only creates tables that don't exist yet -- it never adds a column to an
+# already-existing table, so a database created before a model gained a new
+# column (e.g. cluster95_id, added after protein/family_assignment were
+# already populated) would silently stay on the old schema forever. No
+# alembic here (Phase 1 deliberately kept this lightweight); this list is
+# the whole migration story, and it's safe to re-run unconditionally --
+# each entry is skipped once the column already exists.
+_COLUMN_MIGRATIONS: list[tuple[str, str, str]] = [
+    # (table, column, SQL type+constraints for ADD COLUMN)
+    ("family_assignment", "cluster95_id", "VARCHAR"),
+    ("family_assignment", "cluster95_representative", "VARCHAR"),
+    ("family_assignment", "cluster95_size", "INTEGER"),
+]
+
+
+def _run_column_migrations(conn) -> None:
+    for table, column, coltype in _COLUMN_MIGRATIONS:
+        existing = {row[1] for row in conn.exec_driver_sql(f"PRAGMA table_info({table})").fetchall()}
+        if column not in existing:
+            conn.exec_driver_sql(f"ALTER TABLE {table} ADD COLUMN {column} {coltype}")
+
+
 def init_db(db_path: Path | None = None) -> None:
     engine = get_engine(db_path)
     Base.metadata.create_all(engine)
     with engine.begin() as conn:
+        _run_column_migrations(conn)
         conn.exec_driver_sql("DROP VIEW IF EXISTS protein_master_export")
         conn.exec_driver_sql(PROTEIN_MASTER_EXPORT_VIEW_SQL)
 
