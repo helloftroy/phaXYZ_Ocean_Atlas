@@ -1,0 +1,276 @@
+# PHA reference database -- family configuration.
+#
+# This file drives the whole retrieval pipeline: nothing about a specific
+# family (its EC number, its gene aliases, its UniProt search terms) is
+# hardcoded in pha_reference/*.py. Add/edit a family here and re-run the
+# same ingest-brenda/ingest-uniprot commands -- no code changes needed.
+#
+# Field meanings:
+#   family_id            internal id, e.g. "phaC" or "phaR_synthase"
+#                         (phaR_synthase and phaR_regulator are DELIBERATELY
+#                         separate families even though both are called
+#                         "phaR" -- see disambiguation_terms below)
+#   display_name          human label
+#   role                   one-line biological role (for docs/provenance only)
+#   genes                  exact gene-name aliases to search UniProt for
+#   exclude_genes          gene names that must NOT trigger this family even
+#                          though they're related (e.g. bktB is thiolase-like
+#                          but handled as its own family later, not phaA)
+#   protein_name_terms     free-text protein-name phrases for UniProt's
+#                          protein_name: search field
+#   ec_brenda               EC number to use as the BRENDA starting point, or
+#                          null to skip BRENDA entirely for this family
+#                          (phasins/regulators/synthase-partners have no
+#                          clean EC-based BRENDA coverage -- see README)
+#   require_pha_context     if true, an EC/gene/protein-name hit is NOT
+#                          enough on its own -- the record must also mention
+#                          PHA/polyhydroxyalkanoate context (pathway text,
+#                          keywords, or BRENDA general_information/synonyms)
+#                          before being assigned to this family. Used for EC
+#                          classes that are shared with non-PHA chemistry
+#                          (e.g. 2.3.1.9 acetyl-CoA acetyltransferases,
+#                          4.2.1.119 R-specific enoyl-CoA hydratases).
+#   disambiguation_terms    for families that share a gene name with another
+#                          family (phaR_synthase vs phaR_regulator): at least
+#                          one of these phrases must appear in the UniProt
+#                          protein name/function text for a gene:phaR hit to
+#                          be assigned to THIS family rather than left
+#                          unresolved for manual review.
+#   broad_uniprot_search    if true, allow gene+protein_name+EC terms to be
+#                          OR'd together in one broad UniProt query (only
+#                          safe for families with a genuinely clean EC/name,
+#                          per spec -- phaC is the only one enabled here).
+#                          Every other family queries each term separately
+#                          and tags the retrieval_reason per term so ambiguous
+#                          hits stay traceable to exactly what matched.
+
+families:
+  - family_id: phaA
+    display_name: "PhaA (beta-ketothiolase)"
+    role: "acetyl-CoA/acetoacetyl-CoA precursor supply"
+    genes: [phaA, phbA]
+    exclude_genes: [bktB]
+    protein_name_terms:
+      - "acetyl-CoA acetyltransferase"
+      - "acetoacetyl-CoA thiolase"
+      - "3-ketothiolase"
+      - "poly(3-hydroxybutyrate) biosynthesis thiolase"
+    ec_brenda: "2.3.1.9"
+    require_pha_context: true
+    disambiguation_terms: []
+    broad_uniprot_search: false
+
+  - family_id: phaB
+    display_name: "PhaB (acetoacetyl-CoA reductase)"
+    role: "acetoacetyl-CoA reductase"
+    genes: [phaB, phbB]
+    exclude_genes: []
+    protein_name_terms:
+      - "acetoacetyl-CoA reductase"
+      - "NADPH-dependent acetoacetyl-CoA reductase"
+    ec_brenda: "1.1.1.36"
+    require_pha_context: false
+    disambiguation_terms: []
+    broad_uniprot_search: false
+
+  - family_id: phaC
+    display_name: "PhaC (PHA synthase)"
+    role: "PHA synthase"
+    genes: [phaC, phaC1, phaC2, phbC]
+    exclude_genes: []
+    protein_name_terms:
+      - "PHA synthase"
+      - "polyhydroxyalkanoate synthase"
+      - "polyhydroxybutyrate synthase"
+      - "poly(3-hydroxyalkanoate) synthase"
+      - "poly(3-hydroxybutyrate) polymerase"
+      - "poly[(R)-3-hydroxyalkanoate] polymerase"
+    ec_brenda: "2.3.1.304"
+    require_pha_context: false
+    disambiguation_terms: []
+    broad_uniprot_search: true
+
+  - family_id: phaE
+    display_name: "PhaE (class III synthase partner)"
+    role: "class III synthase partner"
+    genes: [phaE]
+    exclude_genes: []
+    protein_name_terms:
+      - "PHA synthase subunit PhaE"
+      - "polyhydroxyalkanoate synthase subunit E"
+      - "class III PHA synthase subunit E"
+    ec_brenda: null
+    require_pha_context: false
+    disambiguation_terms: []
+    broad_uniprot_search: false
+
+  - family_id: phaR_synthase
+    display_name: "PhaR (class IV synthase partner)"
+    role: "class IV synthase partner"
+    genes: [phaR]
+    exclude_genes: []
+    protein_name_terms:
+      - "PHA synthase subunit PhaR"
+      - "polyhydroxyalkanoate synthase subunit PhaR"
+      - "class IV PHA synthase"
+    ec_brenda: null
+    require_pha_context: false
+    disambiguation_terms:
+      - "synthase"
+      - "class IV"
+      - "PhaRC"
+    broad_uniprot_search: false
+
+  - family_id: phaJ
+    display_name: "PhaJ (R-specific enoyl-CoA hydratase)"
+    role: "R-specific enoyl-CoA hydratase; beta-oxidation route"
+    genes: [phaJ, phaJ1, phaJ2, phaJ3, phaJ4]
+    exclude_genes: []
+    protein_name_terms:
+      - "(R)-specific enoyl-CoA hydratase"
+      - "R-hydratase"
+      - "enoyl-CoA hydratase PhaJ"
+    ec_brenda: "4.2.1.119"
+    require_pha_context: true
+    disambiguation_terms: []
+    broad_uniprot_search: false
+
+  - family_id: phaG
+    display_name: "PhaG (fatty-acid-synthesis precursor route)"
+    role: "fatty-acid-synthesis to PHA precursor route"
+    genes: [phaG]
+    exclude_genes: []
+    protein_name_terms:
+      - "3-hydroxyacyl-ACP:CoA transacylase"
+      - "(R)-3-hydroxyacyl-ACP-CoA transferase"
+      - "PHA precursor transacylase PhaG"
+    ec_brenda: null
+    require_pha_context: false
+    disambiguation_terms: []
+    broad_uniprot_search: false
+
+  - family_id: phaZ
+    display_name: "PhaZ (PHA depolymerase)"
+    role: "PHA depolymerases"
+    genes: [phaZ]
+    exclude_genes: []
+    protein_name_terms:
+      - "PHA depolymerase"
+      - "poly(3-hydroxybutyrate) depolymerase"
+      - "polyhydroxyalkanoate depolymerase"
+      - "intracellular PHB depolymerase"
+    ec_brenda: null
+    require_pha_context: false
+    disambiguation_terms: []
+    broad_uniprot_search: false
+
+  - family_id: phaY
+    display_name: "PhaY (oligomer hydrolase)"
+    role: "oligomer hydrolase/degradation"
+    genes: [phaY]
+    exclude_genes: []
+    protein_name_terms:
+      - "oligo(3-hydroxybutyrate) hydrolase"
+      - "PHA oligomer hydrolase"
+      - "poly(3-hydroxybutyrate) oligomer hydrolase"
+    ec_brenda: null
+    require_pha_context: false
+    disambiguation_terms: []
+    broad_uniprot_search: false
+
+  - family_id: phaP
+    display_name: "PhaP (phasin)"
+    role: "phasin"
+    genes: [phaP]
+    exclude_genes: []
+    protein_name_terms:
+      - "phasin"
+      - "PHA granule-associated protein PhaP"
+      - "PHB granule-associated protein PhaP"
+    ec_brenda: null
+    require_pha_context: false
+    disambiguation_terms: []
+    broad_uniprot_search: false
+
+  - family_id: phaF
+    display_name: "PhaF (granule-associated phasin/regulator)"
+    role: "granule-associated phasin/regulator"
+    genes: [phaF]
+    exclude_genes: []
+    protein_name_terms:
+      - "phasin PhaF"
+      - "granule-associated protein PhaF"
+    ec_brenda: null
+    require_pha_context: false
+    disambiguation_terms: []
+    broad_uniprot_search: false
+
+  - family_id: phaI
+    display_name: "PhaI (phasin)"
+    role: "phasin"
+    genes: [phaI]
+    exclude_genes: []
+    protein_name_terms:
+      - "phasin PhaI"
+      - "granule-associated protein PhaI"
+    ec_brenda: null
+    require_pha_context: false
+    disambiguation_terms: []
+    broad_uniprot_search: false
+
+  - family_id: phaM
+    display_name: "PhaM (granule/nucleoid protein)"
+    role: "granule/nucleoid protein"
+    genes: [phaM]
+    exclude_genes: []
+    protein_name_terms:
+      - "granule-associated protein PhaM"
+      - "PHA granule protein PhaM"
+    ec_brenda: null
+    require_pha_context: false
+    disambiguation_terms: []
+    broad_uniprot_search: false
+
+  - family_id: phaD
+    display_name: "PhaD (regulatory protein)"
+    role: "regulatory protein"
+    genes: [phaD]
+    exclude_genes: []
+    protein_name_terms:
+      - "PHA regulatory protein PhaD"
+      - "polyhydroxyalkanoate biosynthesis regulatory protein PhaD"
+    ec_brenda: null
+    require_pha_context: false
+    disambiguation_terms: []
+    broad_uniprot_search: false
+
+  - family_id: phaR_regulator
+    display_name: "PhaR (PHA-responsive transcriptional regulator)"
+    role: "PHA-responsive transcriptional regulator"
+    genes: [phaR]
+    exclude_genes: []
+    protein_name_terms:
+      - "PHA-responsive transcriptional regulator"
+      - "PhaR transcriptional regulator"
+      - "poly(3-hydroxybutyrate) biosynthesis regulator PhaR"
+      - "PHA biosynthesis regulator PhaR"
+    ec_brenda: null
+    require_pha_context: false
+    disambiguation_terms:
+      - "regulator"
+      - "repressor"
+      - "transcriptional"
+    broad_uniprot_search: false
+
+  - family_id: phaQ
+    display_name: "PhaQ (regulatory protein)"
+    role: "regulatory protein"
+    genes: [phaQ]
+    exclude_genes: []
+    protein_name_terms:
+      - "PHA biosynthesis regulatory protein PhaQ"
+      - "transcriptional regulator PhaQ"
+    ec_brenda: null
+    require_pha_context: false
+    disambiguation_terms: []
+    broad_uniprot_search: false

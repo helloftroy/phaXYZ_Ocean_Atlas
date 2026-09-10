@@ -1,0 +1,80 @@
+# Controlled monomer vocabulary. `code` is the normalized token stored in
+# protein/phenotype.demonstrated_monomers (pipe-separated when multiple).
+# `synonyms` are matched case-insensitively as whole phrases against raw
+# evidence text (BRENDA substrate/product fields, UniProt function/catalytic
+# activity text) during phenotype normalization. Grows over time -- add a
+# new entry here, no code changes needed.
+
+monomers:
+  - code: 3HB
+    synonyms:
+      - "3-hydroxybutyrate"
+      - "3-hydroxybutyric acid"
+      - "(R)-3-hydroxybutyrate"
+      - "(R)-3-hydroxybutanoate"
+      - "3-hydroxybutanoate"
+      - "3HB"
+
+  - code: 4HB
+    synonyms:
+      - "4-hydroxybutyrate"
+      - "4-hydroxybutyric acid"
+      - "4-hydroxybutanoate"
+      - "4HB"
+
+  - code: 3HV
+    synonyms:
+      - "3-hydroxyvalerate"
+      - "3-hydroxyvaleric acid"
+      - "3-hydroxypentanoate"
+      - "3HV"
+
+  - code: 3HHx
+    synonyms:
+      - "3-hydroxyhexanoate"
+      - "3-hydroxyhexanoic acid"
+      - "3HHx"
+      - "3HHX"
+
+  - code: 3HO
+    synonyms:
+      - "3-hydroxyoctanoate"
+      - "3-hydroxyoctanoic acid"
+      - "3HO"
+
+  - code: 3HD
+    synonyms:
+      - "3-hydroxydecanoate"
+      - "3-hydroxydecanoic acid"
+      - "3HD"
+
+  - code: 3HDd
+    synonyms:
+      - "3-hydroxydodecanoate"
+      - "3-hydroxydodecanoic acid"
+      - "3HDd"
+
+  - code: 5HV
+    synonyms:
+      - "5-hydroxyvalerate"
+      - "5-hydroxyvaleric acid"
+      - "5-hydroxypentanoate"
+      - "5HV"
+
+  - code: lactate
+    synonyms:
+      - "lactate"
+      - "lactic acid"
+      - "2-hydroxypropanoate"
+
+  - code: glycolate
+    synonyms:
+      - "glycolate"
+      - "glycolic acid"
+      - "2-hydroxyacetate"
+
+  - code: mcl-3HA
+    synonyms:
+      - "medium-chain-length 3-hydroxyalkanoate"
+      - "mcl-3-hydroxyalkanoate"
+      - "medium chain length hydroxyalkanoate"

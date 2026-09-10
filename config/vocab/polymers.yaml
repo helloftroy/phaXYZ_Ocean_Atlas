@@ -1,0 +1,68 @@
+# Controlled polymer vocabulary, same matching approach as monomers.yaml.
+# `monomer_codes` records which monomers.yaml codes this polymer is
+# composed of, where unambiguous -- informational only, not used to infer
+# monomers that weren't independently matched in the text.
+
+polymers:
+  - code: PHB
+    monomer_codes: [3HB]
+    synonyms:
+      - "poly(3-hydroxybutyrate)"
+      - "poly-3-hydroxybutyrate"
+      - "polyhydroxybutyrate"
+      - "poly[(R)-3-hydroxybutyrate]"
+      - "P(3HB)"
+      - "PHB"
+
+  - code: PHBV
+    monomer_codes: [3HB, 3HV]
+    synonyms:
+      - "poly(3-hydroxybutyrate-co-3-hydroxyvalerate)"
+      - "poly(3-hydroxybutyrate-co-valerate)"
+      - "P(3HB-co-3HV)"
+      - "PHBV"
+
+  - code: "P(3HB-co-4HB)"
+    monomer_codes: [3HB, 4HB]
+    synonyms:
+      - "poly(3-hydroxybutyrate-co-4-hydroxybutyrate)"
+      - "P(3HB-co-4HB)"
+      - "P34HB"
+
+  - code: "P(3HB-co-3HHx)"
+    monomer_codes: [3HB, 3HHx]
+    synonyms:
+      - "poly(3-hydroxybutyrate-co-3-hydroxyhexanoate)"
+      - "P(3HB-co-3HHx)"
+      - "PHBHHx"
+
+  - code: P4HB
+    monomer_codes: [4HB]
+    synonyms:
+      - "poly(4-hydroxybutyrate)"
+      - "poly-4-hydroxybutyrate"
+      - "P4HB"
+      - "P(4HB)"
+
+  - code: mcl-PHA
+    monomer_codes: [mcl-3HA]
+    synonyms:
+      - "medium-chain-length PHA"
+      - "medium-chain-length polyhydroxyalkanoate"
+      - "mcl-PHA"
+      - "mclPHA"
+
+  - code: scl-PHA
+    monomer_codes: [3HB, 3HV]
+    synonyms:
+      - "short-chain-length PHA"
+      - "short-chain-length polyhydroxyalkanoate"
+      - "scl-PHA"
+      - "sclPHA"
+
+  - code: PLA-PHA-copolymer
+    monomer_codes: [lactate, 3HB]
+    synonyms:
+      - "poly(lactate-co-3-hydroxybutyrate)"
+      - "PLA-co-PHB"
+      - "P(LA-co-3HB)"
