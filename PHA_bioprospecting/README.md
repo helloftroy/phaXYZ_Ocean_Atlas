@@ -1,7 +1,9 @@
 # PHA_bioprospecting
 
-Phase 2: cluster the PHA reference database at 95% identity, and stage the
-two discovery databases (GOPC, OMDBv2) it will later be searched against.
+Phase 2: cluster the PHA reference database at 95% identity, stage the two
+discovery databases (GOPC, OMDBv2) it's searched against, and search the
+NR95 reference set against GOPC. Does NOT classify hits as true PHA
+proteins yet -- that (and OMDB's genome-resolved search) is later work.
 
 ## Layout
 
@@ -15,6 +17,10 @@ PHA_bioprospecting/
 │   └── OMDBv2/
 │       ├── OMDBv2.0_*                    # gitignored -- re-downloadable
 │       └── download_manifest.tsv         # committed
+├── gopc_search/                          # gitignored -- fully regenerable, see below
+│   ├── queries/<family>.faa
+│   ├── target_db/gopc_db*
+│   └── results/<family>_{hits,unique_targets,summary}.tsv + all_families_*.tsv
 └── scripts/
     ├── lib_download.sh                   # shared: resumable fetch, checksum, manifest
     ├── download_gopc.sh
@@ -113,17 +119,84 @@ theoretically):
   instead, so at least a later re-download of *our* copy can be checked
   for corruption even without an upstream hash to compare against.
 
-Deliberately not decompressed on download -- `.gz` stays `.gz` until a
-downstream search tool (MMseqs2/DIAMOND/etc. against these catalogs, not
-part of this phase yet) actually needs it unpacked, per the instruction
-that motivated this whole layout: don't duplicate enormous files onto disk
-before something actually needs the duplicate.
+Deliberately not decompressed on download -- `.gz` stays `.gz`; `mmseqs
+createdb` (below) reads gzipped FASTA directly, so it's never unpacked to
+disk at all.
+
+## Searching GOPC (sensitive MMseqs2, per family)
+
+Does NOT classify hits as true PHA proteins -- alignment statistics only,
+retained in full so filtering/classification can happen later without
+rerunning the (expensive) search itself.
+
+```bash
+pha-reference export-queries              # one queries/<family>.faa per family, headers = protein_id only
+pha-reference gopc-build-db PHA_bioprospecting/databases/GOPC/raw/GOPC.geneset.pep.fa.gz   # once
+
+pha-reference gopc-search --family phaC   # test one family first
+pha-reference gopc-search --family all    # then everything
+pha-reference gopc-combine                # all_families_unique_targets.tsv / all_families_summary.tsv
+```
+
+Or as cluster jobs (build once, then search):
+
+```bash
+sbatch cluster/run_gopc_build_db.sbatch
+sbatch --export=ALL,FAMILY=phaC cluster/run_gopc_search.sbatch   # test one family first
+sbatch cluster/run_gopc_search.sbatch                             # FAMILY defaults to 'all'
+```
+
+**Search settings** (`pipeline/gopc_search.py`, all configurable via CLI
+flags / the sbatch job's own env vars): `-s 7.0` (MMseqs2's very-sensitive
+end), `-e 1e-5`, `-c 0.0` -- deliberately no coverage floor at search time,
+so a fragmented metagenomic protein isn't lost before `qcov`/`tcov` are
+even recorded; filter on those afterward (e.g. "≥50% query coverage" or
+"≥70% bidirectional") without rerunning the search. `--alignment-mode 3`
+so reported `pident` comes from the real alignment, not MMseqs2's faster
+estimate.
+
+**`--max-seqs` (default 10000, configurable) is a prefilter cap, not a
+biological result** -- if a query's hit count lands at/near that cap, its
+true hit set may have been truncated rather than genuinely exhausted. Each
+family's own `run_family_search` checks this automatically: if any query's
+hit count reaches ≥95% of `--max-seqs` (also configurable,
+`--cap-warning-fraction`), the job logs a `WARNING: query_hit_cap_warning`
+line naming that family and how many queries hit the cap, and
+`<family>_summary.tsv` records `query_hit_cap_warning=True` plus the exact
+`queries_at_cap` list. Expected most for phaA/phaB/phaJ (embedded in
+larger enzyme superfamilies); phaC should behave more cleanly. Rerun just
+the flagged family at a higher `--max-seqs` (50000/100000) rather than
+redoing everything.
+
+**Per-family outputs**, all under `gopc_search/results/`:
+
+- `<family>_hits.tsv` -- every query-target alignment, all 14 columns
+  (`query,target,evalue,bits,pident,alnlen,qstart,qend,qlen,tstart,tend,tlen,qcov,tcov`).
+- `<family>_unique_targets.tsv` -- one row per unique GOPC protein hit,
+  its single best alignment (lowest e-value, ties broken by bitscore)
+  retained, plus `n_reference_queries_matching` (how many distinct PHA
+  reference queries hit this same target).
+- `<family>_summary.tsv` -- `n_reference_queries`, `n_alignments`,
+  `n_unique_GOPC_targets`, counts at e-value ≤1e-5/1e-10/1e-20, counts at
+  query-coverage ≥0.5 and bidirectional-coverage ≥0.5, identity quantiles
+  (min/p10/p25/median/p75/p90/max), and the cap-warning fields above.
+
+Then combined across every family searched so far: `results/
+all_families_unique_targets.tsv` and `results/all_families_summary.tsv`.
+**A GOPC target hit by more than one family is deliberately NOT
+deduplicated** -- both families' rows are kept in
+`all_families_unique_targets.tsv` rather than picking one; resolving that
+conflict is later work, not this stage's job.
 
 ## What's committed vs. what's not
 
 Committed: this README, both download scripts + their shared library, the
 `reference` symlink, and both `download_manifest.tsv` files (small,
 they're the provenance record). Never committed: anything under
-`databases/GOPC/raw/` or the downloaded `OMDBv2.0_*` files themselves --
+`databases/GOPC/raw/`, the downloaded `OMDBv2.0_*` files, or anything
+under `gopc_search/` (queries/target_db/results -- all regenerated from
+`pha_reference.sqlite` + the downloaded GOPC target by the commands
+above). The search *code* lives in `phaatlas/pipeline/gopc_search.py`
+(committed, same repo as everything else) --
 all multi-GB to multi-hundred-GB, and fully reproducible from the
 manifests' own URLs.

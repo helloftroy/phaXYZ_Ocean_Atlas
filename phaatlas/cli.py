@@ -9,10 +9,11 @@ from rich.console import Console
 from rich.table import Table
 from sqlalchemy import func, select
 
-from phaatlas.config_loader import DEFAULT_FAMILY_CONFIG_PATH, load_family_definitions
+from phaatlas.config_loader import DEFAULT_FAMILY_CONFIG_PATH, REPO_ROOT, load_family_definitions
 from phaatlas.db.models import FamilyAssignment, FamilyDefinitionRow, Phenotype, Protein, RetrievalRun, SourceEvidence
 from phaatlas.db.session import get_db_path, init_db, session_scope
 from phaatlas.pipeline import export as export_pipeline
+from phaatlas.pipeline import gopc_search as gopc_search_pipeline
 from phaatlas.pipeline.cluster95 import MMseqsNotFoundError, cluster_family
 from phaatlas.pipeline.ingest_brenda import ingest_brenda_for_family
 from phaatlas.pipeline.ingest_uniprot import ingest_phaR_disambiguation, ingest_uniprot_for_family
@@ -189,6 +190,111 @@ def export_cluster95_cmd():
     console.print(f"[green]{exports_dir / 'pha_reference_all.faa'}: {n_all} sequences[/green]")
     console.print(f"[green]{exports_dir / 'pha_reference_nr95.faa'}: {n_nr95} sequences (cluster representatives)[/green]")
     console.print(f"[green]{exports_dir / 'pha_reference_cluster95.tsv'}: {n_tsv} rows[/green]")
+
+
+GOPC_SEARCH_DIR = REPO_ROOT / "PHA_bioprospecting" / "gopc_search"
+
+
+@app.command("export-queries")
+def export_queries_cmd(
+    queries_dir: Path = typer.Option(GOPC_SEARCH_DIR / "queries", help="output directory, one <family>.faa per family"),
+):
+    """Writes one query FASTA per pha_family from the NR95 cluster
+    representatives (cluster95_representative rows) -- headers contain
+    ONLY the protein_id, no other metadata. Run `cluster95`/`export-cluster95`
+    first; a family with no NR95 representatives yet is skipped."""
+    db_path = get_db_path()
+    counts = gopc_search_pipeline.export_query_fastas(db_path, queries_dir)
+    for family_id, n in sorted(counts.items()):
+        console.print(f"[green]{queries_dir / f'{family_id}.faa'}: {n} queries[/green]")
+    console.print(f"[bold]{sum(counts.values())} total NR95 query sequences across {len(counts)} families[/bold]")
+
+
+@app.command("gopc-build-db")
+def gopc_build_db_cmd(
+    gopc_faa: Path = typer.Argument(..., help="GOPC FASTA, .gz is fine -- mmseqs reads gzip directly, no need to decompress"),
+    target_db: Path = typer.Option(GOPC_SEARCH_DIR / "target_db" / "gopc_db", help="mmseqs target database path (prefix)"),
+    mmseqs_bin: str = typer.Option("mmseqs", help="mmseqs binary name or full path"),
+    threads: int = typer.Option(None, help="mmseqs --threads (default: mmseqs' own default)"),
+):
+    """`mmseqs createdb` on GOPC -- run once. Slow/IO-heavy given GOPC's
+    real size (~184GB compressed); run via cluster/run_gopc_search.sbatch,
+    not interactively."""
+    try:
+        gopc_search_pipeline.build_gopc_target_db(gopc_faa, target_db, mmseqs_bin=mmseqs_bin, threads=threads)
+    except gopc_search_pipeline.MMseqsNotFoundError as exc:
+        console.print(f"[red]{exc}[/red]")
+        raise typer.Exit(code=2)
+    console.print(f"[green]GOPC target database ready at {target_db}[/green]")
+
+
+@app.command("gopc-search")
+def gopc_search_cmd(
+    family: str = typer.Option("all", help="family_id, comma-separated list, or 'all' (searches every queries/<family>.faa present)"),
+    queries_dir: Path = typer.Option(GOPC_SEARCH_DIR / "queries"),
+    target_db: Path = typer.Option(GOPC_SEARCH_DIR / "target_db" / "gopc_db"),
+    results_dir: Path = typer.Option(GOPC_SEARCH_DIR / "results"),
+    tmp_dir: Path = typer.Option(GOPC_SEARCH_DIR / "tmp"),
+    sensitivity: float = typer.Option(7.0, "--sensitivity", "-s"),
+    evalue: float = typer.Option(1e-5, "--evalue", "-e"),
+    coverage: float = typer.Option(0.0, "--coverage", "-c", help="mmseqs -c; deliberately 0.0 here -- filter on qcov/tcov afterward, don't lose fragmented hits now"),
+    max_seqs: int = typer.Option(10000, help="mmseqs --max-seqs -- see query_hit_cap_warning in the summary if this was too low"),
+    cap_warning_fraction: float = typer.Option(0.95, help="flag a query if its hit count reaches this fraction of max-seqs"),
+    mmseqs_bin: str = typer.Option("mmseqs"),
+    threads: int = typer.Option(None),
+):
+    """Sensitive MMseqs2 search of one/several/all family query FASTAs
+    against the GOPC target database. Per family, writes <family>_hits.tsv
+    (every alignment), <family>_unique_targets.tsv (one row per unique
+    GOPC hit, best alignment retained), and <family>_summary.tsv. Does NOT
+    classify hits as true PHA proteins -- alignment statistics only."""
+    if family == "all":
+        family_ids = sorted(p.stem for p in queries_dir.glob("*.faa"))
+        if not family_ids:
+            console.print(f"[red]No query FASTAs found in {queries_dir} -- run export-queries first.[/red]")
+            raise typer.Exit(code=2)
+    else:
+        family_ids = [f.strip() for f in family.split(",") if f.strip()]
+
+    for family_id in family_ids:
+        query_fasta = queries_dir / f"{family_id}.faa"
+        if not query_fasta.exists():
+            console.print(f"[yellow]{query_fasta} not found -- skipping {family_id}.[/yellow]")
+            continue
+        console.print(f"[bold]{family_id}[/bold]: searching against GOPC (max_seqs={max_seqs})...")
+        try:
+            summary = gopc_search_pipeline.run_family_search(
+                family_id, query_fasta, target_db, results_dir, tmp_dir,
+                sensitivity=sensitivity, evalue=evalue, coverage=coverage, max_seqs=max_seqs,
+                cap_warning_fraction=cap_warning_fraction, mmseqs_bin=mmseqs_bin, threads=threads,
+            )
+        except gopc_search_pipeline.MMseqsNotFoundError as exc:
+            console.print(f"[red]{exc}[/red]")
+            raise typer.Exit(code=2)
+
+        console.print(
+            f"  {summary.n_reference_queries} queries -> {summary.n_alignments} alignments -> "
+            f"{summary.n_unique_gopc_targets} unique GOPC targets"
+        )
+        if summary.query_hit_cap_warning:
+            console.print(
+                f"[yellow]WARNING: query_hit_cap_warning=TRUE for {family_id} -- "
+                f"{len(summary.queries_at_cap)} quer{'y' if len(summary.queries_at_cap) == 1 else 'ies'} "
+                f"reached >={cap_warning_fraction:.0%} of --max-seqs {max_seqs}. "
+                f"Sensitivity may be capped -- consider rerunning this family with a higher --max-seqs "
+                f"(e.g. 50000/100000). See {family_id}_summary.tsv's queries_at_cap for which ones.[/yellow]"
+            )
+
+
+@app.command("gopc-combine")
+def gopc_combine_cmd(results_dir: Path = typer.Option(GOPC_SEARCH_DIR / "results")):
+    """Concatenates every family's *_unique_targets.tsv / *_summary.tsv
+    into all_families_unique_targets.tsv / all_families_summary.tsv.
+    Deliberately does NOT resolve a GOPC target hit by multiple families --
+    both rows are kept."""
+    n_targets, n_families = gopc_search_pipeline.combine_all_families(results_dir)
+    console.print(f"[green]{results_dir / 'all_families_unique_targets.tsv'}: {n_targets} rows[/green]")
+    console.print(f"[green]{results_dir / 'all_families_summary.tsv'}: {n_families} families[/green]")
 
 
 @app.command("status")
