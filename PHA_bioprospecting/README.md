@@ -138,6 +138,14 @@ pha-reference gopc-search --family all    # then everything
 pha-reference gopc-combine                # all_families_unique_targets.tsv / all_families_summary.tsv
 ```
 
+**`gopc-build-db` memory**: confirmed live, `mmseqs createdb`'s own
+`--shuffle` default (on) got this step OOM-killed at 64GB given GOPC's
+real scale (hundreds of millions of sequences) -- `--no-shuffle` is now
+the `phaatlas` default (pass `--shuffle` to re-enable it, trading memory
+for better target-split load-balancing in later searches), and
+`cluster/run_gopc_build_db.sbatch` requests 256GB. Raise further if that
+still isn't enough on your cluster.
+
 Or as cluster jobs (build once, then search):
 
 ```bash

@@ -94,14 +94,26 @@ def build_gopc_target_db(
     target_db_path: Path,
     mmseqs_bin: str = "mmseqs",
     threads: int | None = None,
+    shuffle: bool = False,
 ) -> None:
     """`mmseqs createdb <gopc fasta(.gz)> <target_db_path>` -- run once.
     MMseqs2 reads gzipped FASTA directly, so GOPC.geneset.pep.fa.gz never
     needs to be decompressed to disk separately for this step.
+
+    shuffle=False by default: `createdb`'s own --shuffle defaults to true
+    (it randomizes sequence order up front for better load-balancing when
+    the target is later split across threads/nodes during a search) --
+    confirmed live, at GOPC's real scale (hundreds of millions of
+    sequences) this pushed createdb's memory use past 64GB and got the job
+    OOM-killed. Disabling it trades away some of that load-balancing
+    benefit for actually being able to build the database; pass
+    shuffle=True if you have enough memory headroom to afford both.
     """
     _require_mmseqs(mmseqs_bin)
     target_db_path.parent.mkdir(parents=True, exist_ok=True)
-    cmd = [mmseqs_bin, "createdb", str(gopc_faa_path), str(target_db_path)]
+    cmd = [mmseqs_bin, "createdb", str(gopc_faa_path), str(target_db_path), "--shuffle", "1" if shuffle else "0"]
+    if threads:
+        cmd += ["--threads", str(threads)]
     subprocess.run(cmd, check=True)
 
 

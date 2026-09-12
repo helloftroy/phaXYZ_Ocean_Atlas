@@ -216,12 +216,18 @@ def gopc_build_db_cmd(
     target_db: Path = typer.Option(GOPC_SEARCH_DIR / "target_db" / "gopc_db", help="mmseqs target database path (prefix)"),
     mmseqs_bin: str = typer.Option("mmseqs", help="mmseqs binary name or full path"),
     threads: int = typer.Option(None, help="mmseqs --threads (default: mmseqs' own default)"),
+    shuffle: bool = typer.Option(
+        False,
+        help="mmseqs createdb --shuffle -- defaults OFF: at GOPC's real scale this pushed memory past 64GB and got "
+        "the job OOM-killed (confirmed live). Only turn on if you have generous memory headroom to spare for "
+        "better target-split load-balancing during later searches.",
+    ),
 ):
     """`mmseqs createdb` on GOPC -- run once. Slow/IO-heavy given GOPC's
-    real size (~184GB compressed); run via cluster/run_gopc_search.sbatch,
+    real size (~184GB compressed); run via cluster/run_gopc_build_db.sbatch,
     not interactively."""
     try:
-        gopc_search_pipeline.build_gopc_target_db(gopc_faa, target_db, mmseqs_bin=mmseqs_bin, threads=threads)
+        gopc_search_pipeline.build_gopc_target_db(gopc_faa, target_db, mmseqs_bin=mmseqs_bin, threads=threads, shuffle=shuffle)
     except gopc_search_pipeline.MMseqsNotFoundError as exc:
         console.print(f"[red]{exc}[/red]")
         raise typer.Exit(code=2)
