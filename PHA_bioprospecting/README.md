@@ -184,6 +184,17 @@ larger enzyme superfamilies); phaC should behave more cleanly. Rerun just
 the flagged family at a higher `--max-seqs` (50000/100000) rather than
 redoing everything.
 
+**`--split-memory-limit` matters a lot at GOPC's scale, under SLURM.**
+Confirmed live: the search died right after loading the (tiny) query
+database -- `Error: Prefilter died` / `Error: Search died` -- because
+without this flag, mmseqs sizes its target-database split against the
+*node's* total physical memory, not the job's actual cgroup allocation,
+and then gets OOM-killed once it tries to actually use that much.
+`cluster/run_gopc_search.sbatch` sets this automatically (80% of the
+job's own `--mem`, via `SLURM_MEM_PER_NODE`); running `pha-reference
+gopc-search` outside that script, pass `--split-memory-limit` yourself
+(e.g. `50G`), comfortably below whatever memory is actually available.
+
 **Per-family outputs**, all under `gopc_search/results/`:
 
 - `<family>_hits.tsv` -- every query-target alignment, all 14 columns

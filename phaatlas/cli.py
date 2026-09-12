@@ -248,6 +248,13 @@ def gopc_search_cmd(
     cap_warning_fraction: float = typer.Option(0.95, help="flag a query if its hit count reaches this fraction of max-seqs"),
     mmseqs_bin: str = typer.Option("mmseqs"),
     threads: int = typer.Option(None),
+    split_memory_limit: str = typer.Option(
+        None,
+        help="mmseqs --split-memory-limit, e.g. '50G' -- strongly recommended under SLURM/any cgroup-limited "
+        "scheduler, set comfortably below your job's --mem. Without it mmseqs sizes its prefilter split against "
+        "the NODE's total memory, not your job's actual allocation, which can OOM-kill the prefilter step "
+        "('Error: Prefilter died') even though the query database itself loaded fine.",
+    ),
 ):
     """Sensitive MMseqs2 search of one/several/all family query FASTAs
     against the GOPC target database. Per family, writes <family>_hits.tsv
@@ -273,6 +280,7 @@ def gopc_search_cmd(
                 family_id, query_fasta, target_db, results_dir, tmp_dir,
                 sensitivity=sensitivity, evalue=evalue, coverage=coverage, max_seqs=max_seqs,
                 cap_warning_fraction=cap_warning_fraction, mmseqs_bin=mmseqs_bin, threads=threads,
+                split_memory_limit=split_memory_limit,
             )
         except gopc_search_pipeline.MMseqsNotFoundError as exc:
             console.print(f"[red]{exc}[/red]")

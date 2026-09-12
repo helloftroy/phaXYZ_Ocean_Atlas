@@ -145,13 +145,27 @@ def run_family_search(
     cap_warning_fraction: float = 0.95,
     mmseqs_bin: str = "mmseqs",
     threads: int | None = None,
+    split_memory_limit: str | None = None,
 ) -> FamilySearchSummary:
     """Runs `mmseqs easy-search` for one family, then builds
     <family>_unique_targets.tsv and <family>_summary.tsv from
     <family>_hits.tsv in a single streaming pass (hits.tsv can be large --
     up to n_queries * max_seqs rows for a saturated family -- so this never
     loads the whole file into memory at once, only the small per-target/
-    per-query aggregates)."""
+    per-query aggregates).
+
+    split_memory_limit: mmseqs' own --split-memory-limit (e.g. "50G").
+    Strongly recommended under SLURM/any cgroup-limited scheduler --
+    confirmed live that omitting it against a target this large ("Query
+    database size: ... / Error: Prefilter died / Error: Search died") gets
+    the prefilter step OOM-killed: without an explicit limit, MMseqs2
+    sizes its target-database split against the NODE's total physical
+    memory, not the job's actual cgroup allocation, so on a shared node it
+    can assume far more headroom than it's really been given. Set this
+    comfortably below whatever --mem the job requested (see
+    cluster/run_gopc_search.sbatch, which does this automatically from
+    SLURM_MEM_PER_NODE).
+    """
     _require_mmseqs(mmseqs_bin)
     results_dir.mkdir(parents=True, exist_ok=True)
     family_tmp = tmp_dir / family_id
@@ -171,6 +185,8 @@ def run_family_search(
     ]
     if threads:
         cmd += ["--threads", str(threads)]
+    if split_memory_limit:
+        cmd += ["--split-memory-limit", split_memory_limit]
     subprocess.run(cmd, check=True)
 
     n_reference_queries = _count_fasta_records(query_fasta)
