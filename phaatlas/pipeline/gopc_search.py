@@ -95,6 +95,7 @@ def build_gopc_target_db(
     mmseqs_bin: str = "mmseqs",
     threads: int | None = None,
     shuffle: bool = False,
+    gpu_compatible: bool = False,
 ) -> None:
     """`mmseqs createdb <gopc fasta(.gz)> <target_db_path>` -- run once.
     MMseqs2 reads gzipped FASTA directly, so GOPC.geneset.pep.fa.gz never
@@ -108,10 +109,22 @@ def build_gopc_target_db(
     OOM-killed. Disabling it trades away some of that load-balancing
     benefit for actually being able to build the database; pass
     shuffle=True if you have enough memory headroom to afford both.
+
+    gpu_compatible=False by default: pass True to build with
+    `--createdb-mode 2` (mmseqs' own GPU-compatible storage layout),
+    required before `run_family_search(..., gpu=True)` can search against
+    this database. This is a storage-format choice, not a CUDA runtime
+    requirement -- confirmed via `mmseqs createdb --help` that the flag
+    exists on the plain CPU build too, so this build step itself does NOT
+    need to run on a GPU node even when building a GPU-compatible
+    database. A database built one way can't be searched the other way;
+    rebuild (same command, flip this flag) if you need to switch.
     """
     _require_mmseqs(mmseqs_bin)
     target_db_path.parent.mkdir(parents=True, exist_ok=True)
     cmd = [mmseqs_bin, "createdb", str(gopc_faa_path), str(target_db_path), "--shuffle", "1" if shuffle else "0"]
+    if gpu_compatible:
+        cmd += ["--createdb-mode", "2"]
     if threads:
         cmd += ["--threads", str(threads)]
     subprocess.run(cmd, check=True)
@@ -146,6 +159,7 @@ def run_family_search(
     mmseqs_bin: str = "mmseqs",
     threads: int | None = None,
     split_memory_limit: str | None = None,
+    gpu: bool = False,
 ) -> FamilySearchSummary:
     """Runs `mmseqs easy-search` for one family, then builds
     <family>_unique_targets.tsv and <family>_summary.tsv from
@@ -155,16 +169,29 @@ def run_family_search(
     per-query aggregates).
 
     split_memory_limit: mmseqs' own --split-memory-limit (e.g. "50G").
-    Strongly recommended under SLURM/any cgroup-limited scheduler --
-    confirmed live that omitting it against a target this large ("Query
-    database size: ... / Error: Prefilter died / Error: Search died") gets
-    the prefilter step OOM-killed: without an explicit limit, MMseqs2
-    sizes its target-database split against the NODE's total physical
-    memory, not the job's actual cgroup allocation, so on a shared node it
-    can assume far more headroom than it's really been given. Set this
-    comfortably below whatever --mem the job requested (see
-    cluster/run_gopc_search.sbatch, which does this automatically from
-    SLURM_MEM_PER_NODE).
+    Strongly recommended for a CPU (gpu=False) run under SLURM/any
+    cgroup-limited scheduler -- confirmed live that omitting it against a
+    target this large ("Query database size: ... / Error: Prefilter died /
+    Error: Search died") gets the prefilter step OOM-killed: without an
+    explicit limit, MMseqs2 sizes its target-database split against the
+    NODE's total physical memory, not the job's actual cgroup allocation,
+    so on a shared node it can assume far more headroom than it's really
+    been given. Set this comfortably below whatever --mem the job
+    requested (see cluster/run_gopc_search.sbatch, which does this
+    automatically from SLURM_MEM_PER_NODE).
+
+    gpu: pass --gpu 1 to mmseqs (confirmed present on `search`/
+    `easy-search` in mmseqs2 18-8cc5c's own --help; the GPU-accelerated
+    prefilter is described in Kallenborn et al., "GPU-accelerated homology
+    search with MMseqs2," bioRxiv 2024.11.13.623350). Requires: a
+    GPU-enabled mmseqs binary (mmseqs-linux-gpu, not the plain CPU build --
+    see cluster/install_mmseqs2.sh), a target database built with
+    build_gopc_target_db(..., gpu_compatible=True), and an actual GPU
+    available to the process (CUDA_VISIBLE_DEVICES). split_memory_limit is
+    still passed through if given, but it's a CPU-prefilter-era setting --
+    the GPU path's own memory behavior (which we have not been able to
+    validate end-to-end, since building/testing this locally would need an
+    actual CUDA GPU) may or may not use it the same way.
     """
     _require_mmseqs(mmseqs_bin)
     results_dir.mkdir(parents=True, exist_ok=True)
@@ -187,6 +214,8 @@ def run_family_search(
         cmd += ["--threads", str(threads)]
     if split_memory_limit:
         cmd += ["--split-memory-limit", split_memory_limit]
+    if gpu:
+        cmd += ["--gpu", "1"]
     subprocess.run(cmd, check=True)
 
     n_reference_queries = _count_fasta_records(query_fasta)

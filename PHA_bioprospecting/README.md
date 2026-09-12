@@ -135,29 +135,55 @@ rerunning the (expensive) search itself.
 
 ```bash
 pha-reference export-queries              # one queries/<family>.faa per family, headers = protein_id only
-pha-reference gopc-build-db PHA_bioprospecting/databases/GOPC/raw/GOPC.geneset.pep.fa.gz   # once
+pha-reference gopc-build-db PHA_bioprospecting/databases/GOPC/raw/GOPC.geneset.pep.fa.gz --gpu-compatible   # once
 
-pha-reference gopc-search --family phaC   # test one family first
-pha-reference gopc-search --family all    # then everything
+pha-reference gopc-search --family phaC --gpu --mmseqs-bin cluster/bin-gpu/mmseqs   # test one family first
+pha-reference gopc-search --family all --gpu --mmseqs-bin cluster/bin-gpu/mmseqs    # then everything
 pha-reference gopc-combine                # all_families_unique_targets.tsv / all_families_summary.tsv
 ```
+
+**GPU vs. CPU search.** The actual search (`gopc-search`) runs on
+`gpu-a100` via mmseqs' own `--gpu 1` (GPU-accelerated prefilter, see
+Kallenborn et al., "GPU-accelerated homology search with MMseqs2,"
+bioRxiv 2024.11.13.623350) -- `service` in this project is specifically
+for stages that need internet, and this search needs none. This requires
+its own GPU-enabled mmseqs binary (separate from the plain CPU one) and a
+target database built with `--gpu-compatible` (`--createdb-mode 2`,
+mmseqs' GPU-compatible storage format) -- a plain database can't be
+searched with `--gpu`, and vice versa. **We have not been able to run
+this GPU path ourselves** (no CUDA GPU in this development environment) --
+it's built from the exact flags confirmed present in `mmseqs --help` for
+this release plus that paper's description, not a working run we watched
+succeed, so treat the resource numbers in `cluster/run_gopc_search.sbatch`
+as a first guess and report back what actually happens. The plain CPU
+path (`pha-reference gopc-search` without `--gpu`, `--split-memory-limit`
+instead) still works as a fallback if GPU search doesn't pan out -- see
+the git history for that version if needed.
 
 **`gopc-build-db` memory**: `mmseqs createdb`'s own `--shuffle` default
 (on) reorders the whole input up front, which costs extra memory at
 GOPC's real scale (hundreds of millions of sequences) for no benefit to
-this one-time build step -- `--no-shuffle` is now the `phaatlas` default
-(pass `--shuffle` to re-enable it, trading memory for better target-split
-load-balancing in later searches). A job OOM-killed or failing to
-schedule at a given `--mem` is also worth double-checking against missing
-`--account` first (confirmed live: omitting it can silently route the job
-through a different default QOS with its own, possibly tighter, resource
-enforcement) before assuming `--mem` itself needs to go up.
+a one-time build step -- `--no-shuffle` is the `phaatlas` default for a
+plain build. Confirmed live, though: mmseqs **refuses** `--no-shuffle`
+together with `--gpu-compatible` ("Shuffle database cannot be turned off
+for --createdb-mode 2") and silently re-enables shuffle regardless -- so
+a `--gpu-compatible` build needs more memory than the plain build does at
+the same `--mem`, not the same; `cluster/run_gopc_build_db.sbatch`'s
+header comment has the exact override to use. Separately, a job
+OOM-killed or failing to schedule at a given `--mem` is also worth
+double-checking against missing `--account` first (confirmed live:
+omitting it can silently route the job through a different default QOS
+with its own, possibly tighter, resource enforcement) before assuming
+`--mem` itself needs to go up.
 
 Or as cluster jobs (build once, then search) -- add `--account=<your
 account>` if your cluster requires one for this partition/QOS:
 
 ```bash
-sbatch --account=191001-364393 cluster/run_gopc_build_db.sbatch
+# One-time: GPU-enabled mmseqs binary + GPU-compatible target database
+MMSEQS_VARIANT=linux-gpu MMSEQS_OUTPUT_DIR=cluster/bin-gpu ./cluster/install_mmseqs2.sh
+sbatch --account=191001-364393 --mem=110G --export=ALL,GPU_COMPATIBLE=1 cluster/run_gopc_build_db.sbatch
+
 sbatch --account=191001-364393 --export=ALL,FAMILY=phaC cluster/run_gopc_search.sbatch   # test one family first
 sbatch --account=191001-364393 cluster/run_gopc_search.sbatch                             # FAMILY defaults to 'all'
 ```
@@ -184,16 +210,22 @@ larger enzyme superfamilies); phaC should behave more cleanly. Rerun just
 the flagged family at a higher `--max-seqs` (50000/100000) rather than
 redoing everything.
 
-**`--split-memory-limit` matters a lot at GOPC's scale, under SLURM.**
-Confirmed live: the search died right after loading the (tiny) query
-database -- `Error: Prefilter died` / `Error: Search died` -- because
-without this flag, mmseqs sizes its target-database split against the
-*node's* total physical memory, not the job's actual cgroup allocation,
-and then gets OOM-killed once it tries to actually use that much.
-`cluster/run_gopc_search.sbatch` sets this automatically (80% of the
-job's own `--mem`, via `SLURM_MEM_PER_NODE`); running `pha-reference
-gopc-search` outside that script, pass `--split-memory-limit` yourself
-(e.g. `50G`), comfortably below whatever memory is actually available.
+**If you fall back to the CPU search path** (`gopc-search` without
+`--gpu`, against a plain non-`--gpu-compatible` target database),
+`--split-memory-limit` matters a lot at GOPC's scale, under SLURM.
+Confirmed live on `service` before this moved to GPU: the search died
+right after loading the (tiny) query database -- `Error: Prefilter died` /
+`Error: Search died` -- because without this flag, mmseqs sizes its
+target-database split against the *node's* total physical memory, not the
+job's actual cgroup allocation. Also confirmed live: even WITH it set (80%
+of a 64G job), it still died -- past mmseqs' own "can this fit" estimate
+check, i.e. a genuine crash during execution, meaning that estimate
+doesn't cover everything mmseqs actually uses at runtime; a 100G job with
+a 60% split limit (~60G) is the last CPU configuration tried, itself
+unconfirmed since the GPU path superseded it before a retry. Pass
+`--split-memory-limit` comfortably below whatever `--mem` you actually
+request, and check your own cluster's real ceiling with `sinfo -p
+<partition> -o "%P %m %c %l"` rather than assuming these numbers.
 
 **Per-family outputs**, all under `gopc_search/results/`:
 

@@ -222,12 +222,20 @@ def gopc_build_db_cmd(
         "the job OOM-killed (confirmed live). Only turn on if you have generous memory headroom to spare for "
         "better target-split load-balancing during later searches.",
     ),
+    gpu_compatible: bool = typer.Option(
+        False,
+        help="mmseqs createdb --createdb-mode 2 -- required before `gopc-search --gpu` can search this database. "
+        "A storage-format choice, not a CUDA requirement to build (this step doesn't need an actual GPU), but a "
+        "database built one way can't be searched the other way -- rebuild (flip this flag) to switch.",
+    ),
 ):
     """`mmseqs createdb` on GOPC -- run once. Slow/IO-heavy given GOPC's
     real size (~184GB compressed); run via cluster/run_gopc_build_db.sbatch,
     not interactively."""
     try:
-        gopc_search_pipeline.build_gopc_target_db(gopc_faa, target_db, mmseqs_bin=mmseqs_bin, threads=threads, shuffle=shuffle)
+        gopc_search_pipeline.build_gopc_target_db(
+            gopc_faa, target_db, mmseqs_bin=mmseqs_bin, threads=threads, shuffle=shuffle, gpu_compatible=gpu_compatible
+        )
     except gopc_search_pipeline.MMseqsNotFoundError as exc:
         console.print(f"[red]{exc}[/red]")
         raise typer.Exit(code=2)
@@ -250,10 +258,16 @@ def gopc_search_cmd(
     threads: int = typer.Option(None),
     split_memory_limit: str = typer.Option(
         None,
-        help="mmseqs --split-memory-limit, e.g. '50G' -- strongly recommended under SLURM/any cgroup-limited "
-        "scheduler, set comfortably below your job's --mem. Without it mmseqs sizes its prefilter split against "
-        "the NODE's total memory, not your job's actual allocation, which can OOM-kill the prefilter step "
-        "('Error: Prefilter died') even though the query database itself loaded fine.",
+        help="mmseqs --split-memory-limit, e.g. '50G' -- strongly recommended for a CPU (non --gpu) run under "
+        "SLURM/any cgroup-limited scheduler, set comfortably below your job's --mem. Without it mmseqs sizes its "
+        "prefilter split against the NODE's total memory, not your job's actual allocation, which can OOM-kill "
+        "the prefilter step ('Error: Prefilter died') even though the query database itself loaded fine.",
+    ),
+    gpu: bool = typer.Option(
+        False,
+        help="mmseqs --gpu 1 -- needs a GPU-enabled mmseqs binary (mmseqs-linux-gpu, see cluster/install_mmseqs2.sh), "
+        "a target database built with `gopc-build-db --gpu-compatible`, and an actual GPU available to the process. "
+        "cluster/run_gopc_search.sbatch sets this up on the gpu-a100 partition.",
     ),
 ):
     """Sensitive MMseqs2 search of one/several/all family query FASTAs
@@ -280,7 +294,7 @@ def gopc_search_cmd(
                 family_id, query_fasta, target_db, results_dir, tmp_dir,
                 sensitivity=sensitivity, evalue=evalue, coverage=coverage, max_seqs=max_seqs,
                 cap_warning_fraction=cap_warning_fraction, mmseqs_bin=mmseqs_bin, threads=threads,
-                split_memory_limit=split_memory_limit,
+                split_memory_limit=split_memory_limit, gpu=gpu,
             )
         except gopc_search_pipeline.MMseqsNotFoundError as exc:
             console.print(f"[red]{exc}[/red]")

@@ -1,7 +1,21 @@
 #!/bin/bash
-# Sensitive MMseqs2 search of the NR95 PHA reference set against GOPC, per
-# family: export-queries -> gopc-search -> gopc-combine. Run
-# cluster/run_gopc_build_db.sbatch first (once). No internet needed.
+# GPU-accelerated MMseqs2 search of the NR95 PHA reference set against
+# GOPC, per family: export-queries -> gopc-search --gpu -> gopc-combine.
+# No internet needed -- everything here reads local files.
+#
+# Runs on gpu-a100 (mirroring ../fair_ocean_agent/cluster/run_extraction.sbatch's
+# own GPU job), not `service` -- `service` in this project is specifically
+# for the stages that need internet (see cluster/run_download_databases.sbatch,
+# run_pha_reference_build.sbatch), and this search needs none.
+#
+# One-time prerequisites (both via cluster/install_mmseqs2.sh, see there):
+#   1. A GPU-enabled mmseqs binary -- installed separately from the plain
+#      CPU one used for cluster/run_gopc_build_db.sbatch:
+#        MMSEQS_VARIANT=linux-gpu MMSEQS_OUTPUT_DIR=cluster/bin-gpu ./cluster/install_mmseqs2.sh
+#   2. A GPU-COMPATIBLE target database -- a database built the normal way
+#      (without --gpu-compatible) cannot be searched with --gpu; rebuild once:
+#        sbatch --account=191001-364393 --export=ALL,GPU_COMPATIBLE=1,TARGET_DB=PHA_bioprospecting/gopc_search/target_db_gpu/gopc_db \
+#          cluster/run_gopc_build_db.sbatch
 #
 # Test ONE family first, same philosophy as every other stage in this
 # pipeline -- phaC is the cleanest case (a specific EC, not a shared
@@ -21,16 +35,21 @@
 # less likely for phaC. Rerun just the flagged family with e.g.
 # MAX_SEQS=50000 or 100000 if you see it.
 #
-# --split-memory-limit is set below from this job's own --mem, and matters
-# a lot at GOPC's scale -- confirmed live: without it, the prefilter step
-# died ("Error: Prefilter died / Error: Search died") right after loading
-# the (small) query database, because mmseqs sizes its target-database
-# split against the NODE's total physical memory, not this job's actual
-# cgroup allocation, and got OOM-killed once it tried to actually use that
-# much. Don't remove/override SPLIT_MEMORY_LIMIT unless you're confident
-# your cluster doesn't have this problem.
+# IMPORTANT, please read: this GPU path (mmseqs' own --gpu 1, described in
+# Kallenborn et al., "GPU-accelerated homology search with MMseqs2,"
+# bioRxiv 2024.11.13.623350) has NOT been run end-to-end by us before --
+# there's no way to test it without an actual CUDA GPU, which this
+# development environment doesn't have. Everything here is based on the
+# exact flags confirmed present in `mmseqs --help` for this specific
+# release (18-8cc5c) plus that paper's description, not a working run we
+# watched succeed. --cpus-per-task/--mem below are a starting guess
+# (mirroring ../fair_ocean_agent's own gpu-a100 job) -- if this errors out
+# in a way that looks resource-related, that's the first thing to
+# reconsider, and please report back exactly what happens so this can be
+# corrected quickly.
 #SBATCH --job-name=pha_gopc_search
-#SBATCH --partition=service
+#SBATCH --partition=gpu-a100
+#SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=64G
 #SBATCH --time=48:00:00
@@ -50,17 +69,26 @@ fi
 # shellcheck source=/dev/null
 source cluster/env_activate.sh
 
-if ! command -v mmseqs >/dev/null 2>&1; then
-  echo "mmseqs not found on PATH -- run ./cluster/install_mmseqs2.sh first." >&2
+MMSEQS_GPU_BIN="${MMSEQS_GPU_BIN:-$(pwd)/cluster/bin-gpu/mmseqs}"
+if [ ! -x "${MMSEQS_GPU_BIN}" ]; then
+  echo "${MMSEQS_GPU_BIN} not found/executable -- install it first:" >&2
+  echo "  MMSEQS_VARIANT=linux-gpu MMSEQS_OUTPUT_DIR=cluster/bin-gpu ./cluster/install_mmseqs2.sh" >&2
   exit 2
 fi
-echo "mmseqs: $(mmseqs version)"
+echo "mmseqs (GPU build): $("${MMSEQS_GPU_BIN}" version)"
 echo "Job started: $(date)"
 echo "Host: $(hostname)"
+echo "CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES:-unset}"
+nvidia-smi || echo "nvidia-smi not available/failed -- is a GPU actually attached to this job? (--gres=gpu:1 above)" >&2
 
-TARGET_DB="${TARGET_DB:-PHA_bioprospecting/gopc_search/target_db/gopc_db}"
+# Deliberately a SEPARATE path from the CPU target_db/ -- a GPU-compatible
+# database (--createdb-mode 2) is a different on-disk format and can't be
+# used interchangeably with the plain one cluster/run_gopc_build_db.sbatch
+# builds by default.
+TARGET_DB="${TARGET_DB:-PHA_bioprospecting/gopc_search/target_db_gpu/gopc_db}"
 if [ ! -f "${TARGET_DB}" ]; then
-  echo "${TARGET_DB} not found -- build it first: cluster/run_gopc_build_db.sbatch" >&2
+  echo "${TARGET_DB} not found -- build a GPU-compatible target database first:" >&2
+  echo "  sbatch --account=191001-364393 --export=ALL,GPU_COMPATIBLE=1,TARGET_DB=${TARGET_DB} cluster/run_gopc_build_db.sbatch" >&2
   exit 2
 fi
 
@@ -70,37 +98,21 @@ EVALUE="${EVALUE:-1e-5}"
 COVERAGE="${COVERAGE:-0.0}"
 MAX_SEQS="${MAX_SEQS:-10000}"
 CAP_WARNING_FRACTION="${CAP_WARNING_FRACTION:-0.95}"
-
-# Default: 80% of this job's own SLURM memory allocation, leaving headroom
-# for everything else in the process (query/target DB loading, output
-# buffering, the phaatlas Python process itself) -- SLURM sets
-# SLURM_MEM_PER_NODE (in MB) automatically from the #SBATCH --mem above.
-# Override with SPLIT_MEMORY_LIMIT=<value> (mmseqs' own syntax, e.g. "40G")
-# if 80% isn't right for your job.
-SPLIT_MEMORY_LIMIT="${SPLIT_MEMORY_LIMIT:-}"
-if [ -z "${SPLIT_MEMORY_LIMIT}" ] && [ -n "${SLURM_MEM_PER_NODE:-}" ]; then
-  SPLIT_MEMORY_LIMIT="$(( SLURM_MEM_PER_NODE * 80 / 100 ))M"
-fi
-if [ -z "${SPLIT_MEMORY_LIMIT}" ]; then
-  echo "WARNING: could not determine SPLIT_MEMORY_LIMIT (SLURM_MEM_PER_NODE unset -- did you request" >&2
-  echo "--mem-per-cpu instead of --mem?). Proceeding without --split-memory-limit -- mmseqs will size" >&2
-  echo "its prefilter split against the NODE's total memory, which risks the same OOM this default" >&2
-  echo "exists to avoid. Set SPLIT_MEMORY_LIMIT explicitly if this job dies with 'Prefilter died'." >&2
-fi
-
-echo "FAMILY=${FAMILY} SENSITIVITY=${SENSITIVITY} EVALUE=${EVALUE} COVERAGE=${COVERAGE} MAX_SEQS=${MAX_SEQS} SPLIT_MEMORY_LIMIT=${SPLIT_MEMORY_LIMIT:-<unset>}"
+echo "FAMILY=${FAMILY} SENSITIVITY=${SENSITIVITY} EVALUE=${EVALUE} COVERAGE=${COVERAGE} MAX_SEQS=${MAX_SEQS} TARGET_DB=${TARGET_DB}"
 
 pha-reference init-db
 pha-reference export-queries
 pha-reference gopc-search \
   --family "${FAMILY}" \
+  --target-db "${TARGET_DB}" \
   --sensitivity "${SENSITIVITY}" \
   --evalue "${EVALUE}" \
   --coverage "${COVERAGE}" \
   --max-seqs "${MAX_SEQS}" \
   --cap-warning-fraction "${CAP_WARNING_FRACTION}" \
   --threads "${SLURM_CPUS_PER_TASK:-16}" \
-  ${SPLIT_MEMORY_LIMIT:+--split-memory-limit "${SPLIT_MEMORY_LIMIT}"}
+  --mmseqs-bin "${MMSEQS_GPU_BIN}" \
+  --gpu
 pha-reference gopc-combine
 
 echo "Job finished: $(date)"
