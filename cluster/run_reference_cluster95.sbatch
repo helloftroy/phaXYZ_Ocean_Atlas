@@ -10,6 +10,10 @@
 # millions), so this is a light CPU job -- these resource numbers are
 # deliberately modest; raise --cpus-per-task if you profile it as
 # CPU-bound on your cluster's node type.
+#
+# Add --account=<your account> on submission if your cluster requires one
+# for this partition/QOS, e.g.:
+#   sbatch --account=191001-364393 --export=ALL,FAMILY=phaC cluster/run_reference_cluster95.sbatch
 #SBATCH --job-name=pha_reference_cluster95
 #SBATCH --partition=service
 #SBATCH --cpus-per-task=8

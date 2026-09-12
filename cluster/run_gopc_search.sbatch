@@ -7,9 +7,9 @@
 # pipeline -- phaC is the cleanest case (a specific EC, not a shared
 # superfamily), so it's the best first check that alignment settings and
 # --max-seqs are behaving before spending compute on all 16:
-#   sbatch --export=ALL,FAMILY=phaC cluster/run_gopc_search.sbatch
+#   sbatch --account=191001-364393 --export=ALL,FAMILY=phaC cluster/run_gopc_search.sbatch
 # Then everything:
-#   sbatch cluster/run_gopc_search.sbatch   # FAMILY defaults to 'all'
+#   sbatch --account=191001-364393 cluster/run_gopc_search.sbatch   # FAMILY defaults to 'all'
 #
 # --max-seqs is the one setting most likely to need raising after a first
 # look at the logs -- watch this job's own .out file (or

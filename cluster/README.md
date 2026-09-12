@@ -43,9 +43,16 @@ cp .env.example .env
 Per the spec: pressure-test the whole workflow against one family before
 running all sixteen.
 
+Add `--account=<your account>` to every `sbatch` command below if your
+cluster requires one for this partition/QOS (confirmed live: omitting it
+can silently route the job through a different default QOS with its own,
+possibly tighter, resource enforcement -- a job that OOM-kills or fails to
+schedule without `--account` may work fine at the exact same resource
+request once submitted correctly).
+
 ```bash
 mkdir -p logs
-sbatch --export=ALL,FAMILY=phaC cluster/run_pha_reference_build.sbatch
+sbatch --account=191001-364393 --export=ALL,FAMILY=phaC cluster/run_pha_reference_build.sbatch
 ```
 
 Check progress:
@@ -59,7 +66,7 @@ and the per-tier counts `pha-reference status` prints at the end of the
 job), run every family:
 
 ```bash
-sbatch cluster/run_pha_reference_build.sbatch   # FAMILY defaults to 'all'
+sbatch --account=191001-364393 cluster/run_pha_reference_build.sbatch   # FAMILY defaults to 'all'
 ```
 
 Re-running is safe: every `pha-reference ingest-*` command upserts against

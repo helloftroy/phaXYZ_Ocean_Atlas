@@ -10,13 +10,16 @@
 # 240GB free for everything, or just the relevant subset for TARGET below.
 #
 # TARGET selects what to fetch (see the two scripts' own --help-equivalent
-# usage comments for the full option list):
-#   sbatch --export=ALL,DATASET=gopc,TARGET=md5              cluster/run_download_databases.sbatch
-#   sbatch --export=ALL,DATASET=gopc,TARGET=geneset           cluster/run_download_databases.sbatch   # ~184GB
-#   sbatch --export=ALL,DATASET=omdb,TARGET=data               cluster/run_download_databases.sbatch
-#   sbatch --export=ALL,DATASET=omdb,TARGET=nr100               cluster/run_download_databases.sbatch  # ~49GB
-#   sbatch --export=ALL,DATASET=omdb,TARGET=nr100-clusters      cluster/run_download_databases.sbatch  # ~4.2GB
-#   sbatch --export=ALL,DATASET=omdb,TARGET=all                 cluster/run_download_databases.sbatch
+# usage comments for the full option list). Add --account=<your account>
+# if your cluster requires one for this partition/QOS (confirmed live:
+# omitting it can silently route the job through a different default QOS
+# with its own, possibly tighter, resource enforcement):
+#   sbatch --account=191001-364393 --export=ALL,DATASET=gopc,TARGET=md5              cluster/run_download_databases.sbatch
+#   sbatch --account=191001-364393 --export=ALL,DATASET=gopc,TARGET=geneset           cluster/run_download_databases.sbatch   # ~184GB
+#   sbatch --account=191001-364393 --export=ALL,DATASET=omdb,TARGET=data               cluster/run_download_databases.sbatch
+#   sbatch --account=191001-364393 --export=ALL,DATASET=omdb,TARGET=nr100               cluster/run_download_databases.sbatch  # ~49GB
+#   sbatch --account=191001-364393 --export=ALL,DATASET=omdb,TARGET=nr100-clusters      cluster/run_download_databases.sbatch  # ~4.2GB
+#   sbatch --account=191001-364393 --export=ALL,DATASET=omdb,TARGET=all                 cluster/run_download_databases.sbatch
 #
 # Long walltime because these are genuinely large transfers over a real
 # network, not because the job does much work -- if it hits the time

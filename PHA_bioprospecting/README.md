@@ -45,8 +45,12 @@ pha-reference cluster95 --family all  # then everything
 pha-reference export && pha-reference export-cluster95
 ```
 
-Or as a cluster job: `sbatch cluster/run_reference_cluster95.sbatch`
-(`FAMILY=phaC` to test one family first, defaults to `all`).
+Or as a cluster job: `sbatch --account=191001-364393 cluster/run_reference_cluster95.sbatch`
+(`--export=ALL,FAMILY=phaC` to test one family first, defaults to `all`).
+Add `--account=<your account>` to every `sbatch` command on this page if
+your cluster requires one for this partition/QOS -- omitting it can
+silently route the job through a different default QOS with tighter
+resource enforcement than what you actually requested.
 
 **Exact-dedup, then cluster.** Sequences are grouped by `sequence_sha256`
 first; MMseqs2 only ever sees one representative per unique sequence
@@ -84,9 +88,9 @@ the old record for comparison.
 As a cluster job:
 
 ```bash
-sbatch --export=ALL,DATASET=gopc,TARGET=geneset cluster/run_download_databases.sbatch
-sbatch --export=ALL,DATASET=omdb,TARGET=nr100 cluster/run_download_databases.sbatch
-sbatch --export=ALL,DATASET=omdb,TARGET=nr100-clusters cluster/run_download_databases.sbatch
+sbatch --account=191001-364393 --export=ALL,DATASET=gopc,TARGET=geneset cluster/run_download_databases.sbatch
+sbatch --account=191001-364393 --export=ALL,DATASET=omdb,TARGET=nr100 cluster/run_download_databases.sbatch
+sbatch --account=191001-364393 --export=ALL,DATASET=omdb,TARGET=nr100-clusters cluster/run_download_databases.sbatch
 ```
 
 Each is independent and resumable, so they're safe to submit in parallel
@@ -138,20 +142,24 @@ pha-reference gopc-search --family all    # then everything
 pha-reference gopc-combine                # all_families_unique_targets.tsv / all_families_summary.tsv
 ```
 
-**`gopc-build-db` memory**: confirmed live, `mmseqs createdb`'s own
-`--shuffle` default (on) got this step OOM-killed at 64GB given GOPC's
-real scale (hundreds of millions of sequences) -- `--no-shuffle` is now
-the `phaatlas` default (pass `--shuffle` to re-enable it, trading memory
-for better target-split load-balancing in later searches), and
-`cluster/run_gopc_build_db.sbatch` requests 256GB. Raise further if that
-still isn't enough on your cluster.
+**`gopc-build-db` memory**: `mmseqs createdb`'s own `--shuffle` default
+(on) reorders the whole input up front, which costs extra memory at
+GOPC's real scale (hundreds of millions of sequences) for no benefit to
+this one-time build step -- `--no-shuffle` is now the `phaatlas` default
+(pass `--shuffle` to re-enable it, trading memory for better target-split
+load-balancing in later searches). A job OOM-killed or failing to
+schedule at a given `--mem` is also worth double-checking against missing
+`--account` first (confirmed live: omitting it can silently route the job
+through a different default QOS with its own, possibly tighter, resource
+enforcement) before assuming `--mem` itself needs to go up.
 
-Or as cluster jobs (build once, then search):
+Or as cluster jobs (build once, then search) -- add `--account=<your
+account>` if your cluster requires one for this partition/QOS:
 
 ```bash
-sbatch cluster/run_gopc_build_db.sbatch
-sbatch --export=ALL,FAMILY=phaC cluster/run_gopc_search.sbatch   # test one family first
-sbatch cluster/run_gopc_search.sbatch                             # FAMILY defaults to 'all'
+sbatch --account=191001-364393 cluster/run_gopc_build_db.sbatch
+sbatch --account=191001-364393 --export=ALL,FAMILY=phaC cluster/run_gopc_search.sbatch   # test one family first
+sbatch --account=191001-364393 cluster/run_gopc_search.sbatch                             # FAMILY defaults to 'all'
 ```
 
 **Search settings** (`pipeline/gopc_search.py`, all configurable via CLI

@@ -45,8 +45,10 @@ if [ ! -f .env ] && [ -f .env.example ]; then
 fi
 
 # FAMILY selects which family_id(s) to run (comma-separated, or 'all' --
-# the default). Test with a single family first, e.g.:
-#   sbatch --export=ALL,FAMILY=phaC cluster/run_pha_reference_build.sbatch
+# the default). Test with a single family first, e.g. (add
+# --account=<your account> if your cluster requires one for this
+# partition/QOS):
+#   sbatch --account=191001-364393 --export=ALL,FAMILY=phaC cluster/run_pha_reference_build.sbatch
 FAMILY="${FAMILY:-all}"
 echo "FAMILY=${FAMILY}"
 
