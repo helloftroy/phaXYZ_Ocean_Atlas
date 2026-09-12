@@ -13,9 +13,8 @@
 #      CPU one used for cluster/run_gopc_build_db.sbatch:
 #        MMSEQS_VARIANT=linux-gpu MMSEQS_OUTPUT_DIR=cluster/bin-gpu ./cluster/install_mmseqs2.sh
 #   2. A GPU-COMPATIBLE target database -- a database built the normal way
-#      (without --gpu-compatible) cannot be searched with --gpu; rebuild once:
-#        sbatch --account=191001-364393 --export=ALL,GPU_COMPATIBLE=1,TARGET_DB=PHA_bioprospecting/gopc_search/target_db_gpu/gopc_db \
-#          cluster/run_gopc_build_db.sbatch
+#      (without --gpu-compatible) cannot be searched with --gpu; build one once:
+#        sbatch --account=191001-364393 cluster/run_gopc_build_db_gpu.sbatch
 #
 # Test ONE family first, same philosophy as every other stage in this
 # pipeline -- phaC is the cleanest case (a specific EC, not a shared
@@ -42,16 +41,22 @@
 # development environment doesn't have. Everything here is based on the
 # exact flags confirmed present in `mmseqs --help` for this specific
 # release (18-8cc5c) plus that paper's description, not a working run we
-# watched succeed. --cpus-per-task/--mem below are a starting guess
-# (mirroring ../fair_ocean_agent's own gpu-a100 job) -- if this errors out
-# in a way that looks resource-related, that's the first thing to
-# reconsider, and please report back exactly what happens so this can be
-# corrected quickly.
+# watched succeed. If this errors out in a way that looks resource-related,
+# --mem is the first thing to reconsider, and please report back exactly
+# what happens so this can be corrected quickly.
+#
+# --mem/--cpus-per-task: `sinfo -p gpu-a100 -o "%P %m %c %l %G"` reports
+# each gpu-a100 node as ~1031735MB (~1007GiB) RAM, 128 CPUs, 8 A100 GPUs
+# (gpu:a100:8) -- shared across up to 8 concurrent single-GPU jobs. Since
+# we only request --gres=gpu:1, below is a considerate ~1/8 share
+# (1031735/8 ~ 129000MB, 128/8 = 16 CPUs) rather than a full node's worth
+# for one GPU -- raise --mem if the search itself (not just the build
+# step, which has its own separate job) turns out to need more.
 #SBATCH --job-name=pha_gopc_search
 #SBATCH --partition=gpu-a100
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=16
-#SBATCH --mem=64G
+#SBATCH --mem=100G
 #SBATCH --time=48:00:00
 #SBATCH --output=logs/gopc_search_%j.out
 #SBATCH --error=logs/gopc_search_%j.err
@@ -88,7 +93,7 @@ nvidia-smi || echo "nvidia-smi not available/failed -- is a GPU actually attache
 TARGET_DB="${TARGET_DB:-PHA_bioprospecting/gopc_search/target_db_gpu/gopc_db}"
 if [ ! -f "${TARGET_DB}" ]; then
   echo "${TARGET_DB} not found -- build a GPU-compatible target database first:" >&2
-  echo "  sbatch --account=191001-364393 --export=ALL,GPU_COMPATIBLE=1,TARGET_DB=${TARGET_DB} cluster/run_gopc_build_db.sbatch" >&2
+  echo "  sbatch --account=191001-364393 --export=ALL,TARGET_DB=${TARGET_DB} cluster/run_gopc_build_db_gpu.sbatch" >&2
   exit 2
 fi
 

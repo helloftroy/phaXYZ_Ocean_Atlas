@@ -167,14 +167,29 @@ a one-time build step -- `--no-shuffle` is the `phaatlas` default for a
 plain build. Confirmed live, though: mmseqs **refuses** `--no-shuffle`
 together with `--gpu-compatible` ("Shuffle database cannot be turned off
 for --createdb-mode 2") and silently re-enables shuffle regardless -- so
-a `--gpu-compatible` build needs more memory than the plain build does at
-the same `--mem`, not the same; `cluster/run_gopc_build_db.sbatch`'s
-header comment has the exact override to use. Separately, a job
-OOM-killed or failing to schedule at a given `--mem` is also worth
+the GPU-compatible build needs more memory than the plain build does at
+the same `--mem`, not the same. `sinfo -p gpu-a100 -o "%P %m %c %l %G"`
+confirmed each `gpu-a100` node has ~1031735MB (~1007GiB) RAM, 128 CPUs,
+and 8 A100 GPUs (`gpu:a100:8`) -- shared across up to 8 concurrent
+single-GPU jobs, so `cluster/run_gopc_build_db_gpu.sbatch` and
+`run_gopc_search.sbatch` both request a considerate ~1/8 share
+(~120-129000MB, 16 CPUs) for their single `--gres=gpu:1` rather than a
+full node's worth; there's room to raise `--mem` further (up to the full
+~1TB) if a specific run needs it and the cluster isn't busy. Separately, a
+job OOM-killed or failing to schedule at a given `--mem` is also worth
 double-checking against missing `--account` first (confirmed live:
 omitting it can silently route the job through a different default QOS
 with its own, possibly tighter, resource enforcement) before assuming
 `--mem` itself needs to go up.
+
+**Why the GPU-compatible build also runs on `gpu-a100`, not `service`,
+even though `--createdb-mode 2` itself doesn't strictly need CUDA to
+write** (confirmed live: it completes fine with no GPU present) -- there
+was no way to confirm the resulting database is actually fully correct
+for a later `--gpu` search without a real GPU to test against, and
+getting that wrong after a ~184GB rebuild would cost far more than
+running this one step on a GPU node it may not have strictly needed. When
+unsure, match the resource type the consuming step needs.
 
 Or as cluster jobs (build once, then search) -- add `--account=<your
 account>` if your cluster requires one for this partition/QOS:
@@ -182,7 +197,7 @@ account>` if your cluster requires one for this partition/QOS:
 ```bash
 # One-time: GPU-enabled mmseqs binary + GPU-compatible target database
 MMSEQS_VARIANT=linux-gpu MMSEQS_OUTPUT_DIR=cluster/bin-gpu ./cluster/install_mmseqs2.sh
-sbatch --account=191001-364393 --mem=110G --export=ALL,GPU_COMPATIBLE=1 cluster/run_gopc_build_db.sbatch
+sbatch --account=191001-364393 cluster/run_gopc_build_db_gpu.sbatch
 
 sbatch --account=191001-364393 --export=ALL,FAMILY=phaC cluster/run_gopc_search.sbatch   # test one family first
 sbatch --account=191001-364393 cluster/run_gopc_search.sbatch                             # FAMILY defaults to 'all'
