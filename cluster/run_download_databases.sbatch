@@ -21,15 +21,17 @@
 #   sbatch --account=191001-364393 --export=ALL,DATASET=omdb,TARGET=nr100-clusters      cluster/run_download_databases.sbatch  # ~4.2GB
 #   sbatch --account=191001-364393 --export=ALL,DATASET=omdb,TARGET=all                 cluster/run_download_databases.sbatch
 #
-# Long walltime because these are genuinely large transfers over a real
-# network, not because the job does much work -- if it hits the time
-# limit partway through, just resubmit the exact same command: curl -C -
-# resumes from wherever the partial file stopped rather than restarting.
+# --time=0 (sbatch's own syntax for "no limit") since these are genuinely
+# large transfers over a real network -- `sinfo -p service -o "%P %m %c
+# %l"` confirmed this partition's own TIMELIMIT is "infinite", so there's
+# no cluster-side reason to cap this ourselves. If it's still interrupted
+# somehow (node reboot, etc.), just resubmit the exact same command: curl
+# -C - resumes from wherever the partial file stopped rather than restarting.
 #SBATCH --job-name=pha_download_databases
 #SBATCH --partition=service
 #SBATCH --cpus-per-task=2
 #SBATCH --mem=4G
-#SBATCH --time=48:00:00
+#SBATCH --time=0
 #SBATCH --output=logs/download_databases_%j.out
 #SBATCH --error=logs/download_databases_%j.err
 

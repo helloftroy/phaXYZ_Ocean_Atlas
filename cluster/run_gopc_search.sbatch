@@ -52,12 +52,23 @@
 # (1031735/8 ~ 129000MB, 128/8 = 16 CPUs) rather than a full node's worth
 # for one GPU -- raise --mem if the search itself (not just the build
 # step, which has its own separate job) turns out to need more.
+#
+# --time=0 (sbatch's own syntax for "no limit") -- that same `sinfo` also
+# reported gpu-a100's own TIMELIMIT as "infinite", so there's no
+# cluster-side reason to cap this ourselves; a real per-family GOPC search
+# at -s 7.0 can plausibly run for a long time. If one family is taking
+# MUCH longer than the others (more than ~a day for phaC specifically,
+# the cleanest/smallest family, would be worth investigating) it's worth
+# checking whether the GPU is actually engaged rather than assuming it's
+# just slow: `squeue -u $USER` for the node, then e.g. `srun
+# --jobid=<jobid> --pty nvidia-smi` -- near-0% GPU utilization would mean
+# --gpu 1 isn't actually accelerating this run for some reason.
 #SBATCH --job-name=pha_gopc_search
 #SBATCH --partition=gpu-a100
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=100G
-#SBATCH --time=48:00:00
+#SBATCH --time=0
 #SBATCH --output=logs/gopc_search_%j.out
 #SBATCH --error=logs/gopc_search_%j.err
 

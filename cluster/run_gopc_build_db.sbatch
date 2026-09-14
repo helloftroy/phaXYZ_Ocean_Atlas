@@ -37,11 +37,14 @@
 # reports this partition's real ceiling as ~128356MB (~125GiB) per node,
 # so there's room to raise --mem here too if a future run (e.g. with
 # SHUFFLE=1) needs it.
+# --time=0 (sbatch's own syntax for "no limit") -- that same `sinfo`
+# confirmed this partition's own TIMELIMIT is "infinite", so no
+# cluster-side reason to cap this ourselves.
 #SBATCH --job-name=pha_gopc_build_db
 #SBATCH --partition=service
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=64G
-#SBATCH --time=48:00:00
+#SBATCH --time=0
 #SBATCH --output=logs/gopc_build_db_%j.out
 #SBATCH --error=logs/gopc_build_db_%j.err
 

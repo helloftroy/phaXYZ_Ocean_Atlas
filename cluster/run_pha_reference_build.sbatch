@@ -8,11 +8,15 @@
 #
 # Partition name below is copied from that same convention -- confirm the
 # real partition name for your account with `sinfo` before submitting.
+#
+# --time=0 (sbatch's own syntax for "no limit") -- `sinfo -p service`
+# confirmed this partition's own TIMELIMIT is "infinite", so no
+# cluster-side reason to cap this ourselves.
 #SBATCH --job-name=pha_reference_build
 #SBATCH --partition=service
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=16G
-#SBATCH --time=24:00:00
+#SBATCH --time=0
 #SBATCH --output=logs/pha_reference_build_%j.out
 #SBATCH --error=logs/pha_reference_build_%j.err
 
