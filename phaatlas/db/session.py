@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import sqlite3
 from contextlib import contextmanager
 from pathlib import Path
 
@@ -13,6 +14,14 @@ from phaatlas.db.views import PROTEIN_MASTER_EXPORT_VIEW_SQL
 
 DEFAULT_DB_PATH = REPO_ROOT / "PHA_reference" / "pha_reference.sqlite"
 
+# How long a connection waits on a locked database before raising
+# "database is locked", instead of sqlite3's own default of failing
+# immediately (0s) -- matters because cluster/run_gopc_search.sbatch runs
+# one `pha-reference` process per PHA family, commonly several at once on
+# separate GPUs, and every one of them calls init-db/export-queries against
+# this SAME file at startup.
+SQLITE_BUSY_TIMEOUT_SECONDS = 30.0
+
 
 def get_db_path() -> Path:
     raw = os.environ.get("PHA_REFERENCE_DATABASE_PATH")
@@ -22,7 +31,7 @@ def get_db_path() -> Path:
 def get_engine(db_path: Path | None = None):
     path = db_path or get_db_path()
     path.parent.mkdir(parents=True, exist_ok=True)
-    engine = create_engine(f"sqlite:///{path}", future=True)
+    engine = create_engine(f"sqlite:///{path}", future=True, connect_args={"timeout": SQLITE_BUSY_TIMEOUT_SECONDS})
 
     # SQLite's default foreign-key enforcement is OFF per-connection --
     # without this, an orphaned family_assignment/source_evidence/phenotype
@@ -35,6 +44,16 @@ def get_engine(db_path: Path | None = None):
         cursor.close()
 
     return engine
+
+
+def connect_readonly(db_path: Path) -> sqlite3.Connection:
+    """Plain sqlite3 connection (used by pipeline/export.py and
+    pipeline/gopc_search.py for simple SELECTs against protein_master_export,
+    where going through the SQLAlchemy engine/ORM would be overkill) --
+    routed through one helper so every such call site gets the same
+    SQLITE_BUSY_TIMEOUT_SECONDS, not just the ORM engine above.
+    """
+    return sqlite3.connect(str(db_path), timeout=SQLITE_BUSY_TIMEOUT_SECONDS)
 
 
 # Additive-only, idempotent column migrations. `Base.metadata.create_all`

@@ -10,6 +10,8 @@ import csv
 import sqlite3
 from pathlib import Path
 
+from phaatlas.db.session import connect_readonly
+
 MASTER_COLUMNS = [
     "protein_id",
     "pha_family",
@@ -98,7 +100,7 @@ def _dedup_pipe(value: str | None) -> str | None:
 
 def export_master_csv(db_path: Path, output_csv_path: Path) -> int:
     output_csv_path.parent.mkdir(parents=True, exist_ok=True)
-    conn = sqlite3.connect(str(db_path))
+    conn = connect_readonly(db_path)
     conn.row_factory = sqlite3.Row
     try:
         cursor = conn.execute(f"SELECT {', '.join(MASTER_COLUMNS)} FROM protein_master_export")
@@ -120,7 +122,7 @@ def export_master_csv(db_path: Path, output_csv_path: Path) -> int:
 
 def export_fasta(db_path: Path, output_faa_path: Path) -> int:
     output_faa_path.parent.mkdir(parents=True, exist_ok=True)
-    conn = sqlite3.connect(str(db_path))
+    conn = connect_readonly(db_path)
     conn.row_factory = sqlite3.Row
     try:
         cursor = conn.execute(
@@ -180,7 +182,7 @@ def export_fasta_all(db_path: Path, output_faa_path: Path) -> int:
     family, matching the master CSV's own row granularity.
     """
     output_faa_path.parent.mkdir(parents=True, exist_ok=True)
-    conn = sqlite3.connect(str(db_path))
+    conn = connect_readonly(db_path)
     conn.row_factory = sqlite3.Row
     try:
         rows = conn.execute(
@@ -204,7 +206,7 @@ def export_fasta_nr95(db_path: Path, output_faa_path: Path) -> int:
     simply doesn't appear here.
     """
     output_faa_path.parent.mkdir(parents=True, exist_ok=True)
-    conn = sqlite3.connect(str(db_path))
+    conn = connect_readonly(db_path)
     conn.row_factory = sqlite3.Row
     try:
         rows = conn.execute(
@@ -228,7 +230,7 @@ def export_cluster95_tsv(db_path: Path, output_tsv_path: Path) -> int:
     downstream tools that would rather not open the database directly.
     """
     output_tsv_path.parent.mkdir(parents=True, exist_ok=True)
-    conn = sqlite3.connect(str(db_path))
+    conn = connect_readonly(db_path)
     conn.row_factory = sqlite3.Row
     try:
         rows = conn.execute(

@@ -18,6 +18,8 @@ import subprocess
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from phaatlas.db.session import connect_readonly
+
 FORMAT_OUTPUT_COLUMNS = [
     "query", "target", "evalue", "bits", "pident", "alnlen",
     "qstart", "qend", "qlen", "tstart", "tend", "tlen", "qcov", "tcov",
@@ -52,11 +54,22 @@ def export_query_fastas(db_path: Path, queries_dir: Path) -> dict[str, int]:
     with a non-null sequence. A family with no NR95 representatives yet
     (not clustered, or genuinely no sequenced members) is skipped, not
     written as an empty file.
+
+    Writes every family's file each call (not just one), and each write is
+    write-to-temp-then-os.replace -- important because cluster/run_gopc_search.sbatch
+    calls this at the start of EVERY per-family job, and multiple families'
+    jobs commonly run concurrently on separate GPUs. Without the atomic
+    swap, a concurrent mmseqs process reading e.g. queries/phaA.faa could
+    observe a half-written file from an unrelated phaB job's own
+    export-queries call; os.replace() on the same filesystem is atomic, so
+    a reader always sees either the complete old file or the complete new
+    one, never a partial write.
     """
+    import os
     import sqlite3
 
     queries_dir.mkdir(parents=True, exist_ok=True)
-    conn = sqlite3.connect(str(db_path))
+    conn = connect_readonly(db_path)
     conn.row_factory = sqlite3.Row
     try:
         rows = conn.execute(
@@ -79,12 +92,14 @@ def export_query_fastas(db_path: Path, queries_dir: Path) -> dict[str, int]:
     counts: dict[str, int] = {}
     for family_id, family_rows in by_family.items():
         out_path = queries_dir / f"{family_id}.faa"
-        with open(out_path, "w") as f:
+        tmp_path = queries_dir / f".{family_id}.faa.tmp.{os.getpid()}"
+        with open(tmp_path, "w") as f:
             for row in family_rows:
                 f.write(f">{row['protein_id']}\n")
                 seq = row["sequence"]
                 for i in range(0, len(seq), 60):
                     f.write(seq[i : i + 60] + "\n")
+        os.replace(tmp_path, out_path)
         counts[family_id] = len(family_rows)
     return counts
 
