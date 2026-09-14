@@ -35,15 +35,16 @@
 # Don't forget --account on submission if your cluster requires one, e.g.:
 #   sbatch --account=191001-364393 cluster/run_gopc_build_db_gpu.sbatch
 #
-# --time=0 (sbatch's own syntax for "no limit") -- `sinfo -p gpu-a100`
-# confirmed this partition's own TIMELIMIT is "infinite", so no
-# cluster-side reason to cap this ourselves.
+# --time=48:00:00: confirmed live that GPU jobs on this account are capped
+# at 48h regardless of gpu-a100's own nominal "infinite" TIMELIMIT (a
+# QOS-level restriction tied to the account/allocation, not the raw
+# partition config sinfo reports).
 #SBATCH --job-name=pha_gopc_build_db_gpu
 #SBATCH --partition=gpu-a100
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=120G
-#SBATCH --time=0
+#SBATCH --time=48:00:00
 #SBATCH --output=logs/gopc_build_db_gpu_%j.out
 #SBATCH --error=logs/gopc_build_db_gpu_%j.err
 
