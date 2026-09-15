@@ -48,10 +48,22 @@
 # --mem/--cpus-per-task: `sinfo -p gpu-a100 -o "%P %m %c %l %G"` reports
 # each gpu-a100 node as ~1031735MB (~1007GiB) RAM, 128 CPUs, 8 A100 GPUs
 # (gpu:a100:8) -- shared across up to 8 concurrent single-GPU jobs. Since
-# we only request --gres=gpu:1, below is a considerate ~1/8 share
-# (1031735/8 ~ 129000MB, 128/8 = 16 CPUs) rather than a full node's worth
-# for one GPU -- raise --mem if the search itself (not just the build
-# step, which has its own separate job) turns out to need more.
+# we only request --gres=gpu:1, below stays within a considerate ~1/8
+# share (1031735/8 ~ 129000MB, 128/8 = 16 CPUs) rather than a full node's
+# worth for one GPU. Confirmed live: 100G was NOT enough -- phaA (1822
+# queries, 18.2M alignments -- ~34% more than phaB's 13.5M, which DID
+# succeed at 100G) got OOM-killed specifically in the convertalis step
+# (writing the final formatted hits.tsv; the expensive prefilter+align
+# work upstream of it had already completed). mmseqs has no dedicated
+# memory cap for convertalis the way --split-memory-limit covers the
+# prefilter, so --mem is the only lever -- raised to 120G here, matching
+# cluster/run_gopc_build_db_gpu.sbatch's own already-proven value, still
+# inside the ~129000MB fair-share ceiling above. If a family with even
+# more alignments than phaA's still OOMs at 120G, the next lever to try
+# (unverified, no downside to attempting) is adding `--db-load-mode 2`
+# to the mmseqs command in pipeline/gopc_search.py's run_mmseqs_only --
+# explicit mmap instead of the "auto" default, which cgroups can reclaim
+# under memory pressure before resorting to an OOM-kill.
 #
 # --time=48:00:00: confirmed live that GPU jobs on this account are capped
 # at 48h regardless of gpu-a100's own nominal "infinite" TIMELIMIT (a
@@ -77,7 +89,7 @@
 #SBATCH --partition=gpu-a100
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=16
-#SBATCH --mem=100G
+#SBATCH --mem=120G
 #SBATCH --time=48:00:00
 #SBATCH --output=logs/gopc_search_%j.out
 #SBATCH --error=logs/gopc_search_%j.err

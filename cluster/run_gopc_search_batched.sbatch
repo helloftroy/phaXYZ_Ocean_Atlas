@@ -33,14 +33,17 @@
 # batch's own log shows "Query database size: N" near the top, same as an
 # unbatched run.
 #
-# Same --mem/--cpus-per-task/--gres reasoning as run_gopc_search.sbatch --
-# each batch task still scans the full target, so needs the same resources
-# as a full run would, just for fewer queries.
+# Same --mem/--cpus-per-task/--gres as run_gopc_search.sbatch (see that
+# script's own header for the sinfo-derived fair-share reasoning, and why
+# --mem was raised from 100G to 120G -- confirmed live OOM-killed in
+# convertalis for a family with more alignments than a batch here should
+# individually have, but matching the unbatched job's value regardless
+# since each batch still writes its OWN full convertalis output).
 #SBATCH --job-name=pha_gopc_search_batch
 #SBATCH --partition=gpu-a100
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=16
-#SBATCH --mem=100G
+#SBATCH --mem=120G
 #SBATCH --time=48:00:00
 #SBATCH --output=logs/gopc_search_batch_%A_%a.out
 #SBATCH --error=logs/gopc_search_batch_%A_%a.err

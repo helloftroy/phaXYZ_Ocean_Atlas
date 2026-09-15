@@ -25,9 +25,11 @@
 # (`nvidia-smi`/`srun --jobid=<jobid> --pty nvidia-smi`) before assuming
 # it behaves the same as GOPC did. --mem/--cpus-per-task below are left at
 # the SAME values as run_gopc_search.sbatch for now (see that script's own
-# header for the sinfo-derived ~1/8-share reasoning) -- safer to
-# over-provision once more than guess a smaller number down and hit
-# another OOM; tune down once real OMDB numbers are in hand.
+# header for the sinfo-derived ~1/8-share reasoning, and why --mem is
+# 120G not 100G -- confirmed live OOM-killed in convertalis, the final
+# output-writing step, for a GOPC family with a larger-than-phaB result
+# set) -- safer to over-provision once more than guess a smaller number
+# down and hit another OOM; tune down once real OMDB numbers are in hand.
 #
 # --time=48:00:00: same account-level GPU cap confirmed live for GOPC
 # applies here too.
@@ -35,7 +37,7 @@
 #SBATCH --partition=gpu-a100
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=16
-#SBATCH --mem=100G
+#SBATCH --mem=120G
 #SBATCH --time=48:00:00
 #SBATCH --output=logs/omdb_search_%j.out
 #SBATCH --error=logs/omdb_search_%j.err

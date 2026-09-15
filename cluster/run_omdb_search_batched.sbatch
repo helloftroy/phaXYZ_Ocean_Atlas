@@ -11,11 +11,15 @@
 # Then finalize once the whole array completes:
 #   sbatch --account=191001-364393 --dependency=afterok:<array_job_id> \
 #     --export=ALL,FAMILY=phaC,N_BATCHES=4 cluster/run_omdb_finalize_batches.sbatch
+#
+# --mem=120G: matches run_gopc_search.sbatch's own value -- confirmed live
+# OOM-killed in convertalis (final output-writing step) at 100G for a GOPC
+# family with a large result set, see that script's header for detail.
 #SBATCH --job-name=pha_omdb_search_batch
 #SBATCH --partition=gpu-a100
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=16
-#SBATCH --mem=100G
+#SBATCH --mem=120G
 #SBATCH --time=48:00:00
 #SBATCH --output=logs/omdb_search_batch_%A_%a.out
 #SBATCH --error=logs/omdb_search_batch_%A_%a.err

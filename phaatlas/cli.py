@@ -276,6 +276,13 @@ def gopc_search_cmd(
         "a target database built with `gopc-build-db --gpu-compatible`, and an actual GPU available to the process. "
         "cluster/run_gopc_search.sbatch sets this up on the gpu-a100 partition.",
     ),
+    db_load_mode: int = typer.Option(
+        None,
+        help="mmseqs --db-load-mode (0 auto / 1 fread / 2 mmap / 3 mmap+touch). Confirmed live: convertalis (the "
+        "final output-writing step) has no dedicated memory cap the way --split-memory-limit covers the prefilter, "
+        "and can still OOM-kill a large family even with a generous --mem. Explicit mmap (2) is the untested next "
+        "lever to try if that happens -- cgroups can reclaim clean mmap'd pages under pressure before OOM-killing.",
+    ),
 ):
     """Sensitive MMseqs2 search of one/several/all family query FASTAs
     against the GOPC target database. Per family, writes <family>_hits.tsv
@@ -301,7 +308,7 @@ def gopc_search_cmd(
                 family_id, query_fasta, target_db, results_dir, tmp_dir,
                 sensitivity=sensitivity, evalue=evalue, coverage=coverage, max_seqs=max_seqs,
                 cap_warning_fraction=cap_warning_fraction, mmseqs_bin=mmseqs_bin, threads=threads,
-                split_memory_limit=split_memory_limit, gpu=gpu,
+                split_memory_limit=split_memory_limit, gpu=gpu, db_load_mode=db_load_mode,
             )
         except gopc_search_pipeline.MMseqsNotFoundError as exc:
             console.print(f"[red]{exc}[/red]")
@@ -338,6 +345,7 @@ def gopc_search_batch_cmd(
     threads: int = typer.Option(None),
     split_memory_limit: str = typer.Option(None),
     gpu: bool = typer.Option(False),
+    db_load_mode: int = typer.Option(None, help="mmseqs --db-load-mode -- see gopc-search --help for the full explanation"),
 ):
     """Runs ONE batch of a family's queries against GOPC (see
     pipeline/gopc_search.py's run_family_search_batch docstring for why
@@ -357,6 +365,7 @@ def gopc_search_batch_cmd(
             family, query_fasta, target_db, results_dir, tmp_dir, n_batches, batch_index,
             sensitivity=sensitivity, evalue=evalue, coverage=coverage, max_seqs=max_seqs,
             mmseqs_bin=mmseqs_bin, threads=threads, split_memory_limit=split_memory_limit, gpu=gpu,
+            db_load_mode=db_load_mode,
         )
     except gopc_search_pipeline.MMseqsNotFoundError as exc:
         console.print(f"[red]{exc}[/red]")
@@ -463,6 +472,7 @@ def omdb_search_cmd(
     threads: int = typer.Option(None),
     split_memory_limit: str = typer.Option(None),
     gpu: bool = typer.Option(False),
+    db_load_mode: int = typer.Option(None, help="mmseqs --db-load-mode -- see gopc-search --help for the full explanation"),
 ):
     """Same as gopc-search, against OMDBv2.0_AA_G_NR100 instead of GOPC.
     Does NOT classify hits as true PHA proteins -- alignment statistics only."""
@@ -485,7 +495,7 @@ def omdb_search_cmd(
                 family_id, query_fasta, target_db, results_dir, tmp_dir,
                 sensitivity=sensitivity, evalue=evalue, coverage=coverage, max_seqs=max_seqs,
                 cap_warning_fraction=cap_warning_fraction, mmseqs_bin=mmseqs_bin, threads=threads,
-                split_memory_limit=split_memory_limit, gpu=gpu,
+                split_memory_limit=split_memory_limit, gpu=gpu, db_load_mode=db_load_mode,
             )
         except gopc_search_pipeline.MMseqsNotFoundError as exc:
             console.print(f"[red]{exc}[/red]")
@@ -520,6 +530,7 @@ def omdb_search_batch_cmd(
     threads: int = typer.Option(None),
     split_memory_limit: str = typer.Option(None),
     gpu: bool = typer.Option(False),
+    db_load_mode: int = typer.Option(None, help="mmseqs --db-load-mode -- see gopc-search --help for the full explanation"),
 ):
     """Same as gopc-search-batch, against OMDBv2.0_AA_G_NR100 instead of
     GOPC -- included for parity/in case OMDB turns out to need it too, even
@@ -533,6 +544,7 @@ def omdb_search_batch_cmd(
             family, query_fasta, target_db, results_dir, tmp_dir, n_batches, batch_index,
             sensitivity=sensitivity, evalue=evalue, coverage=coverage, max_seqs=max_seqs,
             mmseqs_bin=mmseqs_bin, threads=threads, split_memory_limit=split_memory_limit, gpu=gpu,
+            db_load_mode=db_load_mode,
         )
     except gopc_search_pipeline.MMseqsNotFoundError as exc:
         console.print(f"[red]{exc}[/red]")

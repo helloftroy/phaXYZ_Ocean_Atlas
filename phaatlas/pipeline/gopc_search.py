@@ -173,12 +173,26 @@ def run_mmseqs_only(
     threads: int | None = None,
     split_memory_limit: str | None = None,
     gpu: bool = False,
+    db_load_mode: int | None = None,
 ) -> None:
     """Runs `mmseqs easy-search` for one query FASTA against the GOPC
     target database, writing hits_path. No aggregation -- see
     aggregate_hits_file() for that, kept separate so a batched run
     (run_family_search_batch() below) can call this once per batch and
     aggregate only after every batch's hits file exists.
+
+    db_load_mode: mmseqs' own --db-load-mode (0 auto / 1 fread / 2 mmap /
+    3 mmap+touch), default None leaves mmseqs' own "auto" choice
+    unchanged. Confirmed live: mmseqs has no dedicated memory cap for its
+    final convertalis (output-formatting) step the way --split-memory-limit
+    covers the prefilter, and a large family (phaA: 1822 queries, 18.2M
+    alignments) was OOM-killed there even with a generous --mem. Explicit
+    mmap (2) is the untested next thing to try if raising --mem alone
+    isn't enough -- cgroups can reclaim clean mmap'd pages under memory
+    pressure before resorting to an OOM-kill, unlike fread's fully-loaded
+    buffers. Not defaulted on since it hasn't been verified to actually
+    help this specific failure mode, only that it's a real, low-risk lever
+    to reach for.
 
     split_memory_limit: mmseqs' own --split-memory-limit (e.g. "50G").
     Strongly recommended for a CPU (gpu=False) run under SLURM/any
@@ -237,6 +251,8 @@ def run_mmseqs_only(
         cmd += ["--split-memory-limit", split_memory_limit]
     if gpu:
         cmd += ["--gpu", "1"]
+    if db_load_mode is not None:
+        cmd += ["--db-load-mode", str(db_load_mode)]
     subprocess.run(cmd, check=True)
 
 
@@ -327,6 +343,7 @@ def run_family_search(
     threads: int | None = None,
     split_memory_limit: str | None = None,
     gpu: bool = False,
+    db_load_mode: int | None = None,
 ) -> FamilySearchSummary:
     """Single-shot search: run_mmseqs_only() against ALL of a family's
     queries in one mmseqs invocation, then aggregate_hits_file() on the
@@ -340,6 +357,7 @@ def run_family_search(
         query_fasta, target_db_path, hits_path, tmp_dir / family_id,
         sensitivity=sensitivity, evalue=evalue, coverage=coverage, max_seqs=max_seqs,
         mmseqs_bin=mmseqs_bin, threads=threads, split_memory_limit=split_memory_limit, gpu=gpu,
+        db_load_mode=db_load_mode,
     )
     n_reference_queries = _count_fasta_records(query_fasta)
     return aggregate_hits_file(hits_path, family_id, n_reference_queries, results_dir, max_seqs, cap_warning_fraction)
@@ -405,6 +423,7 @@ def run_family_search_batch(
     threads: int | None = None,
     split_memory_limit: str | None = None,
     gpu: bool = False,
+    db_load_mode: int | None = None,
 ) -> Path:
     """Runs mmseqs against ONLY this batch's slice of a family's queries
     (see split_query_batch_fasta), writing
@@ -433,6 +452,7 @@ def run_family_search_batch(
         batch_query_fasta, target_db_path, hits_path, batch_tmp,
         sensitivity=sensitivity, evalue=evalue, coverage=coverage, max_seqs=max_seqs,
         mmseqs_bin=mmseqs_bin, threads=threads, split_memory_limit=split_memory_limit, gpu=gpu,
+        db_load_mode=db_load_mode,
     )
     print(f"{family_id} batch {batch_index}/{n_batches}: {n} queries -> {hits_path}")
     return hits_path
