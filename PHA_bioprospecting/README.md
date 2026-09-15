@@ -308,6 +308,62 @@ successfully in one 48h shot, and adjust from what you actually observe;
 each batch's own log shows `Query database size: N` near the top, same as
 an unbatched run, so you can compare directly.
 
+The same batching applies to OMDB -- swap `gopc-search-batch`/
+`gopc-finalize-batches` for `omdb-search-batch`/`omdb-finalize-batches`
+(and the corresponding `run_omdb_search_batched.sbatch`/
+`run_omdb_finalize_batches.sbatch`), though it's less likely to be needed
+given OMDB's ~10x smaller size.
+
+## Searching OMDB (same pipeline, against OMDBv2.0_AA_G_NR100 instead of GOPC)
+
+**Why OMDB, not just GOPC**: GOPC's gene catalog is built by predicting
+genes from each sample's assembled contigs and concatenating them --
+there's no clean per-protein link back to which genome/sample/location it
+came from. OMDB keeps that chain intact (`OMDBv2.0_data.tsv.gz` maps
+GENOME → SAMPLE → STUDY, and `OMDBv2.0_AA_G_NR100.cluster.tsv.gz` maps an
+NR100 representative back to every genome carrying that exact sequence),
+so it's the right catalog to search when the actual question is "which
+organisms/locations/depths carry this" rather than just "does a similar
+protein exist somewhere."
+
+Identical commands to the `gopc-*` ones throughout this doc, with `gopc`
+swapped for `omdb` (`omdb-build-db`, `omdb-search`, `omdb-search-batch`,
+`omdb-finalize-batches`, `omdb-combine`), reusing the exact same
+underlying pipeline code (`pipeline/gopc_search.py`'s functions all take
+`target_db_path` as a plain parameter -- nothing GOPC-specific in the
+logic itself) and the exact same `queries/` directory (the NR95 reference
+FASTAs don't depend on which catalog they're searched against). Results
+land in a separate `PHA_bioprospecting/omdb_search/` so they never
+collide with GOPC's:
+
+```bash
+# One-time: download + build (target file is OMDBv2.0_AA_G_NR100.faa.gz, not the geneset)
+sbatch --account=191001-364393 --export=ALL,DATASET=omdb,TARGET=nr100 cluster/run_download_databases.sbatch
+sbatch --account=191001-364393 --export=ALL,DATASET=omdb,TARGET=nr100-clusters cluster/run_download_databases.sbatch
+sbatch --account=191001-364393 cluster/run_omdb_build_db_gpu.sbatch
+
+sbatch --account=191001-364393 --export=ALL,FAMILY=phaC cluster/run_omdb_search.sbatch   # test one family first
+sbatch --account=191001-364393 cluster/run_omdb_search.sbatch                             # FAMILY defaults to 'all'
+```
+
+**Expected to be faster/lighter than GOPC** (~10x fewer sequences: 249.5M
+vs. GOPC's ~2.46B, so hopefully no sharding/chunking bottleneck) but this
+has not been confirmed live yet -- `run_omdb_build_db_gpu.sbatch`/
+`run_omdb_search.sbatch` currently request the exact same `--mem`/
+`--cpus-per-task` as their GOPC counterparts (safer to over-provision once
+more than guess a smaller number down and repeat the OOM churn already
+hit twice on GOPC); tune down once real OMDB numbers are in hand. Watch
+the first real run's timing and `nvidia-smi` GPU memory/utilization
+before assuming it behaves the same as GOPC did.
+
+Once you have `<family>_unique_targets.tsv` from an OMDB search, joining
+back to `OMDBv2.0_data.tsv.gz` (by whatever genome/sample identifier the
+target IDs carry -- not yet confirmed exactly what format OMDB's target
+IDs take, unlike GOPC's, since no OMDB search has been run yet) is what
+actually answers "where/what organism was this found in" -- that join
+itself isn't built yet, worth doing once real OMDB results exist to
+design it against actual ID formats rather than guessing.
+
 ## What's committed vs. what's not
 
 Committed: this README, both download scripts + their shared library, the

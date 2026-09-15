@@ -193,11 +193,18 @@ def export_cluster95_cmd():
 
 
 GOPC_SEARCH_DIR = REPO_ROOT / "PHA_bioprospecting" / "gopc_search"
+OMDB_SEARCH_DIR = REPO_ROOT / "PHA_bioprospecting" / "omdb_search"
+# Queries are the same NR95 reference FASTAs regardless of which catalog
+# they're searched against -- shared/reused rather than duplicated. Kept
+# under gopc_search/ (not its own directory) because that path is already
+# hardcoded into the currently-running GOPC batch jobs' sbatch defaults;
+# moving it would break those mid-flight for a purely cosmetic gain.
+SHARED_QUERIES_DIR = GOPC_SEARCH_DIR / "queries"
 
 
 @app.command("export-queries")
 def export_queries_cmd(
-    queries_dir: Path = typer.Option(GOPC_SEARCH_DIR / "queries", help="output directory, one <family>.faa per family"),
+    queries_dir: Path = typer.Option(SHARED_QUERIES_DIR, help="output directory, one <family>.faa per family -- shared between GOPC and OMDB searches"),
 ):
     """Writes one query FASTA per pha_family from the NR95 cluster
     representatives (cluster95_representative rows) -- headers contain
@@ -402,6 +409,172 @@ def gopc_combine_cmd(results_dir: Path = typer.Option(GOPC_SEARCH_DIR / "results
     into all_families_unique_targets.tsv / all_families_summary.tsv.
     Deliberately does NOT resolve a GOPC target hit by multiple families --
     both rows are kept."""
+    n_targets, n_families = gopc_search_pipeline.combine_all_families(results_dir)
+    console.print(f"[green]{results_dir / 'all_families_unique_targets.tsv'}: {n_targets} rows[/green]")
+    console.print(f"[green]{results_dir / 'all_families_summary.tsv'}: {n_families} families[/green]")
+
+
+# --- OMDB commands: identical pipeline to the gopc-* commands above (every
+# function in pipeline/gopc_search.py takes target_db_path as a plain
+# parameter, nothing GOPC-specific baked in) -- just pointed at
+# OMDB_SEARCH_DIR instead of GOPC_SEARCH_DIR, and sharing the same
+# queries/ directory (see SHARED_QUERIES_DIR above). Kept as separate
+# omdb-* commands rather than a --catalog flag on the gopc-* ones so the
+# two searches' results/target_db/tmp never collide and neither command
+# set risks the other mid-flight.
+
+
+@app.command("omdb-build-db")
+def omdb_build_db_cmd(
+    omdb_faa: Path = typer.Argument(..., help="OMDBv2.0_AA_G_NR100.faa.gz, .gz is fine -- mmseqs reads gzip directly"),
+    target_db: Path = typer.Option(OMDB_SEARCH_DIR / "target_db" / "omdb_db", help="mmseqs target database path (prefix)"),
+    mmseqs_bin: str = typer.Option("mmseqs"),
+    threads: int = typer.Option(None),
+    shuffle: bool = typer.Option(False, help="see gopc-build-db --shuffle -- same reasoning applies"),
+    gpu_compatible: bool = typer.Option(False, help="see gopc-build-db --gpu-compatible -- required before omdb-search --gpu"),
+):
+    """`mmseqs createdb` on OMDBv2.0_AA_G_NR100 -- run once. ~10x fewer
+    sequences than GOPC (249.5M vs. ~2.46B), so this and the search itself
+    should need noticeably less time/memory -- but that's an expectation,
+    not something we've confirmed live yet."""
+    try:
+        gopc_search_pipeline.build_gopc_target_db(
+            omdb_faa, target_db, mmseqs_bin=mmseqs_bin, threads=threads, shuffle=shuffle, gpu_compatible=gpu_compatible
+        )
+    except gopc_search_pipeline.MMseqsNotFoundError as exc:
+        console.print(f"[red]{exc}[/red]")
+        raise typer.Exit(code=2)
+    console.print(f"[green]OMDB target database ready at {target_db}[/green]")
+
+
+@app.command("omdb-search")
+def omdb_search_cmd(
+    family: str = typer.Option("all", help="family_id, comma-separated list, or 'all'"),
+    queries_dir: Path = typer.Option(SHARED_QUERIES_DIR),
+    target_db: Path = typer.Option(OMDB_SEARCH_DIR / "target_db" / "omdb_db"),
+    results_dir: Path = typer.Option(OMDB_SEARCH_DIR / "results"),
+    tmp_dir: Path = typer.Option(OMDB_SEARCH_DIR / "tmp"),
+    sensitivity: float = typer.Option(7.0, "--sensitivity", "-s"),
+    evalue: float = typer.Option(1e-5, "--evalue", "-e"),
+    coverage: float = typer.Option(0.0, "--coverage", "-c"),
+    max_seqs: int = typer.Option(10000),
+    cap_warning_fraction: float = typer.Option(0.95),
+    mmseqs_bin: str = typer.Option("mmseqs"),
+    threads: int = typer.Option(None),
+    split_memory_limit: str = typer.Option(None),
+    gpu: bool = typer.Option(False),
+):
+    """Same as gopc-search, against OMDBv2.0_AA_G_NR100 instead of GOPC.
+    Does NOT classify hits as true PHA proteins -- alignment statistics only."""
+    if family == "all":
+        family_ids = sorted(p.stem for p in queries_dir.glob("*.faa"))
+        if not family_ids:
+            console.print(f"[red]No query FASTAs found in {queries_dir} -- run export-queries first.[/red]")
+            raise typer.Exit(code=2)
+    else:
+        family_ids = [f.strip() for f in family.split(",") if f.strip()]
+
+    for family_id in family_ids:
+        query_fasta = queries_dir / f"{family_id}.faa"
+        if not query_fasta.exists():
+            console.print(f"[yellow]{query_fasta} not found -- skipping {family_id}.[/yellow]")
+            continue
+        console.print(f"[bold]{family_id}[/bold]: searching against OMDB (max_seqs={max_seqs})...")
+        try:
+            summary = gopc_search_pipeline.run_family_search(
+                family_id, query_fasta, target_db, results_dir, tmp_dir,
+                sensitivity=sensitivity, evalue=evalue, coverage=coverage, max_seqs=max_seqs,
+                cap_warning_fraction=cap_warning_fraction, mmseqs_bin=mmseqs_bin, threads=threads,
+                split_memory_limit=split_memory_limit, gpu=gpu,
+            )
+        except gopc_search_pipeline.MMseqsNotFoundError as exc:
+            console.print(f"[red]{exc}[/red]")
+            raise typer.Exit(code=2)
+
+        console.print(
+            f"  {summary.n_reference_queries} queries -> {summary.n_alignments} alignments -> "
+            f"{summary.n_unique_gopc_targets} unique OMDB targets"
+        )
+        if summary.query_hit_cap_warning:
+            console.print(
+                f"[yellow]WARNING: query_hit_cap_warning=TRUE for {family_id} -- "
+                f"{len(summary.queries_at_cap)} quer{'y' if len(summary.queries_at_cap) == 1 else 'ies'} "
+                f"reached >={cap_warning_fraction:.0%} of --max-seqs {max_seqs}.[/yellow]"
+            )
+
+
+@app.command("omdb-search-batch")
+def omdb_search_batch_cmd(
+    family: str = typer.Option(..., help="single family_id"),
+    n_batches: int = typer.Option(..., "--n-batches"),
+    batch_index: int = typer.Option(..., "--batch-index"),
+    queries_dir: Path = typer.Option(SHARED_QUERIES_DIR),
+    target_db: Path = typer.Option(OMDB_SEARCH_DIR / "target_db" / "omdb_db"),
+    results_dir: Path = typer.Option(OMDB_SEARCH_DIR / "results"),
+    tmp_dir: Path = typer.Option(OMDB_SEARCH_DIR / "tmp"),
+    sensitivity: float = typer.Option(7.0, "--sensitivity", "-s"),
+    evalue: float = typer.Option(1e-5, "--evalue", "-e"),
+    coverage: float = typer.Option(0.0, "--coverage", "-c"),
+    max_seqs: int = typer.Option(10000),
+    mmseqs_bin: str = typer.Option("mmseqs"),
+    threads: int = typer.Option(None),
+    split_memory_limit: str = typer.Option(None),
+    gpu: bool = typer.Option(False),
+):
+    """Same as gopc-search-batch, against OMDBv2.0_AA_G_NR100 instead of
+    GOPC -- included for parity/in case OMDB turns out to need it too, even
+    though it's expected to be much less likely given OMDB's smaller size."""
+    query_fasta = queries_dir / f"{family}.faa"
+    if not query_fasta.exists():
+        console.print(f"[red]{query_fasta} not found -- run export-queries first.[/red]")
+        raise typer.Exit(code=2)
+    try:
+        hits_path = gopc_search_pipeline.run_family_search_batch(
+            family, query_fasta, target_db, results_dir, tmp_dir, n_batches, batch_index,
+            sensitivity=sensitivity, evalue=evalue, coverage=coverage, max_seqs=max_seqs,
+            mmseqs_bin=mmseqs_bin, threads=threads, split_memory_limit=split_memory_limit, gpu=gpu,
+        )
+    except gopc_search_pipeline.MMseqsNotFoundError as exc:
+        console.print(f"[red]{exc}[/red]")
+        raise typer.Exit(code=2)
+    console.print(f"[green]{hits_path}[/green]")
+
+
+@app.command("omdb-finalize-batches")
+def omdb_finalize_batches_cmd(
+    family: str = typer.Option(..., help="family_id, comma-separated list, or 'all'"),
+    n_batches: int = typer.Option(..., "--n-batches"),
+    queries_dir: Path = typer.Option(SHARED_QUERIES_DIR),
+    results_dir: Path = typer.Option(OMDB_SEARCH_DIR / "results"),
+    max_seqs: int = typer.Option(10000),
+    cap_warning_fraction: float = typer.Option(0.95),
+):
+    """Same as gopc-finalize-batches, for OMDB."""
+    if family == "all":
+        family_ids = sorted(p.stem for p in queries_dir.glob("*.faa"))
+    else:
+        family_ids = [f.strip() for f in family.split(",") if f.strip()]
+
+    for family_id in family_ids:
+        query_fasta = queries_dir / f"{family_id}.faa"
+        try:
+            summary = gopc_search_pipeline.finalize_family_batches(
+                family_id, query_fasta, results_dir, n_batches, max_seqs=max_seqs, cap_warning_fraction=cap_warning_fraction
+            )
+        except FileNotFoundError as exc:
+            console.print(f"[red]{exc}[/red]")
+            raise typer.Exit(code=2)
+        console.print(
+            f"[bold]{family_id}[/bold]: {summary.n_reference_queries} queries -> {summary.n_alignments} alignments -> "
+            f"{summary.n_unique_gopc_targets} unique OMDB targets"
+        )
+        if summary.query_hit_cap_warning:
+            console.print(f"[yellow]WARNING: query_hit_cap_warning=TRUE for {family_id}[/yellow]")
+
+
+@app.command("omdb-combine")
+def omdb_combine_cmd(results_dir: Path = typer.Option(OMDB_SEARCH_DIR / "results")):
+    """Same as gopc-combine, for OMDB."""
     n_targets, n_families = gopc_search_pipeline.combine_all_families(results_dir)
     console.print(f"[green]{results_dir / 'all_families_unique_targets.tsv'}: {n_targets} rows[/green]")
     console.print(f"[green]{results_dir / 'all_families_summary.tsv'}: {n_families} families[/green]")
