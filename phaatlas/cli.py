@@ -314,6 +314,88 @@ def gopc_search_cmd(
             )
 
 
+@app.command("gopc-search-batch")
+def gopc_search_batch_cmd(
+    family: str = typer.Option(..., help="single family_id -- run this once per family, not comma-separated/'all'"),
+    n_batches: int = typer.Option(..., "--n-batches", help="total number of batches this family's queries are split into"),
+    batch_index: int = typer.Option(..., "--batch-index", help="which batch this invocation runs (0-based, < n-batches)"),
+    queries_dir: Path = typer.Option(GOPC_SEARCH_DIR / "queries"),
+    target_db: Path = typer.Option(GOPC_SEARCH_DIR / "target_db" / "gopc_db"),
+    results_dir: Path = typer.Option(GOPC_SEARCH_DIR / "results"),
+    tmp_dir: Path = typer.Option(GOPC_SEARCH_DIR / "tmp"),
+    sensitivity: float = typer.Option(7.0, "--sensitivity", "-s"),
+    evalue: float = typer.Option(1e-5, "--evalue", "-e"),
+    coverage: float = typer.Option(0.0, "--coverage", "-c"),
+    max_seqs: int = typer.Option(10000, help="mmseqs --max-seqs, same value must be used for every batch of a family"),
+    mmseqs_bin: str = typer.Option("mmseqs"),
+    threads: int = typer.Option(None),
+    split_memory_limit: str = typer.Option(None),
+    gpu: bool = typer.Option(False),
+):
+    """Runs ONE batch of a family's queries against GOPC (see
+    pipeline/gopc_search.py's run_family_search_batch docstring for why
+    this exists: a single mmseqs invocation against all of GOPC restarts
+    from scratch if a job is killed partway through, so a family whose
+    full search doesn't fit in one job's time limit needs to be split into
+    independent, individually-completable batches instead). Run once per
+    batch_index in 0..n_batches-1 (a SLURM job array is the natural way --
+    see cluster/run_gopc_search_batched.sbatch), then `gopc-finalize-batches`
+    once every batch has a completed hits file."""
+    query_fasta = queries_dir / f"{family}.faa"
+    if not query_fasta.exists():
+        console.print(f"[red]{query_fasta} not found -- run export-queries first.[/red]")
+        raise typer.Exit(code=2)
+    try:
+        hits_path = gopc_search_pipeline.run_family_search_batch(
+            family, query_fasta, target_db, results_dir, tmp_dir, n_batches, batch_index,
+            sensitivity=sensitivity, evalue=evalue, coverage=coverage, max_seqs=max_seqs,
+            mmseqs_bin=mmseqs_bin, threads=threads, split_memory_limit=split_memory_limit, gpu=gpu,
+        )
+    except gopc_search_pipeline.MMseqsNotFoundError as exc:
+        console.print(f"[red]{exc}[/red]")
+        raise typer.Exit(code=2)
+    console.print(f"[green]{hits_path}[/green]")
+
+
+@app.command("gopc-finalize-batches")
+def gopc_finalize_batches_cmd(
+    family: str = typer.Option(..., help="family_id, comma-separated list, or 'all' (every family with queries/<family>.faa present)"),
+    n_batches: int = typer.Option(..., "--n-batches", help="must match what gopc-search-batch was run with for this family"),
+    queries_dir: Path = typer.Option(GOPC_SEARCH_DIR / "queries"),
+    results_dir: Path = typer.Option(GOPC_SEARCH_DIR / "results"),
+    max_seqs: int = typer.Option(10000, help="must match what gopc-search-batch was run with, used for the query_hit_cap_warning threshold"),
+    cap_warning_fraction: float = typer.Option(0.95),
+):
+    """Concatenates every batch's hits file for a family into the same
+    <family>_hits.tsv / _unique_targets.tsv / _summary.tsv a single-shot
+    gopc-search run would have produced. Requires every batch
+    0..n_batches-1 to have a completed hits file already (gopc-search-batch)."""
+    if family == "all":
+        family_ids = sorted(p.stem for p in queries_dir.glob("*.faa"))
+    else:
+        family_ids = [f.strip() for f in family.split(",") if f.strip()]
+
+    for family_id in family_ids:
+        query_fasta = queries_dir / f"{family_id}.faa"
+        try:
+            summary = gopc_search_pipeline.finalize_family_batches(
+                family_id, query_fasta, results_dir, n_batches, max_seqs=max_seqs, cap_warning_fraction=cap_warning_fraction
+            )
+        except FileNotFoundError as exc:
+            console.print(f"[red]{exc}[/red]")
+            raise typer.Exit(code=2)
+        console.print(
+            f"[bold]{family_id}[/bold]: {summary.n_reference_queries} queries -> {summary.n_alignments} alignments -> "
+            f"{summary.n_unique_gopc_targets} unique GOPC targets"
+        )
+        if summary.query_hit_cap_warning:
+            console.print(
+                f"[yellow]WARNING: query_hit_cap_warning=TRUE for {family_id} -- "
+                f"{len(summary.queries_at_cap)} quer{'y' if len(summary.queries_at_cap) == 1 else 'ies'} "
+                f"reached >={cap_warning_fraction:.0%} of --max-seqs {max_seqs}.[/yellow]"
+            )
+
+
 @app.command("gopc-combine")
 def gopc_combine_cmd(results_dir: Path = typer.Option(GOPC_SEARCH_DIR / "results")):
     """Concatenates every family's *_unique_targets.tsv / *_summary.tsv

@@ -40,8 +40,8 @@ set -euo pipefail
 cd "${SLURM_SUBMIT_DIR}"   # repo root (PHA_Ocean_Atlas/)
 mkdir -p logs
 
-: "${DATASET:?Set DATASET=gopc or DATASET=omdb (see this script's header comment for examples).}"
-: "${TARGET:?Set TARGET (see this script's header comment for the valid values per DATASET).}"
+: "${DATASET:?Set DATASET=gopc or DATASET=omdb (see this script header comment for examples).}"
+: "${TARGET:?Set TARGET (see this script header comment for the valid values per DATASET).}"
 
 echo "Job started: $(date)"
 echo "Host: $(hostname)"

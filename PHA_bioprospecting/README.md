@@ -262,6 +262,52 @@ deduplicated** -- both families' rows are kept in
 `all_families_unique_targets.tsv` rather than picking one; resolving that
 conflict is later work, not this stage's job.
 
+## When one family's search doesn't fit in one job (batched search)
+
+**Confirmed live: resubmitting a killed/timed-out `gopc-search` run does
+NOT resume it.** mmseqs creates a fresh, randomly-named tmp subdirectory
+on every invocation, so a resubmit restarts the entire ~2.46-billion-
+sequence GOPC scan from zero every time, regardless of how far the
+previous attempt got. If a family's full query set can't realistically
+finish inside your cluster's job time limit in one shot, split it into
+independent batches instead -- each batch still scans all of GOPC once
+(so total GPU-time goes up, not down), but each is short enough to
+actually complete rather than looping forever without progress:
+
+```bash
+pha-reference export-queries
+for i in 0 1 2 3; do   # N_BATCHES=4 example
+  pha-reference gopc-search-batch --family phaC --n-batches 4 --batch-index "$i" --gpu --mmseqs-bin cluster/bin-gpu/mmseqs
+done
+pha-reference gopc-finalize-batches --family phaC --n-batches 4
+```
+
+Or as cluster jobs -- a SLURM job array for the batches, then a finalize
+job chained to run once the whole array completes:
+
+```bash
+sbatch --account=191001-364393 --array=0-3 --export=ALL,FAMILY=phaC,N_BATCHES=4 \
+  cluster/run_gopc_search_batched.sbatch
+# note the printed array job id, e.g. 12345:
+sbatch --account=191001-364393 --dependency=afterok:12345 \
+  --export=ALL,FAMILY=phaC,N_BATCHES=4 cluster/run_gopc_finalize_batches.sbatch
+```
+
+`N_BATCHES` must match on both submissions and must equal the `--array`
+range size (`--array=0-3` means 4 batches, indices 0..3). Output format
+(`<family>_hits.tsv`/`_unique_targets.tsv`/`_summary.tsv`) is identical to
+an unbatched run -- batching is purely how the compute gets scheduled, not
+a change in what's found (verified: a batched run against a small test
+target produced byte-identical `unique_targets.tsv` rows to an unbatched
+run over the same data).
+
+**How many batches?** No formula yet -- there isn't enough real timing
+data to derive one. Pick `N_BATCHES` so that (this family's query count /
+`N_BATCHES`) is in the same ballpark as a family that already finished
+successfully in one 48h shot, and adjust from what you actually observe;
+each batch's own log shows `Query database size: N` near the top, same as
+an unbatched run, so you can compare directly.
+
 ## What's committed vs. what's not
 
 Committed: this README, both download scripts + their shared library, the

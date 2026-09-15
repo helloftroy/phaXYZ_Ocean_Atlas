@@ -160,28 +160,25 @@ class FamilySearchSummary:
     max_seqs: int = 0
 
 
-def run_family_search(
-    family_id: str,
+def run_mmseqs_only(
     query_fasta: Path,
     target_db_path: Path,
-    results_dir: Path,
+    hits_path: Path,
     tmp_dir: Path,
     sensitivity: float = 7.0,
     evalue: float = 1e-5,
     coverage: float = 0.0,
     max_seqs: int = 10000,
-    cap_warning_fraction: float = 0.95,
     mmseqs_bin: str = "mmseqs",
     threads: int | None = None,
     split_memory_limit: str | None = None,
     gpu: bool = False,
-) -> FamilySearchSummary:
-    """Runs `mmseqs easy-search` for one family, then builds
-    <family>_unique_targets.tsv and <family>_summary.tsv from
-    <family>_hits.tsv in a single streaming pass (hits.tsv can be large --
-    up to n_queries * max_seqs rows for a saturated family -- so this never
-    loads the whole file into memory at once, only the small per-target/
-    per-query aggregates).
+) -> None:
+    """Runs `mmseqs easy-search` for one query FASTA against the GOPC
+    target database, writing hits_path. No aggregation -- see
+    aggregate_hits_file() for that, kept separate so a batched run
+    (run_family_search_batch() below) can call this once per batch and
+    aggregate only after every batch's hits file exists.
 
     split_memory_limit: mmseqs' own --split-memory-limit (e.g. "50G").
     Strongly recommended for a CPU (gpu=False) run under SLURM/any
@@ -207,16 +204,25 @@ def run_family_search(
     the GPU path's own memory behavior (which we have not been able to
     validate end-to-end, since building/testing this locally would need an
     actual CUDA GPU) may or may not use it the same way.
+
+    IMPORTANT, confirmed live: mmseqs creates a fresh, RANDOMLY-named
+    subdirectory under tmp_dir on every single invocation (not a
+    deterministic one keyed by the query/target/params) -- resubmitting
+    the exact same command after a job is killed does NOT resume from
+    where the previous attempt left off, it restarts the entire scan of
+    the target database from zero. There is no known way to force mmseqs
+    to reuse a prior run's intermediate state through this CLI. If one
+    run can't realistically finish inside your cluster's job time limit,
+    use run_family_search_batch()/finalize_family_batches() below instead
+    of resubmitting the same full-query command repeatedly.
     """
     _require_mmseqs(mmseqs_bin)
-    results_dir.mkdir(parents=True, exist_ok=True)
-    family_tmp = tmp_dir / family_id
-    family_tmp.mkdir(parents=True, exist_ok=True)
-    hits_path = results_dir / f"{family_id}_hits.tsv"
+    hits_path.parent.mkdir(parents=True, exist_ok=True)
+    tmp_dir.mkdir(parents=True, exist_ok=True)
 
     cmd = [
         mmseqs_bin, "easy-search",
-        str(query_fasta), str(target_db_path), str(hits_path), str(family_tmp),
+        str(query_fasta), str(target_db_path), str(hits_path), str(tmp_dir),
         "-s", str(sensitivity),
         "-e", str(evalue),
         "-c", str(coverage),
@@ -233,7 +239,23 @@ def run_family_search(
         cmd += ["--gpu", "1"]
     subprocess.run(cmd, check=True)
 
-    n_reference_queries = _count_fasta_records(query_fasta)
+
+def aggregate_hits_file(
+    hits_path: Path,
+    family_id: str,
+    n_reference_queries: int,
+    results_dir: Path,
+    max_seqs: int = 10000,
+    cap_warning_fraction: float = 0.95,
+) -> FamilySearchSummary:
+    """Builds <family>_unique_targets.tsv and <family>_summary.tsv from an
+    ALREADY-COMPLETE hits_path (either a single run's direct output, or
+    several batches concatenated by finalize_family_batches()) in a single
+    streaming pass -- hits.tsv can be large (up to n_queries * max_seqs
+    rows for a saturated family), so this never loads the whole file into
+    memory at once, only the small per-target/per-query aggregates.
+    """
+    results_dir.mkdir(parents=True, exist_ok=True)
     summary = FamilySearchSummary(family_id=family_id, n_reference_queries=n_reference_queries, max_seqs=max_seqs)
 
     best_by_target: dict[str, dict] = {}
@@ -288,6 +310,174 @@ def run_family_search(
 
     _write_family_summary(results_dir / f"{family_id}_summary.tsv", summary)
     return summary
+
+
+def run_family_search(
+    family_id: str,
+    query_fasta: Path,
+    target_db_path: Path,
+    results_dir: Path,
+    tmp_dir: Path,
+    sensitivity: float = 7.0,
+    evalue: float = 1e-5,
+    coverage: float = 0.0,
+    max_seqs: int = 10000,
+    cap_warning_fraction: float = 0.95,
+    mmseqs_bin: str = "mmseqs",
+    threads: int | None = None,
+    split_memory_limit: str | None = None,
+    gpu: bool = False,
+) -> FamilySearchSummary:
+    """Single-shot search: run_mmseqs_only() against ALL of a family's
+    queries in one mmseqs invocation, then aggregate_hits_file() on the
+    result. Fine for a family whose full search comfortably fits inside
+    one job's time limit; use run_family_search_batch()/
+    finalize_family_batches() instead if it doesn't (see run_mmseqs_only's
+    docstring for why resubmitting this doesn't help once a job is killed
+    partway through)."""
+    hits_path = results_dir / f"{family_id}_hits.tsv"
+    run_mmseqs_only(
+        query_fasta, target_db_path, hits_path, tmp_dir / family_id,
+        sensitivity=sensitivity, evalue=evalue, coverage=coverage, max_seqs=max_seqs,
+        mmseqs_bin=mmseqs_bin, threads=threads, split_memory_limit=split_memory_limit, gpu=gpu,
+    )
+    n_reference_queries = _count_fasta_records(query_fasta)
+    return aggregate_hits_file(hits_path, family_id, n_reference_queries, results_dir, max_seqs, cap_warning_fraction)
+
+
+def _read_fasta_records(fasta_path: Path) -> list[tuple[str, str]]:
+    """Returns [(header_line_without_>, sequence), ...], sequence with
+    internal newlines removed (single string, rewrapped on write)."""
+    records: list[tuple[str, str]] = []
+    header: str | None = None
+    seq_parts: list[str] = []
+    with open(fasta_path) as f:
+        for line in f:
+            line = line.rstrip("\n")
+            if line.startswith(">"):
+                if header is not None:
+                    records.append((header, "".join(seq_parts)))
+                header = line[1:]
+                seq_parts = []
+            else:
+                seq_parts.append(line)
+    if header is not None:
+        records.append((header, "".join(seq_parts)))
+    return records
+
+
+def _write_fasta_records(records: list[tuple[str, str]], out_path: Path) -> None:
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(out_path, "w") as f:
+        for header, seq in records:
+            f.write(f">{header}\n")
+            for i in range(0, len(seq), 60):
+                f.write(seq[i : i + 60] + "\n")
+
+
+def split_query_batch_fasta(query_fasta: Path, n_batches: int, batch_index: int, out_path: Path) -> int:
+    """Writes out_path with every n_batches-th record starting at
+    batch_index (simple round-robin striping -- keeps batches close to
+    equal size regardless of any ordering in the source file, and is
+    trivially deterministic/reproducible given the same n_batches). Returns
+    the number of records written."""
+    if not (0 <= batch_index < n_batches):
+        raise ValueError(f"batch_index {batch_index} out of range for n_batches {n_batches}")
+    records = _read_fasta_records(query_fasta)
+    my_records = records[batch_index::n_batches]
+    _write_fasta_records(my_records, out_path)
+    return len(my_records)
+
+
+def run_family_search_batch(
+    family_id: str,
+    query_fasta: Path,
+    target_db_path: Path,
+    results_dir: Path,
+    tmp_dir: Path,
+    n_batches: int,
+    batch_index: int,
+    sensitivity: float = 7.0,
+    evalue: float = 1e-5,
+    coverage: float = 0.0,
+    max_seqs: int = 10000,
+    mmseqs_bin: str = "mmseqs",
+    threads: int | None = None,
+    split_memory_limit: str | None = None,
+    gpu: bool = False,
+) -> Path:
+    """Runs mmseqs against ONLY this batch's slice of a family's queries
+    (see split_query_batch_fasta), writing
+    results_dir/<family_id>_batch<batch_index>of<n_batches>_hits.tsv.
+    Deliberately does NOT aggregate -- run one call per batch_index
+    (0..n_batches-1), normally as separate cluster jobs (e.g. a SLURM job
+    array) each within its own time limit, THEN call
+    finalize_family_batches() once every batch's hits file exists. Returns
+    the hits file path written.
+
+    This exists specifically because a single mmseqs invocation against
+    the full GOPC target restarts from scratch if killed partway through
+    (see run_mmseqs_only's docstring) -- splitting the QUERY side into
+    batches doesn't reduce the cost of scanning the target once per batch
+    (each batch still scans all of GOPC, so total GPU-time goes up, not
+    down), but it turns "one run that might never finish inside the time
+    limit" into several independent runs that each definitely can.
+    """
+    batch_dir = results_dir / "batches" / family_id
+    batch_query_fasta = batch_dir / f"{family_id}_batch{batch_index}of{n_batches}.faa"
+    n = split_query_batch_fasta(query_fasta, n_batches, batch_index, batch_query_fasta)
+
+    hits_path = batch_dir / f"{family_id}_batch{batch_index}of{n_batches}_hits.tsv"
+    batch_tmp = tmp_dir / family_id / f"batch{batch_index}of{n_batches}"
+    run_mmseqs_only(
+        batch_query_fasta, target_db_path, hits_path, batch_tmp,
+        sensitivity=sensitivity, evalue=evalue, coverage=coverage, max_seqs=max_seqs,
+        mmseqs_bin=mmseqs_bin, threads=threads, split_memory_limit=split_memory_limit, gpu=gpu,
+    )
+    print(f"{family_id} batch {batch_index}/{n_batches}: {n} queries -> {hits_path}")
+    return hits_path
+
+
+def finalize_family_batches(
+    family_id: str,
+    query_fasta: Path,
+    results_dir: Path,
+    n_batches: int,
+    max_seqs: int = 10000,
+    cap_warning_fraction: float = 0.95,
+) -> FamilySearchSummary:
+    """Once every batch 0..n_batches-1 has a completed hits file (see
+    run_family_search_batch), concatenates them into the SAME
+    <family>_hits.tsv / <family>_unique_targets.tsv / <family>_summary.tsv
+    paths a single-shot run_family_search() would have produced -- output
+    is indistinguishable in format from an unbatched run, just assembled
+    from N independent mmseqs invocations instead of one. Raises
+    FileNotFoundError naming whichever batch is missing/incomplete.
+    """
+    batch_dir = results_dir / "batches" / family_id
+    batch_paths = [batch_dir / f"{family_id}_batch{i}of{n_batches}_hits.tsv" for i in range(n_batches)]
+    missing = [p for p in batch_paths if not p.exists()]
+    if missing:
+        raise FileNotFoundError(
+            f"{family_id}: {len(missing)}/{n_batches} batch hits file(s) missing -- run "
+            f"run_family_search_batch for each first. Missing: {[str(p) for p in missing]}"
+        )
+
+    hits_path = results_dir / f"{family_id}_hits.tsv"
+    hits_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(hits_path, "w", newline="") as out_f:
+        header_written = False
+        for batch_path in batch_paths:
+            with open(batch_path, newline="") as in_f:
+                header = in_f.readline()
+                if not header_written:
+                    out_f.write(header)
+                    header_written = True
+                for line in in_f:
+                    out_f.write(line)
+
+    n_reference_queries = _count_fasta_records(query_fasta)
+    return aggregate_hits_file(hits_path, family_id, n_reference_queries, results_dir, max_seqs, cap_warning_fraction)
 
 
 def _count_fasta_records(fasta_path: Path) -> int:

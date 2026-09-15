@@ -1,4 +1,6 @@
+import csv
 import shutil
+from pathlib import Path
 
 import pytest
 
@@ -148,3 +150,84 @@ def test_run_family_search_end_to_end(tmp_path):
 
     summary_text = (results_dir / "phaX_summary.tsv").read_text()
     assert "n_unique_GOPC_targets\t1" in summary_text
+
+
+def test_split_query_batch_fasta_round_robin(tmp_path):
+    query_fasta = tmp_path / "q.faa"
+    query_fasta.write_text("".join(f">Q{i}\nMK{i}VL\n" for i in range(7)))
+
+    out0 = tmp_path / "batch0.faa"
+    out1 = tmp_path / "batch1.faa"
+    out2 = tmp_path / "batch2.faa"
+    n0 = gopc_search.split_query_batch_fasta(query_fasta, 3, 0, out0)
+    n1 = gopc_search.split_query_batch_fasta(query_fasta, 3, 1, out1)
+    n2 = gopc_search.split_query_batch_fasta(query_fasta, 3, 2, out2)
+
+    assert (n0, n1, n2) == (3, 2, 2)  # 7 records over 3 batches: sizes as even as round-robin allows
+    assert n0 + n1 + n2 == 7
+
+    headers = lambda p: [l[1:].strip() for l in p.read_text().splitlines() if l.startswith(">")]
+    all_headers = headers(out0) + headers(out1) + headers(out2)
+    assert sorted(all_headers) == sorted(f"Q{i}" for i in range(7))  # every record assigned exactly once
+    assert headers(out0) == ["Q0", "Q3", "Q6"]  # stride-3 starting at index 0
+
+
+def test_split_query_batch_fasta_rejects_bad_index(tmp_path):
+    query_fasta = tmp_path / "q.faa"
+    query_fasta.write_text(">Q0\nMKV\n")
+    with pytest.raises(ValueError):
+        gopc_search.split_query_batch_fasta(query_fasta, 3, 3, tmp_path / "out.faa")
+
+
+@pytest.mark.skipif(not MMSEQS_AVAILABLE, reason="mmseqs binary not on PATH")
+def test_batched_search_matches_unbatched(tmp_path):
+    """The whole point of batching: splitting queries across N separate
+    mmseqs invocations and finalizing must produce the SAME
+    unique_targets/summary as running all queries in one shot -- batching
+    is purely how the compute is scheduled, not a change in what's found.
+    """
+    base_seq = "MKVLNRQAVASLKELQASAAAINSNPFAAAKPAEIQGLARFVQAAKADPAGAFAAAAQPMDSPAALQAYTAKLGLPPAQAWTAQNFLES"
+
+    def mutate(seq: str, positions: list[int]) -> str:
+        chars = list(seq)
+        for p in positions:
+            chars[p] = "A" if chars[p] != "A" else "G"
+        return "".join(chars)
+
+    queries = [(f"QUERY{i}", mutate(base_seq, [i, i + 10])) for i in range(5)]
+    query_fasta = tmp_path / "queries.faa"
+    query_fasta.write_text("".join(f">{h}\n{s}\n" for h, s in queries))
+
+    targets = [(f"CLOSE{i}", mutate(base_seq, [i, i + 20])) for i in range(5)]
+    targets.append(("DECOY", "GGGGPPPPLLLLSSSSTTTTNNNNQQQQEEEEDDDDKKKKRRRRHHHHYYYYWWWWFFFF" * 5))
+    target_fasta = tmp_path / "targets.faa"
+    target_fasta.write_text("".join(f">{h}\n{s}\n" for h, s in targets))
+
+    target_db = tmp_path / "db" / "target_db"
+    gopc_search.build_gopc_target_db(target_fasta, target_db)
+
+    # Unbatched reference run.
+    ref_results = tmp_path / "ref_results"
+    ref_summary = gopc_search.run_family_search(
+        "phaX", query_fasta, target_db, ref_results, tmp_path / "ref_tmp", max_seqs=10000,
+    )
+
+    # Batched run: 3 batches, each its own mmseqs invocation, then finalize.
+    batch_results = tmp_path / "batch_results"
+    for i in range(3):
+        gopc_search.run_family_search_batch(
+            "phaX", query_fasta, target_db, batch_results, tmp_path / "batch_tmp",
+            n_batches=3, batch_index=i, max_seqs=10000,
+        )
+    batched_summary = gopc_search.finalize_family_batches("phaX", query_fasta, batch_results, n_batches=3)
+
+    assert batched_summary.n_reference_queries == ref_summary.n_reference_queries
+    assert batched_summary.n_alignments == ref_summary.n_alignments
+    assert batched_summary.n_unique_gopc_targets == ref_summary.n_unique_gopc_targets
+
+    def read_unique_targets(results_dir: Path) -> set[tuple]:
+        with open(results_dir / "phaX_unique_targets.tsv", newline="") as f:
+            reader = csv.DictReader(f, delimiter="\t")
+            return {(r["target_id"], r["best_query"], r["n_reference_queries_matching"]) for r in reader}
+
+    assert read_unique_targets(batch_results) == read_unique_targets(ref_results)

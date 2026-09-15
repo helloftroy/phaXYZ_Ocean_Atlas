@@ -9,6 +9,7 @@ __pycache__/
 cluster/env_activate.sh
 cluster/.env_config
 cluster/bin/
+cluster/bin-gpu/
 
 # Secrets / local config
 .env
@@ -48,3 +49,9 @@ PHA_bioprospecting/databases/OMDBv2/*
 # source, and target_db/ especially can be very large (built from a ~184GB
 # input). Not committed.
 PHA_bioprospecting/gopc_search/
+
+# Scratch space for results scp'd back from the cluster for local
+# inspection (e.g. a family's *_unique_targets.tsv) -- can be tens of MB,
+# always reproducible by re-running the search or copying it back again.
+# Not committed.
+hpc_results/
