@@ -5,16 +5,19 @@
 # individual run is short enough to actually complete, rather than
 # resubmitting the full-family search over and over.
 #
-# WHY THIS EXISTS (confirmed live): a killed/timed-out
-# cluster/run_gopc_search.sbatch run CANNOT be resumed by resubmitting the
-# same command -- mmseqs creates a fresh, randomly-named tmp subdirectory
-# on every invocation, so a resubmit restarts the entire ~2.46-billion-
-# sequence GOPC scan from zero every time. Splitting the QUERY side into
-# batches does NOT reduce the total GPU-time needed (each batch still
-# scans all of GOPC once, so total cost goes UP relative to one
-# hypothetical uninterrupted run) -- what it buys is turning "one run that
-# might never finish inside the time limit" into several independent runs
-# that each definitely will, at the cost of more total GPU-hours.
+# WHY THIS EXISTS (confirmed live): if cluster/run_gopc_search.sbatch's
+# own search step is killed/times out WHILE STILL SCANNING the ~2.46-billion-
+# sequence GOPC target (as opposed to having already finished and only the
+# later convertalis step failing -- see that script's own header comment
+# for the resumable case), resubmitting restarts that scan from zero every
+# time; there's no way to resume a search that didn't itself finish.
+# Splitting the QUERY side into batches does NOT reduce the total GPU-time
+# needed (each batch still scans all of GOPC once, so total cost goes UP
+# relative to one hypothetical uninterrupted run) -- what it buys is
+# turning "one run that might never finish inside the time limit" into
+# several independent runs that each definitely will, at the cost of more
+# total GPU-hours. Each batch is still itself only resumable the same
+# convertalis-only way once ITS OWN search step completes.
 #
 # --array MUST cover exactly 0..N_BATCHES-1 -- e.g. for N_BATCHES=4:
 #   sbatch --account=191001-364393 --array=0-3 --export=ALL,FAMILY=phaC,N_BATCHES=4 \

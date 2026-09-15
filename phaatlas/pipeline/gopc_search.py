@@ -175,11 +175,33 @@ def run_mmseqs_only(
     gpu: bool = False,
     db_load_mode: int | None = None,
 ) -> None:
-    """Runs `mmseqs easy-search` for one query FASTA against the GOPC
-    target database, writing hits_path. No aggregation -- see
-    aggregate_hits_file() for that, kept separate so a batched run
-    (run_family_search_batch() below) can call this once per batch and
-    aggregate only after every batch's hits file exists.
+    """Runs mmseqs for one query FASTA against the GOPC target database,
+    writing hits_path. No aggregation -- see aggregate_hits_file() for
+    that, kept separate so a batched run (run_family_search_batch() below)
+    can call this once per batch and aggregate only after every batch's
+    hits file exists.
+
+    RESUMABLE, confirmed live: this calls mmseqs' own lower-level
+    `createdb` / `search` / `convertalis` modules directly instead of the
+    `easy-search` wrapper those three normally run inside of. easy-search
+    creates a fresh RANDOMLY-named scratch subdirectory on every
+    invocation, so a killed-and-resubmitted job restarted the entire
+    target-database scan from zero even if `search` (the expensive,
+    multi-hour-to-multi-day step) had already finished -- this bit phaA,
+    which was OOM-killed in the final convertalis (output-formatting)
+    step, well after search had completed successfully, and lost the
+    entire run. Calling the modules directly means WE choose tmp_dir's
+    layout (query db at tmp_dir/query, alignment results at
+    tmp_dir/result), so it's stable across invocations: if result's
+    `.dbtype` file already exists, the search step is skipped entirely and
+    only convertalis (cheap -- seconds to minutes, not hours) is
+    (re)run. Verified live: convertalis rerun against an already-computed
+    result db, with no search rerun at all, reproduces byte-identical
+    output to a single easy-search call. If `search` itself gets killed
+    partway through, this does NOT help -- that's still a from-scratch
+    rerun; use run_family_search_batch()/finalize_family_batches() below
+    to keep any single search invocation inside your cluster's job time
+    limit.
 
     db_load_mode: mmseqs' own --db-load-mode (0 auto / 1 fread / 2 mmap /
     3 mmap+touch), default None leaves mmseqs' own "auto" choice
@@ -192,7 +214,9 @@ def run_mmseqs_only(
     pressure before resorting to an OOM-kill, unlike fread's fully-loaded
     buffers. Not defaulted on since it hasn't been verified to actually
     help this specific failure mode, only that it's a real, low-risk lever
-    to reach for.
+    to reach for. Applies only to convertalis (the step that's actually
+    been OOMing); search's own db loading is governed by split_memory_limit
+    instead.
 
     split_memory_limit: mmseqs' own --split-memory-limit (e.g. "50G").
     Strongly recommended for a CPU (gpu=False) run under SLURM/any
@@ -218,42 +242,58 @@ def run_mmseqs_only(
     the GPU path's own memory behavior (which we have not been able to
     validate end-to-end, since building/testing this locally would need an
     actual CUDA GPU) may or may not use it the same way.
-
-    IMPORTANT, confirmed live: mmseqs creates a fresh, RANDOMLY-named
-    subdirectory under tmp_dir on every single invocation (not a
-    deterministic one keyed by the query/target/params) -- resubmitting
-    the exact same command after a job is killed does NOT resume from
-    where the previous attempt left off, it restarts the entire scan of
-    the target database from zero. There is no known way to force mmseqs
-    to reuse a prior run's intermediate state through this CLI. If one
-    run can't realistically finish inside your cluster's job time limit,
-    use run_family_search_batch()/finalize_family_batches() below instead
-    of resubmitting the same full-query command repeatedly.
     """
     _require_mmseqs(mmseqs_bin)
     hits_path.parent.mkdir(parents=True, exist_ok=True)
     tmp_dir.mkdir(parents=True, exist_ok=True)
 
-    cmd = [
-        mmseqs_bin, "easy-search",
-        str(query_fasta), str(target_db_path), str(hits_path), str(tmp_dir),
-        "-s", str(sensitivity),
-        "-e", str(evalue),
-        "-c", str(coverage),
-        "--max-seqs", str(max_seqs),
-        "--alignment-mode", "3",
+    query_db = tmp_dir / "query"
+    result_db = tmp_dir / "result"
+    search_tmp = tmp_dir / "search_tmp"
+
+    if not (tmp_dir / "query.dbtype").exists():
+        createdb_cmd = [mmseqs_bin, "createdb", str(query_fasta), str(query_db)]
+        if threads:
+            createdb_cmd += ["--threads", str(threads)]
+        subprocess.run(createdb_cmd, check=True)
+
+    if (tmp_dir / "result.dbtype").exists():
+        print(f"Reusing existing alignment results at {result_db} -- skipping search, resuming at convertalis.")
+    else:
+        search_cmd = [
+            mmseqs_bin, "search",
+            str(query_db), str(target_db_path), str(result_db), str(search_tmp),
+            "-s", str(sensitivity),
+            "-e", str(evalue),
+            "-c", str(coverage),
+            "--max-seqs", str(max_seqs),
+            "--alignment-mode", "3",
+        ]
+        if threads:
+            search_cmd += ["--threads", str(threads)]
+        if split_memory_limit:
+            search_cmd += ["--split-memory-limit", split_memory_limit]
+        if gpu:
+            search_cmd += ["--gpu", "1"]
+        subprocess.run(search_cmd, check=True)
+
+    convertalis_cmd = [
+        mmseqs_bin, "convertalis",
+        str(query_db), str(target_db_path), str(result_db), str(hits_path),
+        "--sub-mat", "aa:blosum62.out,nucl:nucleotide.out",
         "--format-mode", "4",  # BLAST-TAB + column headers, so hits.tsv is self-describing
         "--format-output", ",".join(FORMAT_OUTPUT_COLUMNS),
+        "--translation-table", "1",
+        "--gap-open", "aa:11,nucl:5",
+        "--gap-extend", "aa:1,nucl:2",
+        "--db-output", "0",
+        "--search-type", "0",
+        "--compressed", "0",
     ]
     if threads:
-        cmd += ["--threads", str(threads)]
-    if split_memory_limit:
-        cmd += ["--split-memory-limit", split_memory_limit]
-    if gpu:
-        cmd += ["--gpu", "1"]
-    if db_load_mode is not None:
-        cmd += ["--db-load-mode", str(db_load_mode)]
-    subprocess.run(cmd, check=True)
+        convertalis_cmd += ["--threads", str(threads)]
+    convertalis_cmd += ["--db-load-mode", str(db_load_mode) if db_load_mode is not None else "0"]
+    subprocess.run(convertalis_cmd, check=True)
 
 
 def aggregate_hits_file(

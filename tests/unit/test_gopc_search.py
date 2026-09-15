@@ -1,5 +1,6 @@
 import csv
 import shutil
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -150,6 +151,50 @@ def test_run_family_search_end_to_end(tmp_path):
 
     summary_text = (results_dir / "phaX_summary.tsv").read_text()
     assert "n_unique_GOPC_targets\t1" in summary_text
+
+
+@pytest.mark.skipif(not MMSEQS_AVAILABLE, reason="mmseqs binary not on PATH")
+def test_run_mmseqs_only_resumes_convertalis_without_rerunning_search(tmp_path, monkeypatch):
+    """The whole point of the split search/convertalis refactor: if
+    convertalis fails (e.g. OOM, as happened to phaA in production) after
+    search already completed, a second call must reuse the existing
+    alignment results rather than rescanning the target database again."""
+    query_fasta = tmp_path / "phaX.faa"
+    seq = "MKVLNRQAVASLKELQASAAAINSNPFAAAKPAEIQGLARFVQAAKADPAGAFAAAAQPMDSPAALQAYTAKLGLPPAQAWTAQNFLES" * 2
+    query_fasta.write_text(f">QUERY1\n{seq}\n")
+
+    target_fasta = tmp_path / "target.faa"
+    close = seq[:-4] + "AAAA"
+    decoy = "GGGGPPPPLLLLSSSSTTTTNNNNQQQQEEEEDDDDKKKKRRRRHHHHYYYYWWWWFFFF" * 5
+    target_fasta.write_text(f">TARGET_CLOSE\n{close}\n>TARGET_DECOY\n{decoy}\n")
+
+    target_db = tmp_path / "db" / "target_db"
+    gopc_search.build_gopc_target_db(target_fasta, target_db)
+
+    hits_path = tmp_path / "hits.tsv"
+    tmp_dir = tmp_path / "tmp"
+
+    gopc_search.run_mmseqs_only(query_fasta, target_db, hits_path, tmp_dir)
+    assert (tmp_dir / "result.dbtype").exists()
+    first_hits = hits_path.read_text()
+
+    # Simulate convertalis having failed/been deleted after a successful
+    # search: remove only the final TSV, not the alignment result db.
+    hits_path.unlink()
+
+    calls = []
+    real_run = subprocess.run
+
+    def spy_run(cmd, *args, **kwargs):
+        calls.append(cmd)
+        return real_run(cmd, *args, **kwargs)
+
+    monkeypatch.setattr(gopc_search.subprocess, "run", spy_run)
+    gopc_search.run_mmseqs_only(query_fasta, target_db, hits_path, tmp_dir)
+
+    assert not any(cmd[1] == "search" for cmd in calls), "resumed run must not re-invoke mmseqs search"
+    assert any(cmd[1] == "convertalis" for cmd in calls)
+    assert hits_path.read_text() == first_hits
 
 
 def test_split_query_batch_fasta_round_robin(tmp_path):

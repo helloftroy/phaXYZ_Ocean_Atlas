@@ -262,17 +262,40 @@ deduplicated** -- both families' rows are kept in
 `all_families_unique_targets.tsv` rather than picking one; resolving that
 conflict is later work, not this stage's job.
 
+## Resuming after a late-stage failure (e.g. convertalis OOM)
+
+**Confirmed live: resubmitting `gopc-search`/`omdb-search` now reuses a
+prior search that already finished, and only redoes the final
+formatting step.** `run_mmseqs_only` no longer calls mmseqs' `easy-search`
+wrapper (which creates a fresh, randomly-named tmp subdirectory on every
+invocation, making resume impossible) -- it calls the lower-level
+`createdb`/`search`/`convertalis` modules directly against a FIXED path
+under `tmp/<family>/`. This is what fixed phaA: it was OOM-killed in
+convertalis (the final TSV-formatting step) well after the expensive
+prefilter+alignment work had already finished successfully, and the old
+code lost the entire ~2-day run. Now, if `tmp/<family>/result.dbtype`
+already exists from a completed search, a resubmit skips straight to
+convertalis (seconds to minutes, not hours/days) instead of rescanning
+the target from scratch. Verified with a dedicated test
+(`test_run_mmseqs_only_resumes_convertalis_without_rerunning_search`)
+that this reproduces byte-identical output to an uninterrupted run.
+
+**This does NOT help if the job is killed while `search` itself is still
+scanning the target** (as opposed to having already finished) -- that
+work is not preserved, and a resubmit restarts the scan from zero, same
+as before. If a family's full query set can't realistically finish a
+single search inside your cluster's job time limit at all, that's what
+batched search (below) is for.
+
 ## When one family's search doesn't fit in one job (batched search)
 
-**Confirmed live: resubmitting a killed/timed-out `gopc-search` run does
-NOT resume it.** mmseqs creates a fresh, randomly-named tmp subdirectory
-on every invocation, so a resubmit restarts the entire ~2.46-billion-
-sequence GOPC scan from zero every time, regardless of how far the
-previous attempt got. If a family's full query set can't realistically
-finish inside your cluster's job time limit in one shot, split it into
-independent batches instead -- each batch still scans all of GOPC once
-(so total GPU-time goes up, not down), but each is short enough to
-actually complete rather than looping forever without progress:
+If a family's full query set can't realistically finish inside your
+cluster's job time limit in one shot even with the resume behavior above,
+split it into independent batches instead -- each batch still scans all
+of GOPC once (so total GPU-time goes up, not down), but each is short
+enough to actually complete rather than looping forever without progress
+(and each batch's own search is separately resumable the same
+convertalis-only way once it completes):
 
 ```bash
 pha-reference export-queries

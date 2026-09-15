@@ -69,13 +69,20 @@
 # at 48h regardless of gpu-a100's own nominal "infinite" TIMELIMIT (a
 # QOS-level restriction tied to the account/allocation, not the raw
 # partition config sinfo reports) -- `scontrol update ... TimeLimit=`
-# past 48h was rejected. If a family's search doesn't finish in one 48h
-# job, resubmit the exact same command -- it reuses the same tmp/<family>/
-# directory, so at minimum query-db creation is skipped; whether mmseqs'
-# own GPU prefilter resumes partway through a single target-database scan
-# (vs. restarting that scan from zero) has NOT been confirmed by us, so
-# watch whether a resubmitted run reaches further than the last one did
-# before assuming it's making incremental progress. If a family is taking
+# past 48h was rejected.
+#
+# RESUMABLE, confirmed live (see run_mmseqs_only's docstring in
+# pipeline/gopc_search.py): resubmitting the exact same command reuses
+# tmp/<family>/ -- query-db creation is skipped if already present, and if
+# a PRIOR invocation's search step already ran to completion (its output
+# database has a .dbtype file), search is skipped entirely too and only
+# convertalis reruns. This is exactly what turned phaA's convertalis OOM
+# (search had already finished; only the final formatting step failed)
+# into a several-minute resubmit instead of a from-scratch multi-day one.
+# IMPORTANT: this only helps once search has FULLY completed -- if the job
+# is killed WHILE search itself is still scanning the target database
+# (e.g. hits the 48h wall first), that work is NOT preserved and search
+# restarts from zero on resubmit, same as before. If a family is taking
 # MUCH longer than the others (more than ~a day for phaC specifically, the
 # cleanest/smallest family, would be worth investigating) it's worth
 # checking whether the GPU is actually engaged rather than assuming it's
