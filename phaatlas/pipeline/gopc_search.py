@@ -600,8 +600,22 @@ def combine_all_families(results_dir: Path) -> tuple[int, int]:
     all_families_summary.tsv (one row per family). Deliberately does NOT
     deduplicate a GOPC target hit by multiple families -- both rows are
     kept, per spec ("do not resolve proteins hit by multiple families yet").
+
+    Excludes any file already named all_families_* from both globs --
+    those are THIS function's own prior output, written into the same
+    results_dir it reads from. Confirmed live: with each family's cluster
+    job independently calling gopc-combine/omdb-combine at the end (so
+    every completed family re-triggers a combine over whatever's finished
+    so far), the second and later calls' glob picked up the first call's
+    own all_families_summary.tsv as if it were a per-family file --
+    crashing (it has one column per metric, not the 2 columns "metric,
+    value" a real per-family summary has) -- and would have silently
+    re-included all_families_unique_targets.tsv's already-combined rows
+    into itself too, compounding on every call.
     """
-    unique_target_files = sorted(results_dir.glob("*_unique_targets.tsv"))
+    unique_target_files = sorted(
+        p for p in results_dir.glob("*_unique_targets.tsv") if not p.name.startswith("all_families_")
+    )
     combined_targets_path = results_dir / "all_families_unique_targets.tsv"
     n_target_rows = 0
     with open(combined_targets_path, "w", newline="") as out_f:
@@ -615,7 +629,9 @@ def combine_all_families(results_dir: Path) -> tuple[int, int]:
                     writer.writerow(row)
                     n_target_rows += 1
 
-    summary_files = sorted(results_dir.glob("*_summary.tsv"))
+    summary_files = sorted(
+        p for p in results_dir.glob("*_summary.tsv") if not p.name.startswith("all_families_")
+    )
     combined_summaries: list[dict[str, str]] = []
     all_metrics: list[str] = []
     for path in summary_files:

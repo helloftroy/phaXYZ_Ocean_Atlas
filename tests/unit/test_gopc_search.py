@@ -119,6 +119,51 @@ def test_combine_all_families(tmp_path):
     assert "phaA" in summary_text and "phaC" in summary_text
 
 
+def test_combine_all_families_is_idempotent_across_separate_jobs(tmp_path):
+    """Each family runs as its own cluster job and independently calls
+    combine at the end (see run_omdb_search.sbatch/run_gopc_search.sbatch),
+    so a later family's combine call runs against a results_dir that
+    already contains an earlier call's all_families_unique_targets.tsv/
+    all_families_summary.tsv. Confirmed live: those combined files matched
+    combine_all_families's own glob patterns, so a second call crashed
+    trying to parse all_families_summary.tsv as a 2-column per-family
+    summary (ValueError: too many values to unpack) and would have
+    silently re-appended all_families_unique_targets.tsv's own rows into
+    itself. Neither may happen -- a second call with only one MORE
+    family's files added must produce the same result as running once with
+    every family's files present from the start."""
+    results_dir = tmp_path / "results"
+    results_dir.mkdir()
+    (results_dir / "phaA_unique_targets.tsv").write_text(
+        "\t".join(gopc_search.UNIQUE_TARGET_COLUMNS) + "\n"
+        "T1\tphaA\tQ1\t1e-10\t100\t80\t0.9\t0.9\t3\n"
+    )
+    (results_dir / "phaA_summary.tsv").write_text("metric\tvalue\nfamily_id\tphaA\nn_alignments\t10\n")
+
+    gopc_search.combine_all_families(results_dir)  # simulates phaA's job finishing first
+
+    (results_dir / "phaC_unique_targets.tsv").write_text(
+        "\t".join(gopc_search.UNIQUE_TARGET_COLUMNS) + "\n"
+        "T2\tphaC\tQ3\t1e-8\t90\t70\t0.6\t0.6\t1\n"
+    )
+    (results_dir / "phaC_summary.tsv").write_text("metric\tvalue\nfamily_id\tphaC\nn_alignments\t20\n")
+
+    # simulates phaC's job finishing later, re-running combine over a
+    # results_dir that already has phaA's job's own combined output in it
+    n_targets, n_families = gopc_search.combine_all_families(results_dir)
+
+    assert n_targets == 2  # one row per family, NOT phaA's row duplicated
+    assert n_families == 2
+
+    combined_text = (results_dir / "all_families_unique_targets.tsv").read_text()
+    assert combined_text.count("T1\t") == 1
+    assert combined_text.count("T2\t") == 1
+
+    summary_text = (results_dir / "all_families_summary.tsv").read_text()
+    assert summary_text.count("phaA") == 1
+    assert summary_text.count("phaC") == 1
+
+
 @pytest.mark.skipif(not MMSEQS_AVAILABLE, reason="mmseqs binary not on PATH")
 def test_run_family_search_end_to_end(tmp_path):
     query_fasta = tmp_path / "phaX.faa"
