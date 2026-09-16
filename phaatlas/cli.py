@@ -15,6 +15,7 @@ from phaatlas.db.session import get_db_path, init_db, session_scope
 from phaatlas.pipeline import export as export_pipeline
 from phaatlas.pipeline import gopc_search as gopc_search_pipeline
 from phaatlas.pipeline import omdb_metadata as omdb_metadata_pipeline
+from phaatlas.pipeline import pathway_architecture as pathway_architecture_pipeline
 from phaatlas.pipeline.cluster95 import MMseqsNotFoundError, cluster_family
 from phaatlas.pipeline.ingest_brenda import ingest_brenda_for_family
 from phaatlas.pipeline.ingest_uniprot import ingest_phaR_disambiguation, ingest_uniprot_for_family
@@ -645,6 +646,61 @@ def omdb_enrich_metadata_cmd(
             missing = summary.n_target_ids - summary.n_targets_matched_in_cluster_file
             console.print(f"[yellow]WARNING: {missing} target_id(s) not found in {cluster_tsv} -- "
                            f"unexpected unless target_id came from a different NR100 release.[/yellow]")
+
+
+@app.command("pathway-architecture")
+def pathway_architecture_cmd(
+    results_dir: Path = typer.Option(OMDB_SEARCH_DIR / "results",
+                                      help="directory to scan for *_unique_targets_with_metadata.tsv -- "
+                                           "point this at wherever those files actually are, e.g. a "
+                                           "scratch dir you scp'd results into"),
+    out_dir: Path = typer.Option(None, help="defaults to results_dir"),
+    top_n: int = typer.Option(5, help="how many top genera/species/studies to list per architecture"),
+):
+    """Builds a genome x PHA-family count matrix from every
+    <family>_unique_targets_with_metadata.tsv found in results_dir, then
+    collapses each genome's family set into a short architecture label
+    (e.g. phaA+phaB+phaC -> "ABC"). Writes genome_family_matrix.tsv and
+    architecture_summary.tsv, and prints the most/least common
+    architectures with their top taxa. Only families that have actually
+    been through omdb-enrich-metadata are reflected -- a family missing
+    from results_dir reads as absent everywhere, not unknown."""
+    metadata_paths = pathway_architecture_pipeline.discover_metadata_files(results_dir)
+    if not metadata_paths:
+        console.print(f"[red]No *_unique_targets_with_metadata.tsv found in {results_dir} -- "
+                       f"run omdb-enrich-metadata first.[/red]")
+        raise typer.Exit(code=2)
+
+    families_found = sorted(p.name.removesuffix("_unique_targets_with_metadata.tsv") for p in metadata_paths)
+    console.print(f"Found metadata for {len(metadata_paths)} famil{'y' if len(metadata_paths) == 1 else 'ies'}: "
+                  f"{', '.join(families_found)}")
+    all_families = pathway_architecture_pipeline.default_family_order()
+    missing = [f for f in all_families if f not in families_found]
+    if missing:
+        console.print(f"[yellow]Not yet enriched (will read as absent in every architecture): {', '.join(missing)}[/yellow]")
+
+    genomes = pathway_architecture_pipeline.load_genome_records(metadata_paths)
+    out_dir = out_dir or results_dir
+    matrix_path = out_dir / "genome_family_matrix.tsv"
+    summary_path = out_dir / "architecture_summary.tsv"
+    n_rows = pathway_architecture_pipeline.write_genome_family_matrix(genomes, all_families, matrix_path)
+    stats = pathway_architecture_pipeline.summarize_architectures(genomes, all_families, top_n=top_n)
+    pathway_architecture_pipeline.write_architecture_summary(stats, summary_path)
+
+    console.print(f"[green]{matrix_path}[/green]: {n_rows} genomes")
+    console.print(f"[green]{summary_path}[/green]: {len(stats)} distinct architectures")
+
+    table = Table(title="Pathway architectures (most to least common)")
+    table.add_column("architecture")
+    table.add_column("n_genomes", justify="right")
+    table.add_column("% of genomes", justify="right")
+    table.add_column("top genus")
+    table.add_column("top study")
+    for s in stats:
+        top_genus = f"{s.top_genera[0][0]} ({s.top_genera[0][1]})" if s.top_genera else ""
+        top_study = f"{s.top_studies[0][0]} ({s.top_studies[0][1]})" if s.top_studies else ""
+        table.add_row(s.architecture or "(none)", str(s.n_genomes), f"{s.pct_of_genomes:.1f}%", top_genus, top_study)
+    console.print(table)
 
 
 @app.command("status")
