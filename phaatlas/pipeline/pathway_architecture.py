@@ -44,6 +44,10 @@ TAXONOMY_COLUMNS = [
 LOCATION_COLUMNS = [
     "sample_id", "study_id", "latitude_degN", "longitude_degE",
     "ecosystem_type", "ecosystem_name", "ecosystem_compartment", "sample_source",
+    # Only present in a *_with_metadata_depth.tsv (see pipeline/ncbi_depth.py)
+    # -- a plain *_with_metadata.tsv simply has none of these three columns
+    # in its header, so row.get(...) below reads them as "" gracefully.
+    "depth_raw", "depth_m", "depth_zone",
 ]
 
 

@@ -13,7 +13,9 @@ from phaatlas.config_loader import DEFAULT_FAMILY_CONFIG_PATH, REPO_ROOT, load_f
 from phaatlas.db.models import FamilyAssignment, FamilyDefinitionRow, Phenotype, Protein, RetrievalRun, SourceEvidence
 from phaatlas.db.session import get_db_path, init_db, session_scope
 from phaatlas.pipeline import export as export_pipeline
+from phaatlas.pipeline import depth_heatmap as depth_heatmap_pipeline
 from phaatlas.pipeline import gopc_search as gopc_search_pipeline
+from phaatlas.pipeline import ncbi_depth as ncbi_depth_pipeline
 from phaatlas.pipeline import omdb_metadata as omdb_metadata_pipeline
 from phaatlas.pipeline import pathway_architecture as pathway_architecture_pipeline
 from phaatlas.pipeline.cluster95 import MMseqsNotFoundError, cluster_family
@@ -646,6 +648,83 @@ def omdb_enrich_metadata_cmd(
             missing = summary.n_target_ids - summary.n_targets_matched_in_cluster_file
             console.print(f"[yellow]WARNING: {missing} target_id(s) not found in {cluster_tsv} -- "
                            f"unexpected unless target_id came from a different NR100 release.[/yellow]")
+
+
+@app.command("omdb-enrich-depth")
+def omdb_enrich_depth_cmd(
+    family: str = typer.Option(..., help="single family_id or comma-separated list"),
+    results_dir: Path = typer.Option(OMDB_SEARCH_DIR / "results",
+                                      help="where <family>_unique_targets_with_metadata.tsv already lives "
+                                           "(from omdb-enrich-metadata)"),
+    batch_size: int = typer.Option(100, help="BioSample accessions per NCBI efetch request"),
+    sleep_seconds: float = typer.Option(0.35, help="politeness delay between NCBI requests"),
+):
+    """Adds depth_raw/depth_m/depth_zone columns to an already-built
+    <family>_unique_targets_with_metadata.tsv, by fetching each row's
+    sample's real NCBI BioSample record (OMDB's own API has no depth
+    field at all -- see pipeline/ncbi_depth.py's module docstring).
+    Writes <family>_unique_targets_with_metadata_depth.tsv. Coverage is
+    inherently partial -- not every sample has a real NCBI accession, and
+    not every accession's record reports depth -- printed counts make
+    that visible rather than silent."""
+    family_ids = [f.strip() for f in family.split(",") if f.strip()]
+    for family_id in family_ids:
+        metadata_path = results_dir / f"{family_id}_unique_targets_with_metadata.tsv"
+        if not metadata_path.exists():
+            console.print(f"[yellow]{metadata_path} not found -- run omdb-enrich-metadata first. Skipping {family_id}.[/yellow]")
+            continue
+        out_path = results_dir / f"{family_id}_unique_targets_with_metadata_depth.tsv"
+        console.print(f"[bold]{family_id}[/bold]: fetching BioSample depth records from NCBI...")
+        stats = ncbi_depth_pipeline.enrich_with_depth(metadata_path, out_path, batch_size=batch_size, sleep_seconds=sleep_seconds)
+        console.print(
+            f"  {stats['n_distinct_biosamples']} distinct real BioSample accessions -> "
+            f"{stats['n_biosamples_found_in_ncbi']} found in NCBI -> "
+            f"{stats['n_rows_with_parsed_depth']}/{stats['n_input_rows']} rows got a parsed depth\n"
+            f"  -> [green]{out_path}[/green]"
+        )
+
+
+@app.command("depth-heatmap")
+def depth_heatmap_cmd(
+    family: str = typer.Option(..., help="single family_id"),
+    results_dir: Path = typer.Option(OMDB_SEARCH_DIR / "results",
+                                      help="where <family>_unique_targets_with_metadata_depth.tsv lives "
+                                           "(from omdb-enrich-depth)"),
+    clade_column: str = typer.Option("best_query", help="which column groups rows into a 'clade' -- "
+                                                          "best_query (closest NR95 reference protein) by default"),
+    top_n: int = typer.Option(15, help="how many top clades to print to the console (the written TSVs are not truncated)"),
+):
+    """Builds a clade x depth-zone abundance matrix for one family, e.g.
+    "is one PhaC clade almost exclusively deep-ocean while another
+    dominates the photic zone". Writes both a long-format TSV (ready for
+    pandas/seaborn) and a wide clade x depth-zone matrix TSV, ready to
+    paste straight into a heatmap. See pipeline/depth_heatmap.py's module
+    docstring for exactly what "clade" means here (a proxy, not a real
+    phylogeny)."""
+    metadata_depth_path = results_dir / f"{family}_unique_targets_with_metadata_depth.tsv"
+    if not metadata_depth_path.exists():
+        console.print(f"[red]{metadata_depth_path} not found -- run omdb-enrich-depth first.[/red]")
+        raise typer.Exit(code=2)
+
+    clades_ranked, genome_counts, target_id_counts = depth_heatmap_pipeline.build_clade_depth_matrix(
+        metadata_depth_path, clade_column=clade_column
+    )
+    long_path = results_dir / f"{family}_clade_depth_long.tsv"
+    wide_path = results_dir / f"{family}_clade_depth_matrix.tsv"
+    n_long_rows = depth_heatmap_pipeline.write_long_format(clades_ranked, genome_counts, target_id_counts, long_path)
+    depth_heatmap_pipeline.write_wide_matrix(clades_ranked, genome_counts, wide_path)
+
+    console.print(f"[green]{long_path}[/green]: {n_long_rows} (clade, depth_zone) rows")
+    console.print(f"[green]{wide_path}[/green]: {len(clades_ranked)} clades x {len(depth_heatmap_pipeline.DEPTH_ZONE_ORDER)} depth zones")
+
+    table = Table(title=f"{family}: top clades by total genome abundance across depth zones")
+    table.add_column("clade")
+    for zone in depth_heatmap_pipeline.DEPTH_ZONE_ORDER:
+        table.add_column(zone, justify="right")
+    for clade in clades_ranked[:top_n]:
+        row_counts = genome_counts.get(clade, {})
+        table.add_row(clade, *(str(row_counts.get(zone, 0)) for zone in depth_heatmap_pipeline.DEPTH_ZONE_ORDER))
+    console.print(table)
 
 
 @app.command("pathway-architecture")

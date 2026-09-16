@@ -430,6 +430,60 @@ even when not every genome is listed. `genome_metadata_found`/
 cell always means "OMDB's own API had no row for this ID", never a
 silently-dropped lookup.
 
+## Genome x family matrix and pathway architectures
+
+Once at least one family has `<family>_unique_targets_with_metadata.tsv`
+(usually several, to get real co-occurrence patterns), `pha-reference
+pathway-architecture` builds a genome x PHA-family count matrix and
+collapses each genome's present families into a short combination label
+(phaA+phaB+phaC -> `"ABC"`; phaR_regulator/phaR_synthase collide on "R"
+so they get 4-char codes, `RReg`/`RSyn`, instead):
+
+```bash
+pha-reference pathway-architecture   # scans PHA_bioprospecting/omdb_search/results by default
+```
+
+Writes `genome_family_matrix.tsv` (one row per genome) and
+`architecture_summary.tsv` (one row per distinct combination, ranked most
+to least common, with top genus/species/study per combination) into the
+same directory. Prints which families are missing from the scan --
+**a family only counts once it has actually been through
+omdb-enrich-metadata, not merely searched**; a missing family reads as
+"absent" in every genome's architecture, not "unknown", so check that
+warning before trusting a combination as real.
+
+## Depth: PhaC (or any family) clade abundance across depth zones
+
+**OMDB has no depth field anywhere in its own data model** (confirmed by
+reading their API's own column definitions -- see
+pipeline/omdb_metadata.py's docstring). Real numeric depth, where it
+exists at all, lives one level further down: in the NCBI BioSample record
+each sample's `biosample` accession points to. `omdb-enrich-depth` fetches
+those records and adds `depth_raw`/`depth_m`/`depth_zone` columns:
+
+```bash
+pha-reference omdb-enrich-depth --family phaC   # needs omdb-enrich-metadata run first
+pha-reference depth-heatmap --family phaC        # clade x depth-zone abundance matrix
+```
+
+`depth-heatmap` groups by `best_query` by default -- the single closest
+NR95 reference protein each hit matched, a coarse but immediately
+available proxy for a hit's likely subfamily, not a real phylogeny.
+Writes `<family>_clade_depth_long.tsv` (long format, ready for
+pandas/seaborn) and `<family>_clade_depth_matrix.tsv` (clade rows x depth
+zone columns -- 0-50m / 50-200m / 200-1000m / 1000-4000m / >4000m /
+"(unknown depth)" -- ready to paste straight into a heatmap tool).
+
+**Coverage is inherently partial, confirmed live rather than assumed** --
+a real test slice (300 phaQ rows) resolved 92/119 real BioSample
+accessions from NCBI, and only 10 of those had a reported depth
+attribute at all. Two independent gaps, both counted and printed rather
+than silently dropped: not every OMDB sample has a real NCBI accession in
+the first place (many are JGI GOLD-only), and not every accession that
+does have one reported depth when it was submitted. `depth_raw` is always
+kept alongside the parsed `depth_m`, so anything the parser got wrong or
+couldn't handle is visible, not an indistinguishable blank.
+
 ## What's committed vs. what's not
 
 Committed: this README, both download scripts + their shared library, the
