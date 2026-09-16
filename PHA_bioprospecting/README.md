@@ -379,13 +379,56 @@ hit twice on GOPC); tune down once real OMDB numbers are in hand. Watch
 the first real run's timing and `nvidia-smi` GPU memory/utilization
 before assuming it behaves the same as GOPC did.
 
-Once you have `<family>_unique_targets.tsv` from an OMDB search, joining
-back to `OMDBv2.0_data.tsv.gz` (by whatever genome/sample identifier the
-target IDs carry -- not yet confirmed exactly what format OMDB's target
-IDs take, unlike GOPC's, since no OMDB search has been run yet) is what
-actually answers "where/what organism was this found in" -- that join
-itself isn't built yet, worth doing once real OMDB results exist to
-design it against actual ID formats rather than guessing.
+## Joining OMDB hits to genome/sample metadata (taxonomy, location, ecosystem)
+
+Once you have `<family>_unique_targets.tsv` from an OMDB search,
+`pha-reference omdb-enrich-metadata` answers "which organism, and
+where" -- it resolves each `target_id` (an NR100 cluster representative,
+e.g. `OMDBv2.0_AA_G_NR100_000000004889`) back to a genome, then queries
+OMDB's own data for that genome's GTDB taxonomy and its sample's
+location/ecosystem, writing
+`<family>_unique_targets_with_metadata.tsv` (one row per target_id ×
+genome, since a 100%-identical protein can genuinely appear in more than
+one genome/sample -- that breadth is itself signal, not noise).
+
+Two sources, neither a single ready-made table (see
+`pipeline/omdb_metadata.py`'s module docstring for the full detail, all
+confirmed live rather than assumed):
+- `OMDBv2.0_AA_G_NR100.cluster.tsv.gz` (~4.2GB, one-time download, see
+  below) -- each row already lists a cluster's full member gene IDs, and
+  a member ID's genome is recoverable by string-splitting alone
+  (`<GENOME>-scaffold_<N>_<gene#>`), so a single streaming pass resolves
+  every wanted target_id.
+- `omdb.microbiomics.io`'s own public JSON API (`/api/genome-cols`,
+  `/api/sample-cols`) -- the same endpoints their web genome browser
+  itself calls (found by reading their bundled JS, not documented
+  anywhere). No auth needed. Returns full GTDB taxonomy per genome and
+  `latitude_degN`/`longitude_degE` plus ecosystem_type/ecosystem_name/
+  ecosystem_compartment/sample_source per sample. **OMDB has no raw
+  numeric depth field at all** (checked their own column definitions) --
+  the ecosystem fields are the closest available placement/depth-zone
+  signal, not a substitute for one. Batches many IDs into one request via
+  an explicitly anchored+escaped regex OR pattern -- confirmed live their
+  API's own regex matching is unanchored (a truncated prefix of a real ID
+  matched as a substring), so batching without anchoring would risk wrong
+  matches.
+
+```bash
+# One-time, if not already fetched for the search stage:
+sbatch --account=191001-364393 --export=ALL,DATASET=omdb,TARGET=nr100-clusters cluster/run_download_databases.sbatch
+
+# Start with a small family -- phaQ (~5K unique_targets.tsv rows) is the smallest:
+sbatch --account=191001-364393 --export=ALL,FAMILY=phaQ cluster/run_omdb_enrich_metadata.sbatch
+```
+
+Needs internet, not a GPU -- runs on `service`. `--max-genomes-per-target`
+(default 5) caps how many genomes are shown per cluster in the output;
+`n_genomes_in_cluster_total` in the output is never capped, so a highly
+conserved protein found across many genomes is still visible as a count
+even when not every genome is listed. `genome_metadata_found`/
+`sample_metadata_found` columns are explicit -- a blank taxonomy/location
+cell always means "OMDB's own API had no row for this ID", never a
+silently-dropped lookup.
 
 ## What's committed vs. what's not
 

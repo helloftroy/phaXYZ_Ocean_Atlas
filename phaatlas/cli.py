@@ -14,6 +14,7 @@ from phaatlas.db.models import FamilyAssignment, FamilyDefinitionRow, Phenotype,
 from phaatlas.db.session import get_db_path, init_db, session_scope
 from phaatlas.pipeline import export as export_pipeline
 from phaatlas.pipeline import gopc_search as gopc_search_pipeline
+from phaatlas.pipeline import omdb_metadata as omdb_metadata_pipeline
 from phaatlas.pipeline.cluster95 import MMseqsNotFoundError, cluster_family
 from phaatlas.pipeline.ingest_brenda import ingest_brenda_for_family
 from phaatlas.pipeline.ingest_uniprot import ingest_phaR_disambiguation, ingest_uniprot_for_family
@@ -200,6 +201,7 @@ OMDB_SEARCH_DIR = REPO_ROOT / "PHA_bioprospecting" / "omdb_search"
 # hardcoded into the currently-running GOPC batch jobs' sbatch defaults;
 # moving it would break those mid-flight for a purely cosmetic gain.
 SHARED_QUERIES_DIR = GOPC_SEARCH_DIR / "queries"
+OMDB_DATABASES_DIR = REPO_ROOT / "PHA_bioprospecting" / "databases" / "OMDBv2"
 
 
 @app.command("export-queries")
@@ -590,6 +592,59 @@ def omdb_combine_cmd(results_dir: Path = typer.Option(OMDB_SEARCH_DIR / "results
     n_targets, n_families = gopc_search_pipeline.combine_all_families(results_dir)
     console.print(f"[green]{results_dir / 'all_families_unique_targets.tsv'}: {n_targets} rows[/green]")
     console.print(f"[green]{results_dir / 'all_families_summary.tsv'}: {n_families} families[/green]")
+
+
+@app.command("omdb-enrich-metadata")
+def omdb_enrich_metadata_cmd(
+    family: str = typer.Option(..., help="single family_id or comma-separated list -- NOT 'all', deliberately: "
+                                          "start with a small family (e.g. phaQ, ~5K rows) before a large one "
+                                          "(phaB/phaA are 500K+), since cost scales with distinct genomes found"),
+    results_dir: Path = typer.Option(OMDB_SEARCH_DIR / "results"),
+    cluster_tsv: Path = typer.Option(OMDB_DATABASES_DIR / "OMDBv2.0_AA_G_NR100.cluster.tsv.gz",
+                                      help="OMDBv2.0_AA_G_NR100.cluster.tsv.gz -- download via "
+                                           "./PHA_bioprospecting/scripts/download_omdb.sh nr100-clusters"),
+    max_genomes_per_target: int = typer.Option(5, help="cap on how many distinct genomes to report per NR100 "
+                                                         "cluster -- n_genomes_in_cluster_total is never capped"),
+    genome_batch_size: int = typer.Option(100),
+    sample_batch_size: int = typer.Option(100),
+    api_base: str = typer.Option(omdb_metadata_pipeline.OMDB_API_BASE),
+    sleep_seconds: float = typer.Option(0.3, help="politeness delay between batched API requests"),
+):
+    """Joins a family's <family>_unique_targets.tsv to OMDB's own genome
+    (GTDB taxonomy) and sample (lat/lon, ecosystem) metadata, writing
+    <family>_unique_targets_with_metadata.tsv. Needs internet (OMDB's
+    public API) and cluster_tsv downloaded locally -- neither GPU nor
+    mmseqs required. See pipeline/omdb_metadata.py's module docstring for
+    how target_id -> genome -> sample -> metadata is resolved."""
+    if not cluster_tsv.exists():
+        console.print(f"[red]{cluster_tsv} not found -- download it first: "
+                       f"./PHA_bioprospecting/scripts/download_omdb.sh nr100-clusters[/red]")
+        raise typer.Exit(code=2)
+
+    family_ids = [f.strip() for f in family.split(",") if f.strip()]
+    for family_id in family_ids:
+        unique_targets_path = results_dir / f"{family_id}_unique_targets.tsv"
+        if not unique_targets_path.exists():
+            console.print(f"[yellow]{unique_targets_path} not found -- skipping {family_id}.[/yellow]")
+            continue
+        out_path = results_dir / f"{family_id}_unique_targets_with_metadata.tsv"
+        console.print(f"[bold]{family_id}[/bold]: resolving target_id -> genome via {cluster_tsv}...")
+        summary = omdb_metadata_pipeline.enrich_unique_targets(
+            unique_targets_path, cluster_tsv, out_path,
+            max_genomes_per_target=max_genomes_per_target,
+            genome_batch_size=genome_batch_size, sample_batch_size=sample_batch_size,
+            api_base=api_base, sleep_seconds=sleep_seconds,
+        )
+        console.print(
+            f"  {summary.n_target_ids} target_ids -> {summary.n_targets_matched_in_cluster_file} matched in cluster file\n"
+            f"  {summary.n_distinct_genomes_needed} distinct genomes needed -> {summary.n_genomes_resolved} resolved via OMDB API\n"
+            f"  {summary.n_distinct_samples_needed} distinct samples needed -> {summary.n_samples_resolved} resolved via OMDB API\n"
+            f"  -> [green]{out_path}[/green]: {summary.n_output_rows} rows"
+        )
+        if summary.n_targets_matched_in_cluster_file < summary.n_target_ids:
+            missing = summary.n_target_ids - summary.n_targets_matched_in_cluster_file
+            console.print(f"[yellow]WARNING: {missing} target_id(s) not found in {cluster_tsv} -- "
+                           f"unexpected unless target_id came from a different NR100 release.[/yellow]")
 
 
 @app.command("status")
