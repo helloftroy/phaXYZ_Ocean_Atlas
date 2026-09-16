@@ -25,16 +25,15 @@
 # Then a bigger one once you know the timing/coverage looks right:
 #   sbatch --account=191001-364393 --export=ALL,FAMILY=phaC cluster/run_omdb_enrich_metadata.sbatch
 #
-# --time: UNVERIFIED against the real 249.5M-row cluster file end to end
-# (only tested live against a small real slice of it) -- streaming that
-# file once is the dominant cost regardless of family size, since every
-# row is at least glanced at; 4 hours is a generous first guess, not a
-# measured number. If a run is killed by the time limit, it simply
-# restarts the whole streaming pass on resubmit -- there is no partial
-# resume here (unlike the search stage), since a single pass over the
-# cluster file is expected to be fast relative to search in the first
-# place. Report back how long the first real run actually takes so this
-# comment (and the default) can be corrected.
+# --time=48:00:00: same generous default used for every script in this
+# project now, not a measured number for this specific job -- streaming
+# the real 249.5M-row cluster file end to end has not been timed yet
+# (only tested live against a small real slice of it), but is expected to
+# take well under 48h regardless of family size. If a run is killed by
+# the time limit, it simply restarts the whole streaming pass on
+# resubmit -- there is no partial resume here (unlike the search stage),
+# since a single pass over the cluster file is expected to be fast
+# relative to search in the first place.
 #
 # --mem: the per-target_id result dict is small (a handful of strings per
 # match), so memory scales with how many target_ids matched, not with the
@@ -44,7 +43,7 @@
 #SBATCH --partition=service
 #SBATCH --cpus-per-task=2
 #SBATCH --mem=16G
-#SBATCH --time=04:00:00
+#SBATCH --time=48:00:00
 #SBATCH --output=logs/omdb_enrich_metadata_%j.out
 #SBATCH --error=logs/omdb_enrich_metadata_%j.err
 

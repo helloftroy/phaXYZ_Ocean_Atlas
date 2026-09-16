@@ -16,7 +16,7 @@
 #SBATCH --partition=service
 #SBATCH --cpus-per-task=2
 #SBATCH --mem=8G
-#SBATCH --time=02:00:00
+#SBATCH --time=48:00:00
 #SBATCH --output=logs/gopc_finalize_batches_%j.out
 #SBATCH --error=logs/gopc_finalize_batches_%j.err
 

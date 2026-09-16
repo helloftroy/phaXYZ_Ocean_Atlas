@@ -18,7 +18,7 @@
 #SBATCH --partition=service
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=16G
-#SBATCH --time=04:00:00
+#SBATCH --time=48:00:00
 #SBATCH --output=logs/reference_cluster95_%j.out
 #SBATCH --error=logs/reference_cluster95_%j.err
 
