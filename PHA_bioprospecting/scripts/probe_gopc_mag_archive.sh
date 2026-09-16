@@ -24,7 +24,8 @@ IDS="${OUT_DIR}/representative_gopc_ids.tsv"
 SUMMARY="${OUT_DIR}/archive_summary.txt"
 MAPPING="${OUT_DIR}/gopc_mag_mapping_test.tsv"
 
-tar -tzf "${ARCHIVE}" | tee "${FILELIST}.tmp" | head -100 > "${OUT_DIR}/43191_MAGs_filelist_head100.txt"
+tar -tzf "${ARCHIVE}" > "${FILELIST}.tmp"
+head -100 "${FILELIST}.tmp" > "${OUT_DIR}/43191_MAGs_filelist_head100.txt"
 mv "${FILELIST}.tmp" "${FILELIST}"
 
 awk 'NR == 1 { next }
