@@ -30,6 +30,14 @@ data/brenda/*
 data/uniprot_cache/*
 !data/uniprot_cache/.gitkeep
 
+# Large local inputs and outputs for phaC TemStaPro runs. Keep these inside
+# the project checkout on scratch, but do not commit them.
+data/temstapro_inputs/*
+!data/temstapro_inputs/.gitkeep
+data/woa23/*
+!data/woa23/.gitkeep
+/temstapro/
+
 logs/
 *.log
 

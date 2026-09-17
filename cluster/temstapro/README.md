@@ -1,0 +1,74 @@
+# phaC TemStaPro Cluster Workflow
+
+Run these commands from the `PHA_Ocean_Atlas` repository root on the cluster.
+
+## 1. Put required inputs inside this repo
+
+The large phaC data files are not committed to git. Copy or symlink them into:
+
+```bash
+mkdir -p data/temstapro_inputs
+```
+
+Required for FASTA chunk export:
+
+```bash
+data/temstapro_inputs/phaC_cluster_sequences.faa
+```
+
+Required later for metadata merge:
+
+```bash
+data/temstapro_inputs/phaC_unique_targets_with_metadata_depth.tsv
+data/temstapro_inputs/phaC_genomes_woa23_annual_temperature.tsv
+```
+
+If the files already live elsewhere on scratch, symlinks are fine:
+
+```bash
+ln -s /path/to/phaC_cluster_sequences.faa data/temstapro_inputs/phaC_cluster_sequences.faa
+ln -s /path/to/phaC_unique_targets_with_metadata_depth.tsv data/temstapro_inputs/phaC_unique_targets_with_metadata_depth.tsv
+ln -s /path/to/phaC_genomes_woa23_annual_temperature.tsv data/temstapro_inputs/phaC_genomes_woa23_annual_temperature.tsv
+```
+
+## 2. Prepare TemStaPro inputs
+
+```bash
+python3 figures/scripts/export_phac_temstapro_inputs.py
+ls temstapro/chunks/*.faa | wc -l
+```
+
+This writes chunked FASTA files to `temstapro/chunks/`.
+
+## 3. Install TemStaPro on an internet-capable service node
+
+```bash
+bash cluster/temstapro/install_temstapro_service.sh /path/to/scratch_or_project/TemStaPro
+```
+
+This clones TemStaPro, creates the conda environment, and downloads ProtTrans
+to `/path/to/scratch_or_project/TemStaPro/ProtTrans`.
+
+## 4. Submit the GPU array
+
+Adjust the array range to match the chunk count from step 2.
+
+```bash
+sbatch --array=0-128 \
+  --export=ALL,TEMSTAPRO_DIR=/path/to/scratch_or_project/TemStaPro,TEMSTAPRO_ENV=temstapro_env \
+  cluster/temstapro/run_phac_temstapro_array.sbatch
+```
+
+Outputs go to `temstapro/temstapro_outputs/`.
+
+## 5. Merge predictions with metadata
+
+```bash
+python3 figures/scripts/merge_phac_temstapro_outputs.py
+```
+
+Final merged output:
+
+```bash
+temstapro/phaC_temstapro_predictions_with_metadata.tsv
+```

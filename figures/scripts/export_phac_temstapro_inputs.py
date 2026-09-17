@@ -1,12 +1,12 @@
 """Prepare all phaC target sequences for TemStaPro.
 
 Input FASTA:
-  fair_ocean_agent/phaC_cluster_sequences.faa
+  data/temstapro_inputs/phaC_cluster_sequences.faa
 
 Outputs:
-  fair_ocean_agent/temstapro/phaC_temstapro_all.faa
-  fair_ocean_agent/temstapro/chunks/phaC_temstapro_chunk_000.faa ...
-  fair_ocean_agent/temstapro/phaC_temstapro_sequence_manifest.tsv
+  temstapro/phaC_temstapro_all.faa
+  temstapro/chunks/phaC_temstapro_chunk_000.faa ...
+  temstapro/phaC_temstapro_sequence_manifest.tsv
 
 TemStaPro/ProtTrans can be sensitive to non-standard residues. We preserve
 internal X characters, trim terminal X runs that look like translated stop or
@@ -18,9 +18,8 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parent.parent.parent
-WORKSPACE = ROOT.parent
-DEFAULT_FASTA = WORKSPACE / "fair_ocean_agent" / "phaC_cluster_sequences.faa"
-DEFAULT_OUT = WORKSPACE / "fair_ocean_agent" / "temstapro"
+DEFAULT_FASTA = ROOT / "data" / "temstapro_inputs" / "phaC_cluster_sequences.faa"
+DEFAULT_OUT = ROOT / "temstapro"
 AA = set("ACDEFGHIKLMNPQRSTVWYX")
 
 
@@ -76,14 +75,16 @@ def main():
     if not args.input_fasta.exists():
         raise SystemExit(
             f"Input FASTA not found: {args.input_fasta}\n"
-            "This file is not stored in the PHA_Ocean_Atlas git repo. "
-            "Copy or symlink phaC_cluster_sequences.faa onto the cluster, "
+            "This large FASTA is not stored in git. "
+            "Copy or symlink phaC_cluster_sequences.faa into PHA_Ocean_Atlas, "
             "or pass its location explicitly, for example:\n"
+            "  mkdir -p data/temstapro_inputs\n"
+            "  ln -s /path/to/phaC_cluster_sequences.faa "
+            "data/temstapro_inputs/phaC_cluster_sequences.faa\n"
             "  python3 figures/scripts/export_phac_temstapro_inputs.py "
             "--input-fasta /path/to/phaC_cluster_sequences.faa\n"
-            "For the rest of the workflow, the expected default layout is:\n"
-            "  /scratch/morrill/users/hmp278/phaXYZ_Ocean_Atlas\n"
-            "  /scratch/morrill/users/hmp278/fair_ocean_agent/phaC_cluster_sequences.faa"
+            "Default expected path:\n"
+            "  PHA_Ocean_Atlas/data/temstapro_inputs/phaC_cluster_sequences.faa"
         )
 
     args.out_dir.mkdir(parents=True, exist_ok=True)

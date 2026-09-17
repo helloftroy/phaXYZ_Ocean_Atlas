@@ -6,7 +6,7 @@
 #   python3 figures/scripts/export_phac_temstapro_inputs.py
 #
 # Then submit after checking the chunk count:
-#   ls ../fair_ocean_agent/temstapro/chunks/*.faa | wc -l
+#   ls temstapro/chunks/*.faa | wc -l
 #   sbatch --array=0-128 --export=ALL,TEMSTAPRO_DIR=/path/to/TemStaPro,TEMSTAPRO_ENV=temstapro_env cluster/temstapro/run_phac_temstapro_array.sbatch
 #
 # GPU is strongly recommended: TemStaPro README reports ~10 min / 1000 avg
@@ -33,7 +33,7 @@ source "$(conda info --base)/etc/profile.d/conda.sh"
 conda activate "${TEMSTAPRO_ENV}"
 set -u
 
-BASE="../fair_ocean_agent/temstapro"
+BASE="${TEMSTAPRO_BASE:-temstapro}"
 CHUNK="${BASE}/chunks/phaC_temstapro_chunk_${SLURM_ARRAY_TASK_ID}.faa"
 if [ ! -f "${CHUNK}" ]; then
   CHUNK="$(printf "%s/chunks/phaC_temstapro_chunk_%03d.faa" "${BASE}" "${SLURM_ARRAY_TASK_ID}")"

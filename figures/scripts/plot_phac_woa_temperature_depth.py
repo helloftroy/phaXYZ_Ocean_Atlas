@@ -16,8 +16,7 @@ from matplotlib.lines import Line2D
 
 
 ROOT = Path(__file__).resolve().parent.parent.parent
-WORKSPACE = ROOT.parent
-IN = WORKSPACE / "fair_ocean_agent" / "phaC_genomes_woa23_annual_temperature.tsv"
+IN = ROOT / "data" / "temstapro_inputs" / "phaC_genomes_woa23_annual_temperature.tsv"
 OUT = ROOT / "figures"
 
 TOP_N = 6

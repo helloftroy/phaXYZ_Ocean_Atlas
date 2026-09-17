@@ -4,9 +4,8 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parent.parent.parent
-WORKSPACE = ROOT.parent
-IN = WORKSPACE / "fair_ocean_agent" / "phaC_genomes_woa23_annual_temperature.tsv"
-OUT = WORKSPACE / "fair_ocean_agent" / "phaC_genomes_woa23_coldest.tsv"
+IN = ROOT / "data" / "temstapro_inputs" / "phaC_genomes_woa23_annual_temperature.tsv"
+OUT = ROOT / "data" / "temstapro_inputs" / "phaC_genomes_woa23_coldest.tsv"
 
 
 def main():

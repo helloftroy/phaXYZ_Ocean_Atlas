@@ -1,15 +1,16 @@
 """Merge TemStaPro chunk outputs and join phaC metadata + WOA temperature."""
+import argparse
 import csv
 from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parent.parent.parent
-WORKSPACE = ROOT.parent
-BASE = WORKSPACE / "fair_ocean_agent" / "temstapro"
-MANIFEST = BASE / "phaC_temstapro_sequence_manifest.tsv"
-WOA = WORKSPACE / "fair_ocean_agent" / "phaC_genomes_woa23_annual_temperature.tsv"
-META = WORKSPACE / "fair_ocean_agent" / "phaC_unique_targets_with_metadata_depth.tsv"
-OUT = WORKSPACE / "fair_ocean_agent" / "phaC_temstapro_predictions_with_metadata.tsv"
+DEFAULT_BASE = ROOT / "temstapro"
+DEFAULT_INPUT_DIR = ROOT / "data" / "temstapro_inputs"
+DEFAULT_MANIFEST = DEFAULT_BASE / "phaC_temstapro_sequence_manifest.tsv"
+DEFAULT_WOA = DEFAULT_INPUT_DIR / "phaC_genomes_woa23_annual_temperature.tsv"
+DEFAULT_META = DEFAULT_INPUT_DIR / "phaC_unique_targets_with_metadata_depth.tsv"
+DEFAULT_OUT = DEFAULT_BASE / "phaC_temstapro_predictions_with_metadata.tsv"
 
 
 def load_by_key(path, key, delimiter="\t"):
@@ -20,18 +21,40 @@ def load_by_key(path, key, delimiter="\t"):
     return out
 
 
+def require_file(path, label):
+    if not path.exists():
+        raise SystemExit(
+            f"{label} not found: {path}\n"
+            "Expected TemStaPro inputs under PHA_Ocean_Atlas/data/temstapro_inputs "
+            "and generated outputs under PHA_Ocean_Atlas/temstapro. "
+            "Use the corresponding --*-path option if this file lives elsewhere."
+        )
+
+
 def main():
-    manifest = load_by_key(MANIFEST, "target_id")
-    genome_woa = load_by_key(WOA, "genome")
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--base-dir", type=Path, default=DEFAULT_BASE)
+    ap.add_argument("--manifest", type=Path, default=DEFAULT_MANIFEST)
+    ap.add_argument("--woa", type=Path, default=DEFAULT_WOA)
+    ap.add_argument("--metadata", type=Path, default=DEFAULT_META)
+    ap.add_argument("--out", type=Path, default=DEFAULT_OUT)
+    args = ap.parse_args()
+
+    require_file(args.manifest, "Sequence manifest")
+    require_file(args.woa, "WOA temperature table")
+    require_file(args.metadata, "phaC metadata table")
+
+    manifest = load_by_key(args.manifest, "target_id")
+    genome_woa = load_by_key(args.woa, "genome")
 
     target_meta = {}
-    with META.open(newline="") as f:
+    with args.metadata.open(newline="") as f:
         for row in csv.DictReader(f, delimiter="\t"):
             target_meta.setdefault(row["target_id"], row)
 
-    pred_files = sorted((BASE / "temstapro_outputs").glob("phaC_temstapro_chunk_*.tsv"))
+    pred_files = sorted((args.base_dir / "temstapro_outputs").glob("phaC_temstapro_chunk_*.tsv"))
     if not pred_files:
-        raise SystemExit(f"No TemStaPro outputs found under {BASE / 'temstapro_outputs'}")
+        raise SystemExit(f"No TemStaPro outputs found under {args.base_dir / 'temstapro_outputs'}")
 
     pred_rows = []
     pred_fields = None
@@ -68,7 +91,8 @@ def main():
         "raw_length", "clean_length", "cleanup_notes",
     ] + meta_cols + woa_cols
 
-    with OUT.open("w", newline="") as f:
+    args.out.parent.mkdir(parents=True, exist_ok=True)
+    with args.out.open("w", newline="") as f:
         w = csv.DictWriter(f, delimiter="\t", fieldnames=out_fields, extrasaction="ignore")
         w.writeheader()
         for pred in pred_rows:
@@ -82,7 +106,7 @@ def main():
             row.update({k: meta.get(k, "") for k in meta_cols})
             row.update({k: woa.get(k, "") for k in woa_cols})
             w.writerow(row)
-    print(f"merged {len(pred_rows)} predictions -> {OUT}")
+    print(f"merged {len(pred_rows)} predictions -> {args.out}")
 
 
 if __name__ == "__main__":

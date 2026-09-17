@@ -1,11 +1,11 @@
 """Map phaC genome locations/depths to WOA23 annual temperature.
 
 Inputs:
-  - fair_ocean_agent/phaC_unique_targets_with_metadata_depth.tsv
-  - physiochem_data_sources/WOA23/woa23_decav_t00an01.csv.gz
+  - data/temstapro_inputs/phaC_unique_targets_with_metadata_depth.tsv
+  - data/woa23/woa23_decav_t00an01.csv.gz
 
 Output:
-  - fair_ocean_agent/phaC_genomes_woa23_annual_temperature.tsv
+  - data/temstapro_inputs/phaC_genomes_woa23_annual_temperature.tsv
 
 The WOA CSV is the NOAA/NCEI WOA23 1-degree annual temperature
 climatological mean product. This script uses nearest horizontal 1-degree
@@ -22,10 +22,9 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parent.parent.parent
-WORKSPACE = ROOT.parent
-PHAC = WORKSPACE / "fair_ocean_agent" / "phaC_unique_targets_with_metadata_depth.tsv"
-WOA = WORKSPACE / "physiochem_data_sources" / "WOA23" / "woa23_decav_t00an01.csv.gz"
-OUT = WORKSPACE / "fair_ocean_agent" / "phaC_genomes_woa23_annual_temperature.tsv"
+PHAC = ROOT / "data" / "temstapro_inputs" / "phaC_unique_targets_with_metadata_depth.tsv"
+WOA = ROOT / "data" / "woa23" / "woa23_decav_t00an01.csv.gz"
+OUT = ROOT / "data" / "temstapro_inputs" / "phaC_genomes_woa23_annual_temperature.tsv"
 
 
 def parse_depths_from_header(path):
