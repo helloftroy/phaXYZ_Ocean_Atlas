@@ -36,6 +36,8 @@ data/temstapro_inputs/*
 !data/temstapro_inputs/.gitkeep
 data/woa23/*
 !data/woa23/.gitkeep
+data/all_genomes/*
+!data/all_genomes/.gitkeep
 /temstapro/
 
 logs/
