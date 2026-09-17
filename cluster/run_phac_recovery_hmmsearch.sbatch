@@ -5,13 +5,21 @@
 # built from this repo's own 822-sequence curated phaC diversity). CPU
 # only, no internet needed.
 #
-# One-time prerequisite: hmmer isn't in the pha-reference conda env by
-# default -- install it once before the first run of this script:
-#   conda install -n pha-reference -c bioconda -c conda-forge hmmer
+# One-time prerequisite: hmmer needs to be installed somewhere. Installing
+# it INTO an existing env (e.g. faire-agent) can fail with "Disk quota
+# exceeded" writing a .condatmp dir even after redirecting CONDA_PKGS_DIRS
+# to scratch -- confirmed live -- because that existing env's own folder
+# still lives under $HOME/miniforge3/envs/, and conda needs to write inside
+# the env's own prefix during install regardless of where the package cache
+# points. Simplest fix: don't touch that env at all -- create a small,
+# standalone env for just hmmer, entirely on scratch:
+#   export CONDA_REGISTER_ENVS=false   # skip even the tiny ~/.conda/environments.txt write
+#   conda create -p /scratch/$USER/conda_envs/hmmer_env -c bioconda -c conda-forge hmmer -y
+# Then point this script at it (it's not on PATH, so pass it explicitly):
+#   sbatch --account=191001-364393 --export=ALL,HMMER_BIN_DIR=/scratch/$USER/conda_envs/hmmer_env/bin cluster/run_phac_recovery_hmmsearch.sbatch
 #
-#   sbatch --account=191001-364393 cluster/run_phac_recovery_hmmsearch.sbatch
 # Tighten/loosen the threshold if 10 is producing too many/few candidates:
-#   sbatch --account=191001-364393 --export=ALL,DOM_E=1 cluster/run_phac_recovery_hmmsearch.sbatch
+#   sbatch --account=191001-364393 --export=ALL,HMMER_BIN_DIR=...,DOM_E=1 cluster/run_phac_recovery_hmmsearch.sbatch
 #SBATCH --job-name=phac_recovery_hmmsearch
 #SBATCH --partition=service
 #SBATCH --cpus-per-task=4
@@ -36,8 +44,12 @@ source cluster/env_activate.sh
 echo "Job started: $(date)"
 echo "Host: $(hostname)"
 
-if ! command -v hmmsearch >/dev/null 2>&1; then
-  echo "hmmsearch not on PATH -- run: conda install -n pha-reference -c bioconda -c conda-forge hmmer" >&2
+HMMSEARCH_BIN="hmmsearch"
+if [ -n "${HMMER_BIN_DIR:-}" ]; then
+  HMMSEARCH_BIN="${HMMER_BIN_DIR}/hmmsearch"
+fi
+if ! command -v "${HMMSEARCH_BIN}" >/dev/null 2>&1; then
+  echo "${HMMSEARCH_BIN} not found/executable -- install hmmer first (see this script's header comment for the scratch-env fix) and pass its bin dir via HMMER_BIN_DIR." >&2
   exit 2
 fi
 
@@ -53,7 +65,8 @@ fi
 pha-reference phac-recovery-hmmsearch \
   --neighborhoods-fasta "${NEIGHBORHOODS}" \
   --out-hits "${OUT_HITS}" \
-  --dom-e "${DOM_E}"
+  --dom-e "${DOM_E}" \
+  --hmmsearch-bin "${HMMSEARCH_BIN}"
 
 echo "Job finished: $(date)"
 echo "Candidate phaC hits: ${OUT_HITS}"
