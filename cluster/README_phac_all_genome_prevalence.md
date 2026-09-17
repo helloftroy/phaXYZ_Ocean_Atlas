@@ -67,6 +67,34 @@ Output:
 data/all_genomes/phaC_all_genomes_from_nr100_clusters.tsv
 ```
 
+By default this uses conservative filters on `phaC_unique_targets.tsv` before
+expanding target clusters to all genomes:
+
+```text
+best_evalue <= 1e-20
+best_qcov   >= 0.5
+best_tcov   >= 0.5
+```
+
+This matters because the original MMseqs search allowed low coverage during
+search so fragmented hits were not lost. For prevalence, weak/partial hits can
+make the numerator implausibly large after NR100 cluster expansion.
+
+To test a stricter definition:
+
+```bash
+python3 figures/scripts/export_phac_genomes_from_omdb_clusters.py \
+  --max-evalue 1e-50 \
+  --min-qcov 0.7 \
+  --min-tcov 0.7 \
+  --out data/all_genomes/phaC_all_genomes_from_nr100_clusters.strict.tsv
+
+python3 figures/scripts/plot_phac_pct_all_genomes_by_region.py \
+  --phac-genomes data/all_genomes/phaC_all_genomes_from_nr100_clusters.strict.tsv \
+  --out-tsv data/all_genomes/phaC_prevalence_all_genomes_by_region.strict.tsv \
+  --out-prefix figures/phaC_pct_all_genomes_by_region.strict
+```
+
 ## 4. Plot phaC prevalence using all genomes as denominator
 
 The plot script uses the uncapped numerator table by default:

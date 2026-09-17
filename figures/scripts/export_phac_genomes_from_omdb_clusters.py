@@ -3,7 +3,14 @@
 This builds an uncapped numerator for "% of all genomes with phaC".
 The ordinary *_with_metadata.tsv files may cap how many genomes are shown
 per NR100 target cluster; this script streams the full cluster.tsv.gz once
-and emits every distinct genome represented in each phaC NR100 cluster.
+and emits every distinct genome represented in each retained phaC NR100
+cluster.
+
+Important: the original MMseqs search was run with permissive coverage
+settings so fragmented hits were not lost at search time. For prevalence,
+do not expand every weak target. By default this script keeps only target
+clusters whose best phaC alignment has evalue <= 1e-20 and both query and
+target coverage >= 0.5.
 
 Default output:
   data/all_genomes/phaC_all_genomes_from_nr100_clusters.tsv
@@ -30,12 +37,40 @@ def parse_genome_from_member(member_id: str) -> str:
     return member_id[:idx]
 
 
-def load_target_ids(path: Path) -> set[str]:
+def get_float(row: dict[str, str], col: str, default: float) -> float:
+    raw = row.get(col, "")
+    if raw == "":
+        return default
+    return float(raw)
+
+
+def load_target_ids(
+    path: Path,
+    max_evalue: float,
+    min_qcov: float,
+    min_tcov: float,
+    min_pident: float,
+    min_bitscore: float,
+) -> tuple[set[str], int]:
     with path.open(newline="") as f:
         reader = csv.DictReader(f, delimiter="\t")
         if not reader.fieldnames or "target_id" not in reader.fieldnames:
             raise SystemExit(f"{path} does not have a target_id column")
-        return {row["target_id"] for row in reader if row.get("target_id")}
+        out = set()
+        n = 0
+        for row in reader:
+            if not row.get("target_id"):
+                continue
+            n += 1
+            if (
+                get_float(row, "best_evalue", 1.0) <= max_evalue
+                and get_float(row, "best_qcov", 0.0) >= min_qcov
+                and get_float(row, "best_tcov", 0.0) >= min_tcov
+                and get_float(row, "best_pident", 0.0) >= min_pident
+                and get_float(row, "best_bitscore", 0.0) >= min_bitscore
+            ):
+                out.add(row["target_id"])
+        return out, n
 
 
 def main():
@@ -43,6 +78,11 @@ def main():
     ap.add_argument("--phac-targets", type=Path, default=DEFAULT_PHAC_TARGETS)
     ap.add_argument("--cluster-tsv", type=Path, default=DEFAULT_CLUSTER_TSV)
     ap.add_argument("--out", type=Path, default=DEFAULT_OUT)
+    ap.add_argument("--max-evalue", type=float, default=1e-20)
+    ap.add_argument("--min-qcov", type=float, default=0.5)
+    ap.add_argument("--min-tcov", type=float, default=0.5)
+    ap.add_argument("--min-pident", type=float, default=0.0)
+    ap.add_argument("--min-bitscore", type=float, default=0.0)
     args = ap.parse_args()
 
     if not args.phac_targets.exists():
@@ -55,8 +95,23 @@ def main():
             "  ./download_omdb.sh nr100-clusters"
         )
 
-    wanted = load_target_ids(args.phac_targets)
-    print(f"phaC target IDs: {len(wanted):,}")
+    wanted, n_input_targets = load_target_ids(
+        args.phac_targets,
+        max_evalue=args.max_evalue,
+        min_qcov=args.min_qcov,
+        min_tcov=args.min_tcov,
+        min_pident=args.min_pident,
+        min_bitscore=args.min_bitscore,
+    )
+    print(f"input phaC target IDs: {n_input_targets:,}")
+    print(
+        "retained phaC target IDs after filters "
+        f"(e<={args.max_evalue:g}, qcov>={args.min_qcov:g}, "
+        f"tcov>={args.min_tcov:g}, pident>={args.min_pident:g}, "
+        f"bits>={args.min_bitscore:g}): {len(wanted):,}"
+    )
+    if not wanted:
+        raise SystemExit("No target IDs passed filters.")
 
     args.out.parent.mkdir(parents=True, exist_ok=True)
     matched_targets = 0
@@ -70,7 +125,10 @@ def main():
             cluster_idx = 0
             members_idx = 4
         writer = csv.writer(out_f, delimiter="\t")
-        writer.writerow(["target_id", "genome"])
+        writer.writerow([
+            "target_id", "genome", "max_evalue", "min_qcov", "min_tcov",
+            "min_pident", "min_bitscore",
+        ])
         for line in f:
             first_tab = line.find("\t")
             cluster_id = line[:first_tab]
@@ -83,7 +141,10 @@ def main():
             for genome in sorted(genomes):
                 pair = (target_id, genome)
                 if pair not in output_pairs:
-                    writer.writerow([target_id, genome])
+                    writer.writerow([
+                        target_id, genome, args.max_evalue, args.min_qcov,
+                        args.min_tcov, args.min_pident, args.min_bitscore,
+                    ])
                     output_pairs.add(pair)
             matched_targets += 1
 

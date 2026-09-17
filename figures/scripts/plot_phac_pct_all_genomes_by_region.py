@@ -115,6 +115,7 @@ def main():
         writer.writerow([
             "lat_bin", "lon_bin", "n_all_genomes", "n_phac_genomes",
             "pct_all_genomes_with_phac", "passes_min_genomes_filter",
+            "phac_numerator_source",
         ])
         for cell in sorted(cell_total):
             total = cell_total[cell]
@@ -122,6 +123,7 @@ def main():
             writer.writerow([
                 cell[0], cell[1], total, phac, f"{100 * phac / total:.6f}",
                 "yes" if total >= args.min_genomes_per_cell else "no",
+                phac_source,
             ])
 
     lat_bins = list(range(-90, 90, args.grid_deg))
@@ -190,7 +192,8 @@ def main():
         f"All genomes with location: {total_genomes_with_location:,}; "
         f"phaC-positive among those: {phac_genomes_with_location:,}; "
         f"global prevalence: {100 * phac_genomes_with_location / total_genomes_with_location:.2f}%. "
-        f"Color scale capped at the 98th percentile of shown cells ({np.nanpercentile(observed, 98):.2f}%).",
+        f"Color scale capped at the 98th percentile of shown cells ({np.nanpercentile(observed, 98):.2f}%).\n"
+        f"Numerator source: {phac_source.name}",
         ha="center", fontsize=8.8, color="#566A67",
     )
 
