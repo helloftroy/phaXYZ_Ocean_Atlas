@@ -772,7 +772,11 @@ def cluster_ecology_cmd(
     taxa -- answers "does this protein cluster occupy a distinct
     environmental niche". Needs the depth-enriched metadata file (run
     omdb-enrich-depth first, even if most rows end up with no resolved
-    depth -- lat/lon and taxonomy are still used)."""
+    depth -- lat/lon and taxonomy are still used). Output is named after
+    cluster_tsv's own stem (e.g. phaC_cluster0.7_cluster.tsv ->
+    phaC_cluster0.7_cluster_ecology.tsv), not just the family, so
+    re-running this at a different identity threshold does not silently
+    overwrite a previous threshold's results."""
     metadata_path = results_dir / f"{family}_unique_targets_with_metadata_depth.tsv"
     if not metadata_path.exists():
         console.print(f"[red]{metadata_path} not found -- run omdb-enrich-depth first.[/red]")
@@ -783,7 +787,7 @@ def cluster_ecology_cmd(
 
     assignments = sequence_clustering_pipeline.load_cluster_assignments(cluster_tsv)
     stats = cluster_ecology_pipeline.summarize_cluster_ecology(metadata_path, assignments, top_n=top_n)
-    out_path = results_dir / f"{family}_cluster_ecology.tsv"
+    out_path = results_dir / f"{cluster_tsv.stem}_ecology.tsv"
     cluster_ecology_pipeline.write_cluster_ecology(stats, out_path)
     console.print(f"[green]{out_path}[/green]: {len(stats)} clusters")
 
@@ -803,6 +807,33 @@ def cluster_ecology_cmd(
     console.print(table)
 
 
+@app.command("cluster-map-points")
+def cluster_map_points_cmd(
+    family: str = typer.Option(..., help="single family_id"),
+    cluster_tsv: Path = typer.Option(..., help="mmseqs cluster createtsv output"),
+    results_dir: Path = typer.Option(OMDB_SEARCH_DIR / "results"),
+):
+    """Writes one row per (cluster, genome) with a resolvable lat/lon --
+    for plotting cluster membership on a map (e.g. one panel per cluster),
+    as opposed to cluster-ecology's aggregated per-cluster statistics.
+    Output is named after cluster_tsv's own stem, same reasoning as
+    cluster-ecology."""
+    metadata_path = results_dir / f"{family}_unique_targets_with_metadata_depth.tsv"
+    if not metadata_path.exists():
+        console.print(f"[red]{metadata_path} not found -- run omdb-enrich-depth first.[/red]")
+        raise typer.Exit(code=2)
+    if not cluster_tsv.exists():
+        console.print(f"[red]{cluster_tsv} not found.[/red]")
+        raise typer.Exit(code=2)
+
+    assignments = sequence_clustering_pipeline.load_cluster_assignments(cluster_tsv)
+    points = cluster_ecology_pipeline.collect_cluster_points(metadata_path, assignments)
+    out_path = results_dir / f"{cluster_tsv.stem}_points.tsv"
+    cluster_ecology_pipeline.write_cluster_points(points, out_path)
+    n_clusters = len({p.cluster_id for p in points})
+    console.print(f"[green]{out_path}[/green]: {len(points)} points across {n_clusters} clusters")
+
+
 @app.command("sequence-embedding")
 def sequence_embedding_cmd(
     family: str = typer.Option(..., help="single family_id"),
@@ -811,15 +842,20 @@ def sequence_embedding_cmd(
     results_dir: Path = typer.Option(OMDB_SEARCH_DIR / "results"),
     k: int = typer.Option(3, help="k-mer size for the composition feature vector"),
     use_umap: bool = typer.Option(True, "--umap/--no-umap", help="also compute a UMAP embedding if umap-learn "
-                                                                   "is installed (pip install -e '.[umap]') -- "
+                                                                   r"is installed (pip install -e '.\[umap]') -- "
                                                                    "PCA is always computed regardless"),
+    out_path: Path = typer.Option(None, help="defaults to <family>_sequence_embedding_k<k>.tsv -- override if "
+                                              "you want a specific name, e.g. to keep a k=2 local run and a k=3 "
+                                              "cluster run from overwriting each other"),
 ):
     """Builds a 2D sequence-space embedding of every extracted protein
     (PCA always; UMAP if available) -- "each point is a protein",
     colorable by sequence cluster, depth zone, taxon, or pathway
     architecture (all joined in from the depth-enriched metadata file and
     genome_family_matrix.tsv if present). Writes
-    <family>_sequence_embedding.tsv."""
+    <family>_sequence_embedding_k<k>.tsv by default -- named by k so a
+    different k (e.g. a memory-constrained k=2 run vs. a k=3 cluster run)
+    never silently overwrites another run's output."""
     metadata_path = results_dir / f"{family}_unique_targets_with_metadata_depth.tsv"
     if not metadata_path.exists():
         console.print(f"[red]{metadata_path} not found -- run omdb-enrich-depth first.[/red]")
@@ -844,7 +880,7 @@ def sequence_embedding_cmd(
             genome_architecture = {row["genome"]: row["architecture"] for row in csv.DictReader(f, delimiter="\t")}
     annotations = sequence_embedding_pipeline.collect_target_annotations(metadata_path, assignments, genome_architecture)
 
-    out_path = results_dir / f"{family}_sequence_embedding.tsv"
+    out_path = out_path or (results_dir / f"{family}_sequence_embedding_k{k}.tsv")
     n = sequence_embedding_pipeline.write_embedding_tsv(ids, pca_coords, umap_coords, annotations, out_path)
     console.print(f"[green]{out_path}[/green]: {n} points")
 

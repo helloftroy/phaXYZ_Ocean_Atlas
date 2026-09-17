@@ -87,6 +87,41 @@ def test_summarize_cluster_ecology_aggregates_correctly(tmp_path):
     assert stats[0].cluster_id == "REP1"
 
 
+def test_collect_cluster_points_counts_per_genome_target_ids_and_skips_missing_latlon(tmp_path):
+    path = tmp_path / "phaC_unique_targets_with_metadata_depth.tsv"
+    _write_depth_metadata(path, [
+        {"target_id": "T1", "genome": "G1", "latitude_degN": "10.0", "longitude_degE": "20.0", "depth_m": "10"},
+        # G1 also hit by a second target_id in the SAME cluster -- a paralog, n_target_ids should be 2 for G1
+        {"target_id": "T3", "genome": "G1", "latitude_degN": "10.0", "longitude_degE": "20.0", "depth_m": "10"},
+        {"target_id": "T2", "genome": "G2", "latitude_degN": "10.1", "longitude_degE": "20.1", "depth_m": "30"},
+        # no lat/lon at all -- must be excluded from the map points entirely
+        {"target_id": "T5", "genome": "G4", "latitude_degN": "", "longitude_degE": "", "depth_m": "5"},
+        {"target_id": "T4", "genome": "G3", "latitude_degN": "-40.0", "longitude_degE": "100.0"},
+    ])
+    cluster_assignments = {"T1": "REP1", "T2": "REP1", "T3": "REP1", "T4": "REP2", "T5": "REP1"}
+
+    points = ce.collect_cluster_points(path, cluster_assignments)
+    by_genome = {p.genome: p for p in points}
+
+    assert set(by_genome) == {"G1", "G2", "G3"}  # G4 excluded -- no lat/lon
+    assert by_genome["G1"].n_target_ids == 2
+    assert by_genome["G1"].cluster_id == "REP1"
+    assert by_genome["G1"].lat == 10.0 and by_genome["G1"].lon == 20.0
+    assert by_genome["G2"].n_target_ids == 1
+    assert by_genome["G3"].cluster_id == "REP2"
+
+
+def test_write_cluster_points_round_trip(tmp_path):
+    points = [ce.GenomePoint(cluster_id="REP1", genome="G1", lat=10.0, lon=20.0, depth_zone=">4000m", n_target_ids=2)]
+    out_path = tmp_path / "cluster_points.tsv"
+    ce.write_cluster_points(points, out_path)
+    with open(out_path, newline="") as f:
+        rows = list(csv.DictReader(f, delimiter="\t"))
+    assert rows[0]["cluster_id"] == "REP1"
+    assert rows[0]["lat"] == "10.0"
+    assert rows[0]["n_target_ids"] == "2"
+
+
 def test_summarize_cluster_ecology_skips_targets_with_no_cluster_assignment(tmp_path):
     path = tmp_path / "phaC_unique_targets_with_metadata_depth.tsv"
     _write_depth_metadata(path, [

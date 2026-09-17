@@ -99,23 +99,16 @@ class ClusterEcologyStats:
 @dataclass
 class _ClusterAccumulator:
     target_ids: set[str] = field(default_factory=set)
-    genomes: dict[str, dict] = field(default_factory=dict)  # genome -> {lat, lon, depth_m, genus, phylum, study}
+    genomes: dict[str, dict] = field(default_factory=dict)  # genome -> {lat, lon, depth_m, depth_zone, genus, phylum, study}
 
 
-def summarize_cluster_ecology(
-    metadata_depth_path: Path,
-    cluster_assignments: dict[str, str],
-    top_n: int = 5,
-) -> list[ClusterEcologyStats]:
-    """metadata_depth_path: a <family>_unique_targets_with_metadata_depth.tsv
-    (depth columns optional -- median_depth_m/n_genomes_with_depth are
-    just 0/None if absent). cluster_assignments: {target_id: cluster_id},
-    e.g. from sequence_clustering.load_cluster_assignments. A target_id
-    with no entry in cluster_assignments is skipped (its cluster wasn't
-    built -- see that module for why this can legitimately happen for a
-    sequence mmseqs' own clustering treated differently)."""
+def _accumulate_clusters(metadata_depth_path: Path, cluster_assignments: dict[str, str]) -> dict[str, _ClusterAccumulator]:
+    """Shared by summarize_cluster_ecology (aggregate stats) and
+    collect_cluster_points (raw per-genome rows, for mapping) so both
+    read metadata_depth_path exactly once, the same way. A target_id with
+    no entry in cluster_assignments is skipped (its cluster wasn't built
+    -- see sequence_clustering.py for why this can legitimately happen)."""
     accs: dict[str, _ClusterAccumulator] = {}
-
     with open(metadata_depth_path, newline="") as f:
         reader = csv.DictReader(f, delimiter="\t")
         for row in reader:
@@ -134,10 +127,24 @@ def summarize_cluster_ecology(
                 lon = _to_float(row.get("longitude_degE"))
                 depth_m = _to_float(row.get("depth_m"))
                 acc.genomes[genome] = {
-                    "lat": lat, "lon": lon, "depth_m": depth_m,
+                    "lat": lat, "lon": lon, "depth_m": depth_m, "depth_zone": row.get("depth_zone", ""),
                     "genus": row.get("gtdb_genus", ""), "phylum": row.get("gtdb_phylum", ""),
-                    "study": row.get("study_id", ""),
+                    "study": row.get("study_id", ""), "target_ids": set(),
                 }
+            acc.genomes[genome]["target_ids"].add(target_id)
+    return accs
+
+
+def summarize_cluster_ecology(
+    metadata_depth_path: Path,
+    cluster_assignments: dict[str, str],
+    top_n: int = 5,
+) -> list[ClusterEcologyStats]:
+    """metadata_depth_path: a <family>_unique_targets_with_metadata_depth.tsv
+    (depth columns optional -- median_depth_m/n_genomes_with_depth are
+    just 0/None if absent). cluster_assignments: {target_id: cluster_id},
+    e.g. from sequence_clustering.load_cluster_assignments."""
+    accs = _accumulate_clusters(metadata_depth_path, cluster_assignments)
 
     results: list[ClusterEcologyStats] = []
     for cluster_id, acc in accs.items():
@@ -170,6 +177,45 @@ def _to_float(value: str | None) -> float | None:
         return float(value)
     except ValueError:
         return None
+
+
+@dataclass
+class GenomePoint:
+    cluster_id: str
+    genome: str
+    lat: float
+    lon: float
+    depth_zone: str
+    n_target_ids: int  # distinct target_ids from THIS cluster found in THIS genome (usually 1; >1 means paralogs)
+
+
+def collect_cluster_points(metadata_depth_path: Path, cluster_assignments: dict[str, str]) -> list[GenomePoint]:
+    """One row per (cluster, genome) with a resolvable lat/lon -- for
+    plotting cluster membership geographically (e.g. one small-multiple
+    map panel per cluster), as opposed to summarize_cluster_ecology's
+    aggregated per-cluster statistics. Genomes with no lat/lon are
+    skipped here (nothing to place on a map), unlike
+    summarize_cluster_ecology which still counts them elsewhere."""
+    accs = _accumulate_clusters(metadata_depth_path, cluster_assignments)
+    points: list[GenomePoint] = []
+    for cluster_id, acc in accs.items():
+        for genome, g in acc.genomes.items():
+            if g["lat"] is None or g["lon"] is None:
+                continue
+            points.append(GenomePoint(
+                cluster_id=cluster_id, genome=genome, lat=g["lat"], lon=g["lon"],
+                depth_zone=g["depth_zone"], n_target_ids=len(g["target_ids"]),
+            ))
+    return points
+
+
+def write_cluster_points(points: list[GenomePoint], out_path: Path) -> None:
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(out_path, "w", newline="") as f:
+        writer = csv.writer(f, delimiter="\t")
+        writer.writerow(["cluster_id", "genome", "lat", "lon", "depth_zone", "n_target_ids"])
+        for p in points:
+            writer.writerow([p.cluster_id, p.genome, p.lat, p.lon, p.depth_zone, p.n_target_ids])
 
 
 def write_cluster_ecology(stats: list[ClusterEcologyStats], out_path: Path) -> None:
