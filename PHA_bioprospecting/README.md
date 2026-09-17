@@ -484,6 +484,49 @@ does have one reported depth when it was submitted. `depth_raw` is always
 kept alongside the parsed `depth_m`, so anything the parser got wrong or
 couldn't handle is visible, not an indistinguishable blank.
 
+## Deeper sequence clustering, per-cluster ecology, and a sequence-space embedding
+
+`depth-heatmap`'s "clade" (above) groups hits by `best_query` -- the single
+closest NR95 reference protein each hit matched, a coarse proxy for
+subfamily, not real sequence similarity between the hits themselves. This
+pipeline stage clusters a family's actual discovered sequences at a real
+identity threshold (50-70% is a reasonable range for resolving
+subfamilies), then asks whether each resulting cluster occupies a
+distinct environmental niche: are its host genomes' sample locations
+geographically tight or scattered, what's its median depth, which taxa
+carry it.
+
+Getting the sequences reuses the mmseqs target database already built for
+the search stage (`mmseqs createsubdb --id-mode 1` + `convert2fasta`,
+confirmed live) rather than re-downloading the 46GB NR100 catalog:
+
+```bash
+# Cluster-side (needs the built target_db_gpu/omdb_db):
+sbatch --account=191001-364393 --export=ALL,FAMILY=phaC cluster/run_omdb_extract_cluster_sequences.sbatch
+sbatch --account=191001-364393 --export=ALL,FAMILY=phaC cluster/run_omdb_cluster_sequences.sbatch   # MIN_SEQ_ID defaults to 0.6
+
+# Local, once you have the extracted FASTA + cluster TSV:
+pha-reference cluster-ecology --family phaC --cluster-tsv PHA_bioprospecting/omdb_search/results/phaC_cluster0.6_cluster.tsv
+pha-reference sequence-embedding --family phaC \
+  --fasta PHA_bioprospecting/omdb_search/results/phaC_cluster_sequences.faa \
+  --cluster-tsv PHA_bioprospecting/omdb_search/results/phaC_cluster0.6_cluster.tsv
+```
+
+`cluster-ecology` writes `<family>_cluster_ecology.tsv`: one row per
+cluster with `geo_mean_resultant_length` (proper spherical statistics, not
+a flat lat/lon standard deviation which badly distorts near the poles/
+antimeridian -- 1.0 means every host genome's sample sits at effectively
+the same location, values near 0 mean the cluster is scattered across the
+whole globe), `geo_max_pairwise_km`, `median_depth_m`, and top
+genera/phyla/studies.
+
+`sequence-embedding` writes `<family>_sequence_embedding.tsv`: one row per
+protein, `pca_x`/`pca_y` (always computed, k-mer composition -> PCA) plus
+`umap_x`/`umap_y` (only if `umap-learn` is installed -- `pip install -e
+'.[umap]'` -- otherwise left blank, not an error), joined against
+cluster_id, genus, phylum, depth_zone, and pathway architecture (from
+`genome_family_matrix.tsv`, if that's been built) for coloring.
+
 ## What's committed vs. what's not
 
 Committed: this README, both download scripts + their shared library, the

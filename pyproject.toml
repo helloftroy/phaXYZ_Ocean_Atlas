@@ -17,12 +17,22 @@ dependencies = [
     "rich>=13.7,<14.0",
     "ijson>=3.2,<4.0",
     "python-dotenv>=1.0,<2.0",
+    "numpy>=1.26,<3.0",
+    "scikit-learn>=1.4,<2.0",
 ]
 
 [project.optional-dependencies]
 dev = [
     "pytest>=8.0,<9.0",
     "pytest-cov>=5.0,<6.0",
+]
+# umap-learn pulls in numba/llvmlite (heavier, slower first-import) for a
+# nonlinear alternative to the PCA embedding pipeline/sequence_embedding.py
+# always provides -- optional so the core install stays light; that module
+# detects its absence and falls back to PCA-only with a clear message
+# rather than failing.
+umap = [
+    "umap-learn>=0.5,<0.6",
 ]
 
 [project.scripts]

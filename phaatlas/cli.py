@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import csv
 import json
 from pathlib import Path
 
@@ -13,11 +14,14 @@ from phaatlas.config_loader import DEFAULT_FAMILY_CONFIG_PATH, REPO_ROOT, load_f
 from phaatlas.db.models import FamilyAssignment, FamilyDefinitionRow, Phenotype, Protein, RetrievalRun, SourceEvidence
 from phaatlas.db.session import get_db_path, init_db, session_scope
 from phaatlas.pipeline import export as export_pipeline
+from phaatlas.pipeline import cluster_ecology as cluster_ecology_pipeline
 from phaatlas.pipeline import depth_heatmap as depth_heatmap_pipeline
 from phaatlas.pipeline import gopc_search as gopc_search_pipeline
 from phaatlas.pipeline import ncbi_depth as ncbi_depth_pipeline
 from phaatlas.pipeline import omdb_metadata as omdb_metadata_pipeline
 from phaatlas.pipeline import pathway_architecture as pathway_architecture_pipeline
+from phaatlas.pipeline import sequence_clustering as sequence_clustering_pipeline
+from phaatlas.pipeline import sequence_embedding as sequence_embedding_pipeline
 from phaatlas.pipeline.cluster95 import MMseqsNotFoundError, cluster_family
 from phaatlas.pipeline.ingest_brenda import ingest_brenda_for_family
 from phaatlas.pipeline.ingest_uniprot import ingest_phaR_disambiguation, ingest_uniprot_for_family
@@ -725,6 +729,124 @@ def depth_heatmap_cmd(
         row_counts = genome_counts.get(clade, {})
         table.add_row(clade, *(str(row_counts.get(zone, 0)) for zone in depth_heatmap_pipeline.DEPTH_ZONE_ORDER))
     console.print(table)
+
+
+@app.command("cluster-extract-ids")
+def cluster_extract_ids_cmd(
+    family: str = typer.Option(..., help="single family_id"),
+    results_dir: Path = typer.Option(OMDB_SEARCH_DIR / "results"),
+    out_path: Path = typer.Option(None, help="defaults to results_dir/<family>_cluster_wanted_ids.txt"),
+):
+    """Writes one target_id per line for a family -- the input
+    cluster/run_omdb_extract_cluster_sequences.sbatch's `mmseqs createsubdb
+    --id-mode 1` needs to pull exactly those sequences out of the
+    already-built OMDB target database (no re-download of the 46GB NR100
+    catalog). Uses the depth-enriched file if present (superset of
+    plain _with_metadata.tsv's target_ids -- same set either way, depth
+    enrichment doesn't drop rows), otherwise the plain one."""
+    depth_path = results_dir / f"{family}_unique_targets_with_metadata_depth.tsv"
+    plain_path = results_dir / f"{family}_unique_targets_with_metadata.tsv"
+    source = depth_path if depth_path.exists() else plain_path
+    if not source.exists():
+        console.print(f"[red]Neither {depth_path} nor {plain_path} found -- run omdb-enrich-metadata first.[/red]")
+        raise typer.Exit(code=2)
+
+    target_ids = sequence_clustering_pipeline.collect_wanted_target_ids([source])
+    out_path = out_path or (results_dir / f"{family}_cluster_wanted_ids.txt")
+    n = sequence_clustering_pipeline.write_wanted_ids_file(target_ids, out_path)
+    console.print(f"[green]{out_path}[/green]: {n} distinct target_ids (from {source.name})")
+
+
+@app.command("cluster-ecology")
+def cluster_ecology_cmd(
+    family: str = typer.Option(..., help="single family_id"),
+    cluster_tsv: Path = typer.Option(..., help="mmseqs cluster createtsv output (representative \\t member), "
+                                                "from cluster/run_omdb_cluster_sequences.sbatch"),
+    results_dir: Path = typer.Option(OMDB_SEARCH_DIR / "results"),
+    top_n: int = typer.Option(5, help="how many top genera/phyla/studies to list per cluster"),
+):
+    """For each sequence cluster in cluster_tsv, summarizes whether its
+    host genomes' sample locations are geographically tight or scattered
+    (see pipeline/cluster_ecology.py's module docstring for the spherical
+    statistics used), median sample depth where resolvable, and top host
+    taxa -- answers "does this protein cluster occupy a distinct
+    environmental niche". Needs the depth-enriched metadata file (run
+    omdb-enrich-depth first, even if most rows end up with no resolved
+    depth -- lat/lon and taxonomy are still used)."""
+    metadata_path = results_dir / f"{family}_unique_targets_with_metadata_depth.tsv"
+    if not metadata_path.exists():
+        console.print(f"[red]{metadata_path} not found -- run omdb-enrich-depth first.[/red]")
+        raise typer.Exit(code=2)
+    if not cluster_tsv.exists():
+        console.print(f"[red]{cluster_tsv} not found.[/red]")
+        raise typer.Exit(code=2)
+
+    assignments = sequence_clustering_pipeline.load_cluster_assignments(cluster_tsv)
+    stats = cluster_ecology_pipeline.summarize_cluster_ecology(metadata_path, assignments, top_n=top_n)
+    out_path = results_dir / f"{family}_cluster_ecology.tsv"
+    cluster_ecology_pipeline.write_cluster_ecology(stats, out_path)
+    console.print(f"[green]{out_path}[/green]: {len(stats)} clusters")
+
+    table = Table(title=f"{family}: sequence clusters ranked by genome count")
+    table.add_column("cluster_id")
+    table.add_column("n_genomes", justify="right")
+    table.add_column("geo R (1.0=tight, ->0=global)", justify="right")
+    table.add_column("max spread (km)", justify="right")
+    table.add_column("median depth (m)", justify="right")
+    table.add_column("top genus")
+    for s in stats[:20]:
+        r = f"{s.geo.mean_resultant_length:.3f}" if s.geo.mean_resultant_length is not None else "-"
+        spread = f"{s.geo.max_pairwise_km:,.0f}" if s.geo.max_pairwise_km is not None else "-"
+        depth = f"{s.median_depth_m:,.0f}" if s.median_depth_m is not None else "-"
+        genus = f"{s.top_genera[0][0]} ({s.top_genera[0][1]})" if s.top_genera else ""
+        table.add_row(s.cluster_id, str(s.n_genomes), r, spread, depth, genus)
+    console.print(table)
+
+
+@app.command("sequence-embedding")
+def sequence_embedding_cmd(
+    family: str = typer.Option(..., help="single family_id"),
+    fasta: Path = typer.Option(..., help="extracted sequences, from cluster/run_omdb_extract_cluster_sequences.sbatch"),
+    cluster_tsv: Path = typer.Option(..., help="mmseqs cluster createtsv output, from cluster/run_omdb_cluster_sequences.sbatch"),
+    results_dir: Path = typer.Option(OMDB_SEARCH_DIR / "results"),
+    k: int = typer.Option(3, help="k-mer size for the composition feature vector"),
+    use_umap: bool = typer.Option(True, "--umap/--no-umap", help="also compute a UMAP embedding if umap-learn "
+                                                                   "is installed (pip install -e '.[umap]') -- "
+                                                                   "PCA is always computed regardless"),
+):
+    """Builds a 2D sequence-space embedding of every extracted protein
+    (PCA always; UMAP if available) -- "each point is a protein",
+    colorable by sequence cluster, depth zone, taxon, or pathway
+    architecture (all joined in from the depth-enriched metadata file and
+    genome_family_matrix.tsv if present). Writes
+    <family>_sequence_embedding.tsv."""
+    metadata_path = results_dir / f"{family}_unique_targets_with_metadata_depth.tsv"
+    if not metadata_path.exists():
+        console.print(f"[red]{metadata_path} not found -- run omdb-enrich-depth first.[/red]")
+        raise typer.Exit(code=2)
+    if not fasta.exists() or not cluster_tsv.exists():
+        console.print(f"[red]{fasta} and/or {cluster_tsv} not found.[/red]")
+        raise typer.Exit(code=2)
+
+    ids, matrix = sequence_embedding_pipeline.build_feature_matrix(fasta, k=k)
+    console.print(f"{len(ids)} sequences, {matrix.shape[1]}-dim k={k} composition vectors")
+    pca_coords = sequence_embedding_pipeline.pca_2d(matrix)
+    umap_coords = sequence_embedding_pipeline.umap_2d(matrix) if use_umap else None
+    if use_umap and umap_coords is None:
+        console.print("[yellow]UMAP unavailable or too few sequences -- umap_x/umap_y left blank "
+                       r"(install with: pip install -e '.\[umap]')[/yellow]")
+
+    assignments = sequence_clustering_pipeline.load_cluster_assignments(cluster_tsv)
+    genome_architecture = None
+    matrix_path = results_dir / "genome_family_matrix.tsv"
+    if matrix_path.exists():
+        with open(matrix_path, newline="") as f:
+            genome_architecture = {row["genome"]: row["architecture"] for row in csv.DictReader(f, delimiter="\t")}
+    annotations = sequence_embedding_pipeline.collect_target_annotations(metadata_path, assignments, genome_architecture)
+
+    out_path = results_dir / f"{family}_sequence_embedding.tsv"
+    n = sequence_embedding_pipeline.write_embedding_tsv(ids, pca_coords, umap_coords, annotations, out_path)
+    console.print(f"[green]{out_path}[/green]: {n} points")
 
 
 @app.command("pathway-architecture")
