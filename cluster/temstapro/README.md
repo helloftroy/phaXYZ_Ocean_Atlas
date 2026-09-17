@@ -60,6 +60,16 @@ The installer also keeps the conda package cache in scratch by default:
 /scratch/morrill/users/hmp278/conda_pkgs
 ```
 
+If PyTorch fails with `libtorch_cpu.so: undefined symbol: iJIT_NotifyEvent`,
+repair the existing scratch environment on a service/login node:
+
+```bash
+source "$(conda info --base)/etc/profile.d/conda.sh"
+conda activate /scratch/morrill/users/hmp278/TemStaPro/conda_env
+conda install -y "mkl<2024.1"
+python -c "import torch; print(torch.__version__, torch.cuda.is_available())"
+```
+
 To choose a different env path, pass it as the second argument:
 
 ```bash

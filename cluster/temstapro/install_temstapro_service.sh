@@ -31,6 +31,14 @@ if [ "${TEMSTAPRO_GPU:-1}" = "1" ]; then
 else
   conda install -y pytorch torchvision torchaudio -c pytorch
 fi
+# Avoid PyTorch/MKL runtime mismatch seen as:
+# libtorch_cpu.so: undefined symbol: iJIT_NotifyEvent
+conda install -y "mkl<2024.1"
+
+python - <<'PY'
+import torch
+print("torch import ok", torch.__version__, "cuda_available", torch.cuda.is_available())
+PY
 
 cd "${PREFIX}"
 chmod +x ./temstapro
