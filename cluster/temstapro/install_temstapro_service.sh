@@ -16,6 +16,23 @@ else
   git -C "${PREFIX}" pull --ff-only
 fi
 
+# TemStaPro currently calls transformers.utils.logging.disable_progress_bar(),
+# which is absent in some Python-3.7-compatible transformers builds. Make that
+# call conditional instead of pinning an awkward transformer/Python matrix.
+python - "${PREFIX}/prottrans_models.py" <<'PY'
+from pathlib import Path
+import sys
+
+path = Path(sys.argv[1])
+if path.exists():
+    text = path.read_text()
+    old = "hf_logging.disable_progress_bar()"
+    new = "getattr(hf_logging, 'disable_progress_bar', lambda: None)()"
+    if old in text and new not in text:
+        path.write_text(text.replace(old, new))
+        print(f"patched {path}")
+PY
+
 if [ ! -d "${ENV_PREFIX}/conda-meta" ]; then
   conda create -y -p "${ENV_PREFIX}" python=3.7
 fi

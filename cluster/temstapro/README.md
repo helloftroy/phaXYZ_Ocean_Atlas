@@ -70,6 +70,23 @@ conda install -y "mkl<2024.1"
 python -c "import torch; print(torch.__version__, torch.cuda.is_available())"
 ```
 
+If TemStaPro fails with
+`AttributeError: module 'transformers.utils.logging' has no attribute 'disable_progress_bar'`,
+patch the existing checkout:
+
+```bash
+python - <<'PY'
+from pathlib import Path
+p = Path("/scratch/morrill/users/hmp278/TemStaPro/prottrans_models.py")
+text = p.read_text()
+p.write_text(text.replace(
+    "hf_logging.disable_progress_bar()",
+    "getattr(hf_logging, 'disable_progress_bar', lambda: None)()",
+))
+print(f"patched {p}")
+PY
+```
+
 To choose a different env path, pass it as the second argument:
 
 ```bash
