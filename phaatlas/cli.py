@@ -15,11 +15,14 @@ from phaatlas.db.models import FamilyAssignment, FamilyDefinitionRow, Phenotype,
 from phaatlas.db.session import get_db_path, init_db, session_scope
 from phaatlas.pipeline import export as export_pipeline
 from phaatlas.pipeline import cluster_ecology as cluster_ecology_pipeline
+from phaatlas.pipeline import community_ordination as community_ordination_pipeline
+from phaatlas.pipeline import phylogenetics as phylogenetics_pipeline
 from phaatlas.pipeline import depth_heatmap as depth_heatmap_pipeline
 from phaatlas.pipeline import gopc_search as gopc_search_pipeline
 from phaatlas.pipeline import ncbi_depth as ncbi_depth_pipeline
 from phaatlas.pipeline import omdb_metadata as omdb_metadata_pipeline
 from phaatlas.pipeline import pathway_architecture as pathway_architecture_pipeline
+from phaatlas.pipeline import phac_recovery as phac_recovery_pipeline
 from phaatlas.pipeline import sequence_clustering as sequence_clustering_pipeline
 from phaatlas.pipeline import sequence_embedding as sequence_embedding_pipeline
 from phaatlas.pipeline.cluster95 import MMseqsNotFoundError, cluster_family
@@ -807,6 +810,87 @@ def cluster_ecology_cmd(
     console.print(table)
 
 
+@app.command("build-phylo-tree")
+def build_phylo_tree_cmd(
+    family: str = typer.Option(..., help="single family_id"),
+    cluster_tsv: Path = typer.Option(..., help="mmseqs cluster createtsv output"),
+    fasta: Path = typer.Option(..., help="extracted cluster sequences, from run_omdb_extract_cluster_sequences.sbatch"),
+    results_dir: Path = typer.Option(OMDB_SEARCH_DIR / "results"),
+    top_n: int = typer.Option(80, help="how many of the largest clusters (by genome count) to include as tips"),
+    extra_cluster_ids: str = typer.Option("", help="comma-separated cluster_ids to force-include beyond top_n (e.g. interesting regional clusters from an earlier map)"),
+    mafft_bin: str = typer.Option("mafft"),
+    fasttree_bin: str = typer.Option("FastTree"),
+    threads: int = typer.Option(None),
+):
+    """Builds an iTOL-ready phylogenetic tree of a family's major
+    sequence-cluster representatives: selects top_n clusters by genome
+    count (+ extra_cluster_ids), extracts their representative sequences,
+    aligns with MAFFT, builds a tree with FastTree, and gathers per-tip
+    annotations (dominant taxonomy, depth, ocean basin, pathway
+    architecture -- see pipeline/phylogenetics.py's module docstring).
+    Needs a real depth-enriched metadata file, genome_family_matrix.tsv,
+    and working mafft/FastTree binaries (neither is a Python package --
+    see that module's docstring for how to install them if this errors
+    with ExternalToolNotFoundError). Writes <family>_phylo.nwk,
+    <family>_phylo_annotations.tsv, <family>_phylo_layout.tsv (a
+    precomputed rectangular-phylogram x/y layout, ready to render), and
+    the representative/aligned FASTAs
+    alongside them."""
+    ecology_path = results_dir / f"{cluster_tsv.stem}_ecology.tsv"
+    metadata_path = results_dir / f"{family}_unique_targets_with_metadata_depth.tsv"
+    matrix_path = results_dir / "genome_family_matrix.tsv"
+    for p, hint in [
+        (ecology_path, "run cluster-ecology first"),
+        (metadata_path, "run omdb-enrich-depth first"),
+        (matrix_path, "run pathway-architecture first"),
+        (cluster_tsv, ""), (fasta, ""),
+    ]:
+        if not p.exists():
+            console.print(f"[red]{p} not found{' -- ' + hint if hint else ''}.[/red]")
+            raise typer.Exit(code=2)
+
+    extras = [c.strip() for c in extra_cluster_ids.split(",") if c.strip()]
+    wanted = phylogenetics_pipeline.select_representatives(ecology_path, top_n=top_n, extra_cluster_ids=extras)
+    console.print(f"Selected {len(wanted)} cluster representatives ({top_n} by size + {len(extras)} extras, deduped)")
+
+    rep_fasta = results_dir / f"{family}_phylo_representatives.faa"
+    n_written = phylogenetics_pipeline.extract_sequences_subset(fasta, wanted, rep_fasta)
+    console.print(f"[green]{rep_fasta}[/green]: {n_written}/{len(wanted)} sequences found")
+    if n_written < len(wanted):
+        console.print(f"[yellow]{len(wanted) - n_written} requested cluster_id(s) had no sequence in {fasta} -- skipped.[/yellow]")
+
+    console.print("Running MAFFT...")
+    aligned_fasta = results_dir / f"{family}_phylo_aligned.faa"
+    try:
+        phylogenetics_pipeline.run_mafft(rep_fasta, aligned_fasta, mafft_bin=mafft_bin, threads=threads)
+    except phylogenetics_pipeline.ExternalToolNotFoundError as exc:
+        console.print(f"[red]{exc}[/red]")
+        raise typer.Exit(code=2)
+    console.print(f"[green]{aligned_fasta}[/green]")
+
+    console.print("Running FastTree...")
+    tree_path = results_dir / f"{family}_phylo.nwk"
+    try:
+        phylogenetics_pipeline.run_fasttree(aligned_fasta, tree_path, fasttree_bin=fasttree_bin)
+    except phylogenetics_pipeline.ExternalToolNotFoundError as exc:
+        console.print(f"[red]{exc}[/red]")
+        raise typer.Exit(code=2)
+    console.print(f"[green]{tree_path}[/green]")
+
+    assignments = sequence_clustering_pipeline.load_cluster_assignments(cluster_tsv)
+    with open(matrix_path, newline="") as f:
+        genome_architecture = {row["genome"]: row["architecture"] for row in csv.DictReader(f, delimiter="\t")}
+    annotations = phylogenetics_pipeline.annotate_clusters(metadata_path, assignments, genome_architecture, wanted)
+    ann_path = results_dir / f"{family}_phylo_annotations.tsv"
+    phylogenetics_pipeline.write_cluster_annotations(annotations, ann_path)
+    console.print(f"[green]{ann_path}[/green]: {len(annotations)} cluster annotations")
+
+    layout_nodes = phylogenetics_pipeline.compute_tree_layout(tree_path)
+    layout_path = results_dir / f"{family}_phylo_layout.tsv"
+    phylogenetics_pipeline.write_tree_layout(layout_nodes, layout_path)
+    console.print(f"[green]{layout_path}[/green]: {len(layout_nodes)} nodes ({sum(1 for n in layout_nodes if n.is_tip)} tips)")
+
+
 @app.command("cluster-map-points")
 def cluster_map_points_cmd(
     family: str = typer.Option(..., help="single family_id"),
@@ -832,6 +916,100 @@ def cluster_map_points_cmd(
     cluster_ecology_pipeline.write_cluster_points(points, out_path)
     n_clusters = len({p.cluster_id for p in points})
     console.print(f"[green]{out_path}[/green]: {len(points)} points across {n_clusters} clusters")
+
+
+@app.command("community-ordination")
+def community_ordination_cmd(
+    family: str = typer.Option(..., help="single family_id"),
+    cluster_tsv: Path = typer.Option(..., help="mmseqs cluster createtsv output -- clusters are the 'species'"),
+    results_dir: Path = typer.Option(OMDB_SEARCH_DIR / "results"),
+    min_richness: int = typer.Option(3, help="drop sites (samples) with fewer than this many distinct clusters -- too sparse for a meaningful community comparison"),
+    max_sites: int = typer.Option(2000, help="cap on sites, richest-first, for ordination/Mantel runtime -- confirmed live NMDS over ~6,300 real sites took 82s with one init"),
+    n_permutations: int = typer.Option(999, help="Mantel test permutations"),
+    random_state: int = typer.Option(0),
+):
+    """Treats each sampling site (OMDB SAMPLE) as an ecological "sample"
+    and each sequence cluster as a "species": builds the site x cluster
+    matrix, ordinates sites by community composition (NMDS and PCoA, both
+    Bray-Curtis and Jaccard dissimilarity -- see
+    pipeline/community_ordination.py's module docstring for what each
+    measures and their tradeoffs), and runs a Mantel test of community
+    dissimilarity against geographic distance for both metrics -- a
+    significant positive correlation is a real isolation-by-distance
+    signal; no correlation reads as cosmopolitan mixing. Writes
+    <family>_site_ordination.tsv (one row per site, all four
+    ordinations' coordinates) and <family>_mantel_test.tsv."""
+    metadata_path = results_dir / f"{family}_unique_targets_with_metadata_depth.tsv"
+    if not metadata_path.exists():
+        console.print(f"[red]{metadata_path} not found -- run omdb-enrich-depth first.[/red]")
+        raise typer.Exit(code=2)
+    if not cluster_tsv.exists():
+        console.print(f"[red]{cluster_tsv} not found.[/red]")
+        raise typer.Exit(code=2)
+
+    assignments = sequence_clustering_pipeline.load_cluster_assignments(cluster_tsv)
+    console.print(f"Building site x cluster matrix (min_richness={min_richness}, max_sites={max_sites})...")
+    site_matrix = community_ordination_pipeline.build_site_cluster_matrix(
+        metadata_path, assignments, min_richness=min_richness, max_sites=max_sites,
+    )
+    n_sites, n_clusters = site_matrix.matrix.shape
+    console.print(f"{n_sites} sites x {n_clusters} clusters")
+    if n_sites < 4:
+        console.print("[red]Fewer than 4 qualifying sites -- nothing to ordinate.[/red]")
+        raise typer.Exit(code=2)
+
+    bray = community_ordination_pipeline.bray_curtis_distance_matrix(site_matrix.matrix)
+    jaccard = community_ordination_pipeline.jaccard_distance_matrix(site_matrix.matrix)
+    geo = community_ordination_pipeline.geographic_distance_matrix(site_matrix.site_ids, site_matrix.site_meta)
+
+    console.print("Running NMDS + PCoA for both metrics...")
+    bray_nmds_coords, bray_nmds_stress = community_ordination_pipeline.nmds(bray, random_state=random_state)
+    bray_pcoa_coords, bray_pcoa_pctvar = community_ordination_pipeline.pcoa(bray)
+    jaccard_nmds_coords, jaccard_nmds_stress = community_ordination_pipeline.nmds(jaccard, random_state=random_state)
+    jaccard_pcoa_coords, jaccard_pcoa_pctvar = community_ordination_pipeline.pcoa(jaccard)
+    console.print(f"  Bray-Curtis NMDS stress: {bray_nmds_stress:.1f}  |  PCoA variance explained (2 axes): {bray_pcoa_pctvar.sum():.1%}")
+    console.print(f"  Jaccard NMDS stress: {jaccard_nmds_stress:.1f}  |  PCoA variance explained (2 axes): {jaccard_pcoa_pctvar.sum():.1%}")
+
+    out_ord_path = results_dir / f"{family}_site_ordination.tsv"
+    richness = (site_matrix.matrix > 0).sum(axis=1)
+    with open(out_ord_path, "w", newline="") as f:
+        writer = csv.writer(f, delimiter="\t")
+        writer.writerow([
+            "site_id", "lat", "lon", "depth_zone", "ecosystem_type", "ecosystem_name", "study_id", "ocean_basin",
+            "richness", "bray_nmds_x", "bray_nmds_y", "bray_pcoa_x", "bray_pcoa_y",
+            "jaccard_nmds_x", "jaccard_nmds_y", "jaccard_pcoa_x", "jaccard_pcoa_y",
+        ])
+        for i, site_id in enumerate(site_matrix.site_ids):
+            m = site_matrix.site_meta[site_id]
+            writer.writerow([
+                site_id, m["lat"], m["lon"], m["depth_zone"], m["ecosystem_type"], m["ecosystem_name"],
+                m["study_id"], m["ocean_basin"], int(richness[i]),
+                bray_nmds_coords[i, 0], bray_nmds_coords[i, 1], bray_pcoa_coords[i, 0], bray_pcoa_coords[i, 1],
+                jaccard_nmds_coords[i, 0], jaccard_nmds_coords[i, 1], jaccard_pcoa_coords[i, 0], jaccard_pcoa_coords[i, 1],
+            ])
+    console.print(f"[green]{out_ord_path}[/green]: {n_sites} sites")
+
+    console.print(f"Running Mantel test ({n_permutations} permutations)...")
+    bray_r, bray_p = community_ordination_pipeline.mantel_test(bray, geo, n_permutations=n_permutations, random_state=random_state)
+    jaccard_r, jaccard_p = community_ordination_pipeline.mantel_test(jaccard, geo, n_permutations=n_permutations, random_state=random_state)
+
+    out_mantel_path = results_dir / f"{family}_mantel_test.tsv"
+    with open(out_mantel_path, "w", newline="") as f:
+        writer = csv.writer(f, delimiter="\t")
+        writer.writerow(["metric", "r", "p_value", "n_permutations", "n_sites"])
+        writer.writerow(["braycurtis", bray_r, bray_p, n_permutations, n_sites])
+        writer.writerow(["jaccard", jaccard_r, jaccard_p, n_permutations, n_sites])
+    console.print(f"[green]{out_mantel_path}[/green]")
+
+    table = Table(title="Mantel test: community dissimilarity vs. geographic distance")
+    table.add_column("metric")
+    table.add_column("r", justify="right")
+    table.add_column("p-value", justify="right")
+    table.add_column("interpretation")
+    for metric, r, p in [("Bray-Curtis", bray_r, bray_p), ("Jaccard", jaccard_r, jaccard_p)]:
+        interp = "isolation-by-distance signal" if (p < 0.05 and r > 0) else "no significant geographic signal"
+        table.add_row(metric, f"{r:.3f}", f"{p:.4f}", interp)
+    console.print(table)
 
 
 @app.command("sequence-embedding")
@@ -968,6 +1146,91 @@ def status_cmd():
         for family_id, tier, count, review_count in sorted(rows):
             table.add_row(family_id, tier, str(count), str(review_count or 0))
         console.print(table)
+
+
+@app.command("phac-recovery-extract-neighborhoods")
+def phac_recovery_extract_neighborhoods_cmd(
+    genome_download_manifest: Path = typer.Option(..., help="genome, genes_aa_url TSV -- see phac_recovery/build_local_manifests.py"),
+    other_pha_hits: Path = typer.Option(..., help="genome, family, target_id TSV -- see phac_recovery/build_local_manifests.py"),
+    target_sequences_faa: Path = typer.Option(..., help="target_id -> sequence FASTA extracted from the cluster's mmseqs target_db (cluster/run_phac_recovery_extract_targets.sbatch)"),
+    out_fasta: Path = typer.Option(..., help="combined neighborhood-genes FASTA, ready for hmmsearch"),
+    out_report: Path = typer.Option(..., help="per-genome status (ok / download_failed / no_anchors_found)"),
+    window: int = typer.Option(10, help="+/- N flanking genes per anchor (naturally the whole scaffold if it has fewer genes than that)"),
+):
+    """The heavy cluster-side step (needs internet -- run on the `service`
+    partition, not GPU): downloads each qualifying genome's own gene
+    calls, locates its known other-pha-family hits by exact sequence
+    match (not the 4.2GB NR100 cluster.tsv -- see phac_recovery.py's
+    module docstring for why that's unnecessary), and writes the union of
+    their +/-window neighborhoods to one combined FASTA."""
+    target_records = phac_recovery_pipeline.read_fasta(target_sequences_faa)
+    target_id_sequences = dict(target_records)
+    console.print(f"{len(target_id_sequences)} target_id sequences loaded from {target_sequences_faa}")
+
+    genome_anchor_sequences = phac_recovery_pipeline.load_anchor_sequences_by_genome(other_pha_hits, target_id_sequences)
+    console.print(f"{len(genome_anchor_sequences)} genomes have >=1 resolvable anchor sequence")
+
+    genome_urls: dict[str, str] = {}
+    with open(genome_download_manifest, newline="") as f:
+        for row in csv.DictReader(f, delimiter="\t"):
+            genome_urls[row["genome"]] = row["genes_aa_url"]
+    console.print(f"{len(genome_urls)} genomes to download and search")
+
+    results = phac_recovery_pipeline.run_neighborhood_extraction_batch(
+        genome_urls=genome_urls,
+        genome_anchor_sequences=genome_anchor_sequences,
+        out_path=out_fasta,
+        window=window,
+        log=console.print,
+    )
+    phac_recovery_pipeline.write_batch_report(results, out_report)
+
+    n_ok = sum(1 for r in results if r.status == "ok")
+    n_failed = sum(1 for r in results if r.status == "download_failed")
+    n_no_anchor = sum(1 for r in results if r.status == "no_anchors_found")
+    total_genes = sum(r.n_neighborhood_genes for r in results)
+    console.print(f"[green]{out_fasta}[/green]: {total_genes} neighborhood genes from {n_ok} genomes")
+    console.print(f"ok={n_ok}  download_failed={n_failed}  no_anchors_found={n_no_anchor}")
+    console.print(f"[green]{out_report}[/green]")
+
+
+@app.command("phac-recovery-hmmsearch")
+def phac_recovery_hmmsearch_cmd(
+    neighborhoods_fasta: Path = typer.Option(..., help="output of phac-recovery-extract-neighborhoods"),
+    out_hits: Path = typer.Option(..., help="combined hits TSV across both HMM profiles"),
+    hmm_dir: Path = typer.Option(REPO_ROOT / "phac_recovery" / "hmm", help="directory containing PF07167.hmm and phaC_custom.hmm"),
+    dom_e: float = typer.Option(10.0, help="relaxed --domE threshold -- deliberately permissive since the goal is catching phaC too divergent for the original mmseqs2 seed search, not confident calls"),
+    hmmsearch_bin: str = typer.Option("hmmsearch"),
+):
+    """Searches the extracted neighborhoods with both phaC HMM profiles
+    (Pfam PF07167 -- N-terminal domain only, 20 seed sequences; and
+    phaC_custom.hmm -- full-length, built from this repo's own 822-sequence
+    curated phaC diversity, see phac_recovery/hmm/build_custom_phac_hmm.sh)
+    at a relaxed threshold, and writes one merged hits TSV."""
+    if not neighborhoods_fasta.exists():
+        console.print(f"[red]{neighborhoods_fasta} not found -- run phac-recovery-extract-neighborhoods first.[/red]")
+        raise typer.Exit(code=2)
+
+    profiles = {"PF07167": hmm_dir / "PF07167.hmm", "phaC_custom": hmm_dir / "phaC_custom.hmm"}
+    missing = [name for name, p in profiles.items() if not p.exists()]
+    if missing:
+        console.print(f"[red]Missing HMM(s): {missing} in {hmm_dir} -- see phac_recovery/hmm/build_custom_phac_hmm.sh[/red]")
+        raise typer.Exit(code=2)
+
+    all_hits = []
+    for name, hmm_path in profiles.items():
+        domtbl_path = out_hits.parent / f"{name}.domtbl"
+        console.print(f"Running hmmsearch ({name}, --domE {dom_e})...")
+        phac_recovery_pipeline.run_hmmsearch(hmm_path, neighborhoods_fasta, domtbl_path, dom_e=dom_e, hmmsearch_bin=hmmsearch_bin)
+        hits = phac_recovery_pipeline.parse_hmmsearch_domtbl(domtbl_path, profile_name=name)
+        console.print(f"  {len(hits)} domain hits")
+        all_hits.extend(hits)
+
+    phac_recovery_pipeline.write_hmm_hits_report(all_hits, out_hits)
+    n_distinct_genes = len({h.gene_id for h in all_hits})
+    n_distinct_genomes = len({h.gene_id.split("-scaffold_")[0] for h in all_hits})
+    console.print(f"[green]{out_hits}[/green]: {len(all_hits)} domain hits, {n_distinct_genes} distinct candidate genes, "
+                  f"{n_distinct_genomes} distinct genomes with a candidate phaC")
 
 
 if __name__ == "__main__":
