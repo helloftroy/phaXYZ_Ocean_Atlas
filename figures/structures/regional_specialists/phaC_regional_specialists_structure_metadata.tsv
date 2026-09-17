@@ -1,0 +1,13 @@
+structure_id	cluster_id	dominant_genus	n_genomes	n_genomes_with_depth	mean_depth_m	latitude_degN	longitude_degE	raw_length	clean_length	cleanup_notes	fasta_path
+000033545441_SHLQ01	OMDBv2.0_AA_G_NR100_000033545441	SHLQ01	42	42	1.35	-33.8801	151.2121	414	413	trimmed_terminal_X:1	figures/structures/regional_specialists/inputs/000033545441_SHLQ01.faa
+000034200129_SHLQ01	OMDBv2.0_AA_G_NR100_000034200129	SHLQ01	42	42	1.37	-33.8859	151.2137	506	505	trimmed_terminal_X:1	figures/structures/regional_specialists/inputs/000034200129_SHLQ01.faa
+000140439260_Moritella	OMDBv2.0_AA_G_NR100_000140439260	Moritella	42	26	3406.08	35.4700	-143.6816	206	205	trimmed_terminal_X:1	figures/structures/regional_specialists/inputs/000140439260_Moritella.faa
+000067604172_Thermococcus	OMDBv2.0_AA_G_NR100_000067604172	Thermococcus	76	20	1522.38	-26.3922	-176.0239	119	118	trimmed_terminal_X:1	figures/structures/regional_specialists/inputs/000067604172_Thermococcus.faa
+000045952813_UBA4427	OMDBv2.0_AA_G_NR100_000045952813	UBA4427	49	19	9.69	83.0446	-10.2483	193	192	trimmed_terminal_X:1	figures/structures/regional_specialists/inputs/000045952813_UBA4427.faa
+000005303736_UBA4582	OMDBv2.0_AA_G_NR100_000005303736	UBA4582	64	15	14.12	67.9523	15.2735	608	607	trimmed_terminal_X:1	figures/structures/regional_specialists/inputs/000005303736_UBA4582.faa
+000232749406_Crocosphaera	OMDBv2.0_AA_G_NR100_000232749406	Crocosphaera	23	17	38.82	17.0951	-157.6900	944	943	trimmed_terminal_X:1	figures/structures/regional_specialists/inputs/000232749406_Crocosphaera.faa
+000012716247_JACZQZ01	OMDBv2.0_AA_G_NR100_000012716247	JACZQZ01	27	17	10.76	18.1070	141.9375	390	389	trimmed_terminal_X:1	figures/structures/regional_specialists/inputs/000012716247_JACZQZ01.faa
+000226102035_Robiginitomaculum_A	OMDBv2.0_AA_G_NR100_000226102035	Robiginitomaculum_A	17	16	173.12	22.3373	-48.9125	565	564	trimmed_terminal_X:1	figures/structures/regional_specialists/inputs/000226102035_Robiginitomaculum_A.faa
+000018400463_Rs1	OMDBv2.0_AA_G_NR100_000018400463	Rs1	15	15	4000.0	22.7500	-158.0000	356	355	trimmed_terminal_X:1	figures/structures/regional_specialists/inputs/000018400463_Rs1.faa
+000001867111_BACL27	OMDBv2.0_AA_G_NR100_000001867111	BACL27	74	14	31.21	58.3941	22.2438	398	397	trimmed_terminal_X:1	figures/structures/regional_specialists/inputs/000001867111_BACL27.faa
+000027486053_Algiphilus	OMDBv2.0_AA_G_NR100_000027486053	Algiphilus	15	15	29.33	-45.1464	149.9358	392	391	trimmed_terminal_X:1	figures/structures/regional_specialists/inputs/000027486053_Algiphilus.faa
