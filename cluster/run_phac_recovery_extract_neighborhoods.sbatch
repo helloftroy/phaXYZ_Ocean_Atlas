@@ -11,7 +11,11 @@
 # NEEDS INTERNET (13,522 individual HTTPS fetches to sunagawalab.ethz.ch)
 # -- `service` partition, not GPU, same as
 # cluster/run_omdb_enrich_metadata.sbatch. Long walltime because of the
-# sheer number of individual requests, not because any one is slow.
+# sheer number of individual requests, not because any one is slow --
+# 47h is the longest this cluster allows (48h cap); if it doesn't finish
+# in that window, resubmitting is NOT idempotent yet (it always starts
+# from genome_urls[0] again, no checkpoint/resume) -- see the module
+# docstring in phac_recovery.py if this needs to change.
 #
 #   sbatch --account=191001-364393 cluster/run_phac_recovery_extract_neighborhoods.sbatch
 # Override the neighborhood window (default +/-10 genes):
@@ -20,7 +24,7 @@
 #SBATCH --partition=service
 #SBATCH --cpus-per-task=2
 #SBATCH --mem=8G
-#SBATCH --time=72:00:00
+#SBATCH --time=47:00:00
 #SBATCH --output=logs/phac_recovery_extract_neighborhoods_%j.out
 #SBATCH --error=logs/phac_recovery_extract_neighborhoods_%j.err
 
