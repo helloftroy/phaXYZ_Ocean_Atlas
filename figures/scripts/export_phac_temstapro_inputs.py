@@ -73,6 +73,19 @@ def main():
     ap.add_argument("--chunk-size", type=int, default=1000)
     args = ap.parse_args()
 
+    if not args.input_fasta.exists():
+        raise SystemExit(
+            f"Input FASTA not found: {args.input_fasta}\n"
+            "This file is not stored in the PHA_Ocean_Atlas git repo. "
+            "Copy or symlink phaC_cluster_sequences.faa onto the cluster, "
+            "or pass its location explicitly, for example:\n"
+            "  python3 figures/scripts/export_phac_temstapro_inputs.py "
+            "--input-fasta /path/to/phaC_cluster_sequences.faa\n"
+            "For the rest of the workflow, the expected default layout is:\n"
+            "  /scratch/morrill/users/hmp278/phaXYZ_Ocean_Atlas\n"
+            "  /scratch/morrill/users/hmp278/fair_ocean_agent/phaC_cluster_sequences.faa"
+        )
+
     args.out_dir.mkdir(parents=True, exist_ok=True)
     chunk_dir = args.out_dir / "chunks"
     chunk_dir.mkdir(parents=True, exist_ok=True)
