@@ -43,11 +43,30 @@ This writes chunked FASTA files to `temstapro/chunks/`.
 ## 3. Install TemStaPro on an internet-capable service node
 
 ```bash
-bash cluster/temstapro/install_temstapro_service.sh /path/to/scratch_or_project/TemStaPro
+bash cluster/temstapro/install_temstapro_service.sh /scratch/morrill/users/hmp278/TemStaPro
 ```
 
-This clones TemStaPro, creates the conda environment, and downloads ProtTrans
-to `/path/to/scratch_or_project/TemStaPro/ProtTrans`.
+This clones TemStaPro, creates the conda environment under scratch, and
+downloads ProtTrans under scratch:
+
+```bash
+/scratch/morrill/users/hmp278/TemStaPro/conda_env
+/scratch/morrill/users/hmp278/TemStaPro/ProtTrans
+```
+
+The installer also keeps the conda package cache in scratch by default:
+
+```bash
+/scratch/morrill/users/hmp278/conda_pkgs
+```
+
+To choose a different env path, pass it as the second argument:
+
+```bash
+bash cluster/temstapro/install_temstapro_service.sh \
+  /scratch/morrill/users/hmp278/TemStaPro \
+  /scratch/morrill/users/hmp278/conda_envs/temstapro
+```
 
 ## 4. Submit the GPU array
 
@@ -55,7 +74,7 @@ Adjust the array range to match the chunk count from step 2.
 
 ```bash
 sbatch --array=0-128 \
-  --export=ALL,TEMSTAPRO_DIR=/path/to/scratch_or_project/TemStaPro,TEMSTAPRO_ENV=temstapro_env \
+  --export=ALL,TEMSTAPRO_DIR=/scratch/morrill/users/hmp278/TemStaPro,TEMSTAPRO_ENV=/scratch/morrill/users/hmp278/TemStaPro/conda_env \
   cluster/temstapro/run_phac_temstapro_array.sbatch
 ```
 

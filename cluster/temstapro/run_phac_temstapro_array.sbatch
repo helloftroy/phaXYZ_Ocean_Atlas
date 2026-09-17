@@ -7,7 +7,7 @@
 #
 # Then submit after checking the chunk count:
 #   ls temstapro/chunks/*.faa | wc -l
-#   sbatch --array=0-128 --export=ALL,TEMSTAPRO_DIR=/path/to/TemStaPro,TEMSTAPRO_ENV=temstapro_env cluster/temstapro/run_phac_temstapro_array.sbatch
+#   sbatch --array=0-128 --export=ALL,TEMSTAPRO_DIR=/path/to/TemStaPro,TEMSTAPRO_ENV=/path/to/TemStaPro/conda_env cluster/temstapro/run_phac_temstapro_array.sbatch
 #
 # GPU is strongly recommended: TemStaPro README reports ~10 min / 1000 avg
 # 1137-aa proteins on an RTX 2080 Ti vs ~10 h on laptop CPU.
@@ -26,7 +26,7 @@ cd "${SLURM_SUBMIT_DIR}"
 mkdir -p logs
 
 : "${TEMSTAPRO_DIR:?Set TEMSTAPRO_DIR to the TemStaPro checkout path.}"
-TEMSTAPRO_ENV="${TEMSTAPRO_ENV:-temstapro_env}"
+TEMSTAPRO_ENV="${TEMSTAPRO_ENV:-${TEMSTAPRO_DIR}/conda_env}"
 
 set +u
 source "$(conda info --base)/etc/profile.d/conda.sh"
