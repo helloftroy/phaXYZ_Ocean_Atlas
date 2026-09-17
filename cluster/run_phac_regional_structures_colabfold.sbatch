@@ -35,11 +35,18 @@ if ! command -v "${COLABFOLD_BIN}" >/dev/null 2>&1; then
   exit 2
 fi
 
-python3 figures/scripts/prepare_regional_specialist_structure_inputs.py
-
 INPUT="figures/structures/regional_specialists/phaC_regional_specialists_for_structure.faa"
 OUT="figures/structures/regional_specialists/colabfold_single_sequence"
 mkdir -p "${OUT}"
+
+if [ -f "figures/phaC_regional_specialists_sequences.csv" ]; then
+  python3 figures/scripts/prepare_regional_specialist_structure_inputs.py
+elif [ ! -f "${INPUT}" ]; then
+  echo "Missing ${INPUT}, and figures/phaC_regional_specialists_sequences.csv is not present to regenerate it." >&2
+  exit 2
+else
+  echo "Using existing prepared FASTA: ${INPUT}"
+fi
 
 echo "Job started: $(date)"
 echo "Host: $(hostname)"
