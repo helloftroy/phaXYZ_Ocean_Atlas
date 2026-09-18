@@ -31,6 +31,8 @@ TEMSTAPRO_PT_CACHE="${TEMSTAPRO_PT_CACHE:-${TEMSTAPRO_DIR}/ProtTrans_cache}"
 export HF_HOME="${HF_HOME:-${TEMSTAPRO_DIR}/hf_home}"
 export TRANSFORMERS_CACHE="${TRANSFORMERS_CACHE:-${TEMSTAPRO_PT_CACHE}}"
 export TRANSFORMERS_OFFLINE="${TRANSFORMERS_OFFLINE:-1}"
+export MPLCONFIGDIR="${MPLCONFIGDIR:-${TEMSTAPRO_DIR}/matplotlib_cache}"
+mkdir -p "${MPLCONFIGDIR}"
 
 set +u
 source "$(conda info --base)/etc/profile.d/conda.sh"
