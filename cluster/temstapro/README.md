@@ -87,6 +87,34 @@ print(f"patched {p}")
 PY
 ```
 
+If GPU jobs fail with `Connection error, and we cannot find the requested
+files in the cached path`, pre-populate the HF cache on a service/login node:
+
+```bash
+source "$(conda info --base)/etc/profile.d/conda.sh"
+conda activate /scratch/morrill/users/hmp278/TemStaPro/conda_env
+cd /scratch/morrill/users/hmp278/TemStaPro
+python - <<'PY'
+from pathlib import Path
+from transformers import T5Tokenizer, T5EncoderModel
+name = "Rostlab/prot_t5_xl_half_uniref50-enc"
+cache = Path("ProtTrans_cache")
+tok = T5Tokenizer.from_pretrained(name, do_lower_case=False, cache_dir=str(cache))
+model = T5EncoderModel.from_pretrained(name, cache_dir=str(cache))
+T5Tokenizer.from_pretrained(name, do_lower_case=False, cache_dir=str(cache), local_files_only=True)
+T5EncoderModel.from_pretrained(name, cache_dir=str(cache), local_files_only=True)
+print(f"cached and offline-verified {name} in {cache.resolve()}")
+PY
+```
+
+Then submit with `TEMSTAPRO_PT_CACHE`:
+
+```bash
+sbatch --array=0-128 \
+  --export=ALL,TEMSTAPRO_DIR=/scratch/morrill/users/hmp278/TemStaPro,TEMSTAPRO_ENV=/scratch/morrill/users/hmp278/TemStaPro/conda_env,TEMSTAPRO_PT_CACHE=/scratch/morrill/users/hmp278/TemStaPro/ProtTrans_cache \
+  cluster/temstapro/run_phac_temstapro_array.sbatch
+```
+
 To choose a different env path, pass it as the second argument:
 
 ```bash

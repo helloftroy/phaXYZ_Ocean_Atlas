@@ -27,6 +27,10 @@ mkdir -p logs
 
 : "${TEMSTAPRO_DIR:?Set TEMSTAPRO_DIR to the TemStaPro checkout path.}"
 TEMSTAPRO_ENV="${TEMSTAPRO_ENV:-${TEMSTAPRO_DIR}/conda_env}"
+TEMSTAPRO_PT_CACHE="${TEMSTAPRO_PT_CACHE:-${TEMSTAPRO_DIR}/ProtTrans_cache}"
+export HF_HOME="${HF_HOME:-${TEMSTAPRO_DIR}/hf_home}"
+export TRANSFORMERS_CACHE="${TRANSFORMERS_CACHE:-${TEMSTAPRO_PT_CACHE}}"
+export TRANSFORMERS_OFFLINE="${TRANSFORMERS_OFFLINE:-1}"
 
 set +u
 source "$(conda info --base)/etc/profile.d/conda.sh"
@@ -52,11 +56,12 @@ echo "started $(date)"
 echo "host $(hostname)"
 echo "chunk ${CHUNK}"
 echo "output ${OUT}"
+echo "ProtTrans cache ${TEMSTAPRO_PT_CACHE}"
 
 "${TEMSTAPRO_DIR}/temstapro" \
   --input-fasta "${CHUNK}" \
   --embeddings-dir "${EMBDIR}" \
-  --PT-directory "${TEMSTAPRO_DIR}/ProtTrans" \
+  --PT-directory "${TEMSTAPRO_PT_CACHE}" \
   --temstapro-directory "${TEMSTAPRO_DIR}" \
   --more-thresholds \
   --mean-output "${OUT}"

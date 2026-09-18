@@ -60,23 +60,31 @@ PY
 cd "${PREFIX}"
 chmod +x ./temstapro
 
-# Download the HuggingFace ProtTrans model into the TemStaPro checkout so GPU
-# nodes do not need internet access.
+# Download the HuggingFace ProtTrans model into a cache under the TemStaPro
+# checkout so GPU nodes do not need internet access. TemStaPro passes
+# --PT-directory as a transformers cache_dir, so this must be the HF cache
+# layout, not only a save_pretrained() directory.
 python - <<'PY'
 from pathlib import Path
 from transformers import T5Tokenizer, T5EncoderModel
 name = "Rostlab/prot_t5_xl_half_uniref50-enc"
-out = Path("ProtTrans")
-print("downloading", name, "->", out)
-tokenizer = T5Tokenizer.from_pretrained(name, do_lower_case=False)
-model = T5EncoderModel.from_pretrained(name)
-tokenizer.save_pretrained(out)
-model.save_pretrained(out)
+cache = Path("ProtTrans_cache")
+local = Path("ProtTrans")
+print("downloading", name, "to HF cache ->", cache)
+tokenizer = T5Tokenizer.from_pretrained(name, do_lower_case=False, cache_dir=str(cache))
+model = T5EncoderModel.from_pretrained(name, cache_dir=str(cache))
+print("saving local copy ->", local)
+tokenizer.save_pretrained(local)
+model.save_pretrained(local)
+print("verifying offline load from cache")
+T5Tokenizer.from_pretrained(name, do_lower_case=False, cache_dir=str(cache), local_files_only=True)
+T5EncoderModel.from_pretrained(name, cache_dir=str(cache), local_files_only=True)
 print("done")
 PY
 
 echo "TemStaPro installed at: ${PREFIX}"
 echo "Conda env: ${ENV_PREFIX}"
 echo "Conda package cache: ${CONDA_PKGS_DIRS}"
+echo "ProtTrans HF cache: ${PREFIX}/ProtTrans_cache"
 echo "Submit jobs with:"
 echo "  sbatch --export=ALL,TEMSTAPRO_DIR=${PREFIX},TEMSTAPRO_ENV=${ENV_PREFIX} cluster/temstapro/run_phac_temstapro_array.sbatch"
