@@ -132,13 +132,37 @@ def parse_prodigal_faa(records: list[tuple[str, str]]) -> dict[str, list[tuple[s
     return dict(by_scaffold)
 
 
+def _strip_terminal_artifact(seq: str) -> str:
+    """Strips a single trailing '*' or 'X' character before comparison.
+    Confirmed live (2026-09-21, real cluster run): target_sequences.faa
+    (built by cluster/run_phac_recovery_extract_targets.sbatch via mmseqs
+    createsubdb --id-mode 1 + convert2fasta straight from the target_db)
+    represents a translated stop codon as a trailing 'X', while OMDB's own
+    prodigal gene calls (downloaded directly per-genome) use a trailing
+    '*' at the exact same position -- otherwise byte-identical, confirmed
+    by diffing one real anchor (target_id OMDBv2.0_AA_G_NR100_000000044862,
+    genome ACIN21-1_SAMN05422165_MAG_00000013) against its own gene calls.
+    Without this, exact-sequence matching fails for the LAST residue only,
+    which is enough to break every single comparison -- confirmed live:
+    7,826/7,826 genomes reported no_anchors_found before this fix, not a
+    handful, because every genome's own trailing-'*' gene calls failed to
+    exact-match the target_db's trailing-'X' anchor sequences uniformly."""
+    if seq and seq[-1] in ("*", "X"):
+        return seq[:-1]
+    return seq
+
+
 def find_anchor_gene_ids(genome_genes: dict[str, list[tuple[str, str]]], anchor_sequences: set[str]) -> list[str]:
-    """Which of this genome's own genes are an exact-sequence match to one
-    of the known anchor (other-pha-family target) sequences."""
+    """Which of this genome's own genes are a sequence match to one of the
+    known anchor (other-pha-family target) sequences -- tolerant of a
+    trailing '*'/'X' mismatch at the final residue only (see
+    _strip_terminal_artifact's docstring for why), not a fully lenient or
+    fuzzy match otherwise."""
+    normalized_anchors = {_strip_terminal_artifact(a) for a in anchor_sequences}
     found = []
     for gene_list in genome_genes.values():
         for gene_id, seq in gene_list:
-            if seq in anchor_sequences:
+            if _strip_terminal_artifact(seq) in normalized_anchors:
                 found.append(gene_id)
     return found
 

@@ -94,6 +94,34 @@ def test_find_anchor_gene_ids_matches_by_exact_sequence():
     assert found == ["G-scaffold_1_2"]
 
 
+def test_find_anchor_gene_ids_tolerates_trailing_stop_codon_artifact():
+    # Real bug, confirmed live 2026-09-21: target_sequences.faa (mmseqs
+    # createsubdb/convert2fasta from the target_db) ends translated stop
+    # codons in 'X'; OMDB's own prodigal gene calls end the same position
+    # in '*'. Every one of 7,826 genomes reported no_anchors_found before
+    # this was fixed, since the exact-match comparison failed on the
+    # final residue alone for every single anchor.
+    genome_genes = {
+        "G-scaffold_1": [("G-scaffold_1_1", "MNNPVIVDCIRTPMGR*")],
+    }
+    found = pr.find_anchor_gene_ids(genome_genes, anchor_sequences={"MNNPVIVDCIRTPMGRX"})
+    assert found == ["G-scaffold_1_1"]
+
+    # also tolerant in the other direction (genome ends in X, anchor in *)
+    genome_genes2 = {
+        "G-scaffold_1": [("G-scaffold_1_1", "MNNPVIVDCIRTPMGRX")],
+    }
+    found2 = pr.find_anchor_gene_ids(genome_genes2, anchor_sequences={"MNNPVIVDCIRTPMGR*"})
+    assert found2 == ["G-scaffold_1_1"]
+
+    # a genuine internal difference (not just the terminal residue) must NOT match
+    genome_genes3 = {
+        "G-scaffold_1": [("G-scaffold_1_1", "MNNPVIVDCIRTPMGQ*")],  # R->Q substitution, not terminal
+    }
+    found3 = pr.find_anchor_gene_ids(genome_genes3, anchor_sequences={"MNNPVIVDCIRTPMGRX"})
+    assert found3 == []
+
+
 def test_extract_neighborhood_windows_clips_to_scaffold_and_dedupes():
     # 25-gene scaffold, anchor at index 12 (0-based) -- window=3 should give indices 9..15
     genes = [(f"G-scaffold_1_{i+1}", f"SEQ{i}") for i in range(25)]
