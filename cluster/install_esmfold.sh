@@ -34,6 +34,16 @@ SCRATCH_BASE="${SCRATCH_BASE:-/scratch/morrill/users/hmp278}"
 PKG_DIR="${PKG_DIR:-${SCRATCH_BASE}/esmfold_packages}"
 export HF_HOME="${HF_HOME:-${SCRATCH_BASE}/hf_cache}"
 export PIP_CACHE_DIR="${PIP_CACHE_DIR:-${SCRATCH_BASE}/pip_cache}"
+
+# Wipe PKG_DIR clean before every install rather than layering onto
+# whatever's already there. Confirmed live this matters: `pip install
+# --target` SKIPS any file/directory that already exists unless you pass
+# --upgrade (it warns "Target directory ... already exists" and moves on)
+# -- a second run with different package versions silently left a mix of
+# old and new files, which broke at import time (new transformers expecting
+# torch APIs the old, un-overwritten torch didn't have). A clean directory
+# every run is slower (full re-download) but avoids that whole class of bug.
+rm -rf "${PKG_DIR}"
 mkdir -p "${PKG_DIR}" "${HF_HOME}" "${PIP_CACHE_DIR}"
 
 if [ -z "${VIRTUAL_ENV:-}" ] && [ -z "${CONDA_DEFAULT_ENV:-}" ]; then
@@ -45,14 +55,26 @@ echo "Active env: ${CONDA_DEFAULT_ENV:-${VIRTUAL_ENV}}"
 echo "Package install target (on scratch, NOT the env's own site-packages): ${PKG_DIR}"
 echo "Pip download/build cache (on scratch): ${PIP_CACHE_DIR}"
 
-# CUDA 12.1 build -- matches what's been used elsewhere on this project's
-# gpu-a100 partition (see cluster/install_mmseqs2.sh's GPU-variant notes);
-# adjust the index-url below if the cluster's actual CUDA toolkit differs.
-echo "Installing PyTorch (CUDA 12.1 build) to ${PKG_DIR} ..."
-pip install --target="${PKG_DIR}" --index-url https://download.pytorch.org/whl/cu121 torch
+# No forced --index-url here (an earlier version of this script pinned
+# https://download.pytorch.org/whl/cu121, which is now stale advice --
+# confirmed live that a plain `pip install torch` on this cluster already
+# resolves a CUDA-enabled build with its own bundled nvidia-*/cuda-* runtime
+# dependencies pulled in automatically). If a plain install ever resolves a
+# CPU-only build instead, THEN add back an explicit --index-url matching
+# whatever CUDA version `nvidia-smi` reports on an actual GPU node.
+#
+# transformers pinned to a specific 4.x release, not left open-ended:
+# confirmed live that unpinned installed 5.17.0 (a major version bump this
+# script's author has no verified knowledge of), which then failed to
+# import ESMFold with "cannot import name 'CPUOffloadPolicy' from
+# torch.distributed.fsdp" -- a torch/transformers version-compatibility
+# mismatch, not a real bug in the approach. 4.44.2 is a well-established
+# release from well inside transformers' 4.x line, before that rewrite.
+echo "Installing PyTorch to ${PKG_DIR} ..."
+pip install --target="${PKG_DIR}" --upgrade torch
 
-echo "Installing transformers + supporting packages to ${PKG_DIR} ..."
-pip install --target="${PKG_DIR}" "transformers>=4.35" accelerate einops
+echo "Installing transformers (pinned 4.44.2) + supporting packages to ${PKG_DIR} ..."
+pip install --target="${PKG_DIR}" --upgrade "transformers==4.44.2" accelerate einops
 
 # Persist PYTHONPATH (and the two cache dirs) so every later shell/sbatch
 # job can just `source cluster/esmfold_pythonpath.sh` instead of
@@ -70,17 +92,28 @@ echo "wrote cluster/esmfold_pythonpath.sh"
 source cluster/esmfold_pythonpath.sh
 
 echo
-echo "Verifying import + CUDA visibility (no model download yet) ..."
+echo "Verifying import (no model download yet) ..."
 python - <<'PYEOF'
 import torch
 print("torch:", torch.__version__, "CUDA available:", torch.cuda.is_available())
 if torch.cuda.is_available():
     print("device:", torch.cuda.get_device_name(0))
+else:
+    print("(CUDA not available in THIS shell is expected if you're on a login node --")
+    print(" login nodes normally have no GPU attached. This only means something is")
+    print(" wrong if it's still False inside an actual --gres=gpu:1 job/session.)")
 import transformers
 print("transformers:", transformers.__version__)
 from transformers import EsmForProteinFolding  # import-only check, no download
 print("EsmForProteinFolding import OK")
 PYEOF
+
+echo
+echo "(If pip printed a 'rich X.Y.Z is incompatible' warning against fair-ocean-agent"
+echo "or pha-reference above: harmless here -- those two packages aren't imported by"
+echo "anything in this ESMFold pipeline, so their own rich version pin doesn't matter"
+echo "for this workflow. Only worth revisiting if you hit an actual ImportError running"
+echo "fair-ocean-agent/pha-reference themselves afterward.)"
 
 echo
 echo "Environment ready -- packages live on scratch (${PKG_DIR}), imported into the"
