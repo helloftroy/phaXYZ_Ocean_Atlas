@@ -42,7 +42,7 @@ mkdir -p logs
 export PYTHONUNBUFFERED=1
 
 : "${FASTA:?Set FASTA=<path to one of the three structure_prediction/*.faa input files>.}"
-: "${OUT_DIR:?Set OUT_DIR=<output directory for this FASTA's PDB files>.}"
+: "${OUT_DIR:?Set OUT_DIR=<output directory for the PDB files from this FASTA>.}"
 : "${N_BATCHES:?Set N_BATCHES=<total batch count> -- must match the --array range used (0..N_BATCHES-1).}"
 
 if [ ! -f cluster/env_activate.sh ]; then
@@ -53,10 +53,13 @@ fi
 # shellcheck source=/dev/null
 source cluster/env_activate.sh
 
-# scratch, not $HOME -- the ~2.7GB model-weight cache would blow a small $HOME
-# quota (see cluster/install_esmfold.sh's own note); set before every task, not
-# just once, since each array task is a fresh shell.
-export HF_HOME="${HF_HOME:-/scratch/morrill/users/hmp278/hf_cache}"
+if [ ! -f cluster/esmfold_pythonpath.sh ]; then
+  echo "cluster/esmfold_pythonpath.sh is missing -- run ./cluster/install_esmfold.sh first" >&2
+  echo "(it writes this file pointing PYTHONPATH at the scratch package install)." >&2
+  exit 2
+fi
+# shellcheck source=/dev/null
+source cluster/esmfold_pythonpath.sh   # sets PYTHONPATH, HF_HOME, PIP_CACHE_DIR -- all on scratch, not $HOME
 
 echo "Job started: $(date)"
 echo "Host: $(hostname)"
