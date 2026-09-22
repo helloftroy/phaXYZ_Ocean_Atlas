@@ -183,6 +183,25 @@ All three small-multiples figures were built with `figures/scripts/plot_genus_gl
 
 **Prevalence by ocean habitat** (`figures/phac_pct_by_ocean_habitat.png`) — % phaC-positive per habitat category (≥200 genomes each), true-denominator approach (same genome universe as the global map). 61,130/257,321 genomes phaC-positive overall (23.8%). Clear host-association enrichment at the top: whale-fall bone biofilm (78.5%), estuarine sediment (62.1%), hydrozoa tissue (58.2%), sea ice (57.4%), algae tissue (55.0%), coral tissue (51.3%) — all well above the open-water baseline (21.5%). Sponge tissue sits at 38.2% here (dataset-wide, all evidence tiers combined) — for the tier-specific sponge-enrichment finding (which *did* change substantially post-audit), see §3's habitat discussion.
 
+#### 5.3.1 Does the habitat effect survive controlling for phylum?
+
+The raw percentages above are a real concern on their own: if, say, whale-fall bone biofilm just happens to be dominated by a phylum that is independently phaC-rich everywhere, the 78.5% figure would be a taxonomic-composition artifact, not a habitat effect. Tested this directly with `figures/scripts/phac_habitat_phylum_controlled_test.py`: for each habitat (same ≥200-genome set as above), a Cochran-Mantel-Haenszel test stratified by GTDB phylum (227,192/257,321 genomes, 88.3%, have a phylum match via `genome_family_matrix.tsv` — the rest lack phylum data and are excluded from this test only, not from the raw percentages), plus a phylum-composition-standardized expected rate (what the habitat's phaC rate would be if each of its phyla behaved exactly as that phylum does everywhere else in the ocean, weighted by the habitat's own actual phylum mix).
+
+**The enrichment survives for every one of the habitats flagged above — but composition explains a real chunk of the raw magnitude.** Full results in `figures/phac_habitat_phylum_enrichment_test.tsv`:
+
+| Habitat | Raw % | Composition-only expected % | CMH odds ratio | CMH p |
+|---|---|---|---|---|
+| Whale-fall bone biofilm | 78.5% | 42.2% | 6.04 | 1.7×10⁻⁴⁰ |
+| Estuarine sediment | 62.1% | 32.0% | 4.58 | 2.6×10⁻⁶¹ |
+| Hydrozoa tissue | 58.2% | 37.7% | 3.08 | 6.4×10⁻⁷² |
+| Sea ice | 57.4% | 31.6% | 3.83 | 4.2×10⁻⁶⁵ |
+| Algae tissue | 55.0% | 28.5% | 4.38 | 1.9×10⁻⁷⁰ |
+| Coral tissue | 51.3% | 31.5% | 3.39 | 5.6×10⁻⁵⁸ |
+
+Reading this: the composition-only expected rate (what you'd see from phylum mix alone) is roughly half the raw rate for every one of these — so composition is a real, substantial contributor — but the expected rate itself still sits far above the 23.8% dataset-wide baseline, and the CMH odds ratio (which directly tests the within-phylum association, the actual "controlling for phylum" number) stays large (3-6×) and extremely significant. Whale-fall bone biofilm's CMH result is driven mostly by one large, informative stratum: 279 Pseudomonadota genomes in bone biofilm are 82.4% phaC-positive vs. 43.2% for Pseudomonadota everywhere else (Fisher OR 6.2, p=4×10⁻⁴¹ — see `figures/phac_habitat_phylum_enrichment_breakdown.tsv` for the full per-habitat × per-phylum table). Conclusion: these are real habitat effects, not pure taxonomic-composition artifacts, but roughly half of each raw percentage's *size* (not its existence) is attributable to which phyla happen to live there.
+
+Two habitats worth flagging as the opposite case — statistically "significant" by raw Fisher test only because of huge sample size, not because of real effect size once phylum is controlled: hydrothermal vent fluid/plume (CMH OR 0.86) and hydrothermal vent sediment (CMH OR 0.77) both sit *at or slightly below* 1 after phylum-controlling despite p<10⁻⁵ raw — phylum composition, not the habitat itself, is doing essentially all the work for these two. Open-water seawater (the dominant background category, 82% of all genomes) shows CMH OR 0.41 — depleted relative to other habitats once matched by phylum, consistent with it being the "everything not otherwise enriched" default bucket rather than having its own effect.
+
 ### 5.4 Depth
 
 **REDSEA-S09-B13 case study** (`figures/redsea_depth_clusters.png`) — does this specific genus's phaC cluster membership shift with depth? Its largest cluster (`...123205028`, 89 genomes) spans the full range this genus was sampled at, from 0m to 5,100m, with no obvious depth-driven cluster turnover — the same cluster persists from surface to deep.

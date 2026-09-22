@@ -1,0 +1,644 @@
+habitat	phylum	n_in_habitat	phac_in_habitat	pct_in_habitat	n_outside_habitat	phac_outside_habitat	pct_outside_habitat	fisher_or	fisher_p	low_n_flag
+Marine sediment	Desulfobacterota_D	71	29	40.8	740	51	6.9	9.328	1.38e-13	
+Marine sediment	Aerophobota	13	0	0.0	39	5	12.8	0.000	0.314	yes
+Marine sediment	Planctomycetota	484	43	8.9	5200	231	4.4	2.097	8.09e-05	
+Marine sediment	Chrysiogenota	32	7	21.9	6	6	100.0	0.000	0.000622	
+Marine sediment	Asgardarchaeota	197	33	16.8	255	17	6.7	2.817	0.000822	
+Marine sediment	SAR324	45	17	37.8	2454	1110	45.2	0.735	0.366	
+Marine sediment	RBG-13-66-14	10	0	0.0	2	0	0.0		1	yes
+Marine sediment	Babelota	5	0	0.0	16	0	0.0		1	yes
+Marine sediment	BMS3Abin14	7	0	0.0	8	0	0.0		1	yes
+Marine sediment	Moduliflexota	2	2	100.0	0	0	nan			yes
+Marine sediment	Chloroflexota	1133	225	19.9	8839	841	9.5	2.357	1.64e-22	
+Marine sediment	Methanobacteriota_B	23	5	21.7	74	11	14.9	1.591	0.521	
+Marine sediment	Methylomirabilota	34	16	47.1	4	1	25.0	2.667	0.613	
+Marine sediment	Desulfobacterota_G	1	0	0.0	1	0	0.0			yes
+Marine sediment	SM23-31	11	1	9.1	2	2	100.0	0.000	0.0385	yes
+Marine sediment	Thermoplasmatota	126	12	9.5	13045	43	0.3	31.829	1.07e-13	
+Marine sediment	Arandabacterota	11	7	63.6	1	0	0.0			yes
+Marine sediment	Chlamydiota	31	1	3.2	86	0	0.0	inf	0.265	
+Marine sediment	UBA6266	1	0	0.0	7	0	0.0			yes
+Marine sediment	SZUA-182	5	0	0.0	2	1	50.0	0.000	0.286	yes
+Marine sediment	Cloacimonadota	14	2	14.3	56	6	10.7	1.389	0.656	yes
+Marine sediment	JAAXVQ01	1	0	0.0	4	1	25.0			yes
+Marine sediment	Thermotogota	15	0	0.0	60	4	6.7	0.000	0.578	yes
+Marine sediment	NPL-UPA2	5	0	0.0	10	0	0.0		1	yes
+Marine sediment	CG2-30-70-394	1	0	0.0	0	0	nan			yes
+Marine sediment	Omnitrophota	71	5	7.0	142	9	6.3	1.120	1	
+Marine sediment	UBP18	3	0	0.0	1	0	0.0			yes
+Marine sediment	Thermosulfidibacterota	2	0	0.0	24	0	0.0		1	yes
+Marine sediment	TA06	2	0	0.0	0	0	nan			yes
+Marine sediment	Bipolaricaulota	29	1	3.4	101	19	18.8	0.154	0.0446	
+Marine sediment	Fermentibacterota	18	0	0.0	21	0	0.0		1	yes
+Marine sediment	Myxococcota_A	72	55	76.4	364	276	75.8	1.032	1	
+Marine sediment	4484-113	6	0	0.0	5	0	0.0		1	yes
+Marine sediment	Nitrospinota	47	6	12.8	819	21	2.6	5.561	0.0023	
+Marine sediment	JADFOP01	17	9	52.9	8	6	75.0	0.375	0.402	yes
+Marine sediment	CAIJMQ01	1	0	0.0	10	0	0.0			yes
+Marine sediment	B130-G9	5	0	0.0	2	0	0.0		1	yes
+Marine sediment	Bacteroidota_A	299	146	48.8	1002	518	51.7	0.892	0.392	
+Marine sediment	Tectomicrobia	2	1	50.0	61	40	65.6	0.525	1	yes
+Marine sediment	Armatimonadota	24	0	0.0	12	0	0.0		1	
+Marine sediment	Nanobdellota	46	4	8.7	221	20	9.0	0.957	1	
+Marine sediment	Hinthialibacterota	3	0	0.0	6	3	50.0	0.000	0.464	yes
+Marine sediment	Halobacteriota	106	3	2.8	202	36	17.8	0.134	9.66e-05	
+Marine sediment	Hadarchaeota	9	0	0.0	13	0	0.0		1	yes
+Marine sediment	Eisenbacteria	4	0	0.0	12	12	100.0	0.000	0.000549	yes
+Marine sediment	Atribacterota	7	0	0.0	18	4	22.2	0.000	0.294	yes
+Marine sediment	Korarchaeota	2	0	0.0	17	2	11.8	0.000	1	yes
+Marine sediment	Poribacteria	7	3	42.9	882	366	41.5	1.057	1	yes
+Marine sediment	Latescibacterota	20	9	45.0	784	210	26.8	2.236	0.0786	
+Marine sediment	Margulisbacteria	3	0	0.0	85	23	27.1	0.000	0.564	yes
+Marine sediment	B1Sed10-29	1	0	0.0	6	0	0.0			yes
+Marine sediment	Fusobacteriota	11	11	100.0	8	8	100.0		1	yes
+Marine sediment	Muiribacteriota	3	2	66.7	40	24	60.0	1.333	1	yes
+Marine sediment	Desulfobacterota_E	11	0	0.0	3	0	0.0		1	yes
+Marine sediment	Abyssobacteria	1	1	100.0	0	0	nan			yes
+Marine sediment	Unknown Bacteria	1	1	100.0	10	0	0.0			yes
+Marine sediment	Patescibacteriota	162	5	3.1	484	10	2.1	1.510	0.546	
+Marine sediment	CAKKQC01	1	0	0.0	0	0	nan			yes
+Marine sediment	Synergistota	7	0	0.0	4	0	0.0		1	yes
+Marine sediment	Desulfobacterota_B	28	16	57.1	454	377	83.0	0.272	0.0018	
+Marine sediment	Bdellovibrionota	5	1	20.0	492	97	19.7	1.018	1	yes
+Marine sediment	4572-55	1	0	0.0	1	0	0.0			yes
+Marine sediment	Calditrichota	93	56	60.2	86	32	37.2	2.554	0.00273	
+Marine sediment	Actinomycetota	339	55	16.2	13121	1491	11.4	1.511	0.0074	
+Marine sediment	Deinococcota	15	0	0.0	136	39	28.7	0.000	0.0121	yes
+Marine sediment	Acidobacteriota	334	65	19.5	2170	319	14.7	1.402	0.0276	
+Marine sediment	UBA2233	9	0	0.0	0	0	nan			yes
+Marine sediment	Iainarchaeota	2	0	0.0	13	0	0.0		1	yes
+Marine sediment	UBA6262	3	0	0.0	11	0	0.0		1	yes
+Marine sediment	Gemmatimonadota	239	79	33.1	1464	176	12.0	3.613	1.29e-14	
+Marine sediment	JABMQX01	2	1	50.0	1	0	0.0			yes
+Marine sediment	UBA3054	8	0	0.0	2	0	0.0		1	yes
+Marine sediment	Sumerlaeota	2	2	100.0	5	0	0.0	inf	0.0476	yes
+Marine sediment	CG03	1	0	0.0	2	1	50.0			yes
+Marine sediment	UBP6	5	0	0.0	2	0	0.0		1	yes
+Marine sediment	Electryoneota	8	4	50.0	23	1	4.3	22.000	0.00981	yes
+Marine sediment	Aenigmatarchaeota	20	0	0.0	36	0	0.0		1	
+Marine sediment	JAPLJL01	5	4	80.0	0	0	nan			yes
+Marine sediment	Nitrospirota	115	18	15.7	284	22	7.7	2.210	0.0259	
+Marine sediment	UBA8248	1	0	0.0	153	29	19.0			yes
+Marine sediment	Micrarchaeota	8	0	0.0	18	1	5.6	0.000	1	yes
+Marine sediment	Blakebacterota	1	1	100.0	1	0	0.0			yes
+Marine sediment	Zixibacteria	70	21	30.0	44	8	18.2	1.929	0.189	
+Marine sediment	Verrucomicrobiota	92	32	34.8	6818	398	5.8	8.603	1.48e-16	
+Marine sediment	Altiarchaeota	8	0	0.0	5	0	0.0		1	yes
+Marine sediment	Krumholzibacteriota	43	34	79.1	85	45	52.9	3.358	0.00416	
+Marine sediment	Bacillota	82	17	20.7	432	99	22.9	0.880	0.774	
+Marine sediment	Desulfobacterota	1013	408	40.3	839	297	35.4	1.231	0.0344	
+Marine sediment	Caldisericota	3	0	0.0	24	0	0.0		1	yes
+Marine sediment	Fibrobacterota	8	2	25.0	8	4	50.0	0.333	0.608	yes
+Marine sediment	Hydrogenedentota	31	3	9.7	21	7	33.3	0.214	0.0692	
+Marine sediment	Bacteroidota	598	190	31.8	36834	4795	13.0	3.112	6.31e-32	
+Marine sediment	Joyebacterota	8	0	0.0	16	0	0.0		1	yes
+Marine sediment	Hydrothermarchaeota	1	0	0.0	30	1	3.3			yes
+Marine sediment	Marinisomatota	137	14	10.2	7218	674	9.3	1.105	0.658	
+Marine sediment	CG2-30-53-67	1	1	100.0	1	0	0.0			yes
+Marine sediment	TA06_A	1	1	100.0	4	1	25.0			yes
+Marine sediment	WOR-3	34	6	17.6	130	18	13.8	1.333	0.59	
+Marine sediment	JAGRBM01	1	1	100.0	0	0	nan			yes
+Marine sediment	Myxococcota	55	46	83.6	780	531	68.1	2.397	0.0154	
+Marine sediment	GCA-001730085	1	0	0.0	0	0	nan			yes
+Marine sediment	Campylobacterota	143	40	28.0	630	162	25.7	1.122	0.599	
+Marine sediment	Desulfobacterota_I	14	3	21.4	31	14	45.2	0.331	0.188	yes
+Marine sediment	Cyanobacteriota	91	32	35.2	4218	184	4.4	11.891	7.48e-20	
+Marine sediment	Bdellovibrionota_B	7	2	28.6	126	21	16.7	2.000	0.348	yes
+Marine sediment	Ratteibacteria	5	0	0.0	1	1	100.0			yes
+Marine sediment	UBA10199	3	0	0.0	27	0	0.0		1	yes
+Marine sediment	UBA4055	8	6	75.0	1	0	0.0			yes
+Marine sediment	JAZFTZ01	1	0	0.0	0	0	nan			yes
+Marine sediment	UBP14	9	0	0.0	19	0	0.0		1	yes
+Marine sediment	EX4484-52	4	0	0.0	27	1	3.7	0.000	1	yes
+Marine sediment	Spirochaetota	98	50	51.0	422	178	42.2	1.428	0.115	
+Marine sediment	JAJVIF01	5	0	0.0	3	0	0.0		1	yes
+Marine sediment	Mcinerneyibacteriota	12	5	41.7	0	0	nan			yes
+Marine sediment	Zhuqueibacterota	85	16	18.8	55	3	5.5	4.019	0.025	
+Marine sediment	Thermoproteota	631	223	35.3	3682	950	25.8	1.572	1.2e-06	
+Marine sediment	Pseudomonadota	2944	1790	60.8	98595	42215	42.8	2.072	5.99e-83	
+Seawater	Desulfobacterota_D	500	49	9.8	311	31	10.0	0.981	1	
+Seawater	Planctomycetota	4430	189	4.3	1254	85	6.8	0.613	0.000424	
+Seawater	Chrysiogenota	1	1	100.0	37	12	32.4			yes
+Seawater	Asgardarchaeota	98	4	4.1	354	46	13.0	0.285	0.0105	
+Seawater	SAR324	2365	1089	46.0	134	38	28.4	2.156	5.3e-05	
+Seawater	JAMORN01	1	0	0.0	0	0	nan			yes
+Seawater	Babelota	7	0	0.0	14	0	0.0		1	yes
+Seawater	Chloroflexota	5340	177	3.3	4632	889	19.2	0.144	2.9e-153	
+Seawater	Methanobacteriota_B	1	0	0.0	96	16	16.7			yes
+Seawater	Auribacterota	1	1	100.0	1	1	100.0			yes
+Seawater	Methylomirabilota	4	1	25.0	34	16	47.1	0.375	0.613	yes
+Seawater	Thermoplasmatota	12553	23	0.2	618	32	5.2	0.034	9.44e-29	
+Seawater	CAIWAD01	18	2	11.1	0	0	nan			yes
+Seawater	Chlamydiota	61	0	0.0	56	1	1.8	0.000	0.479	
+Seawater	Cloacimonadota	25	4	16.0	45	4	8.9	1.952	0.443	
+Seawater	UBP7	28	0	0.0	2	0	0.0		1	
+Seawater	Thermotogota	3	0	0.0	72	4	5.6	0.000	1	yes
+Seawater	Bdellovibrionota_F	1	0	0.0	0	0	nan			yes
+Seawater	Omnitrophota	44	0	0.0	169	14	8.3	0.000	0.0795	
+Seawater	Elusimicrobiota	1	0	0.0	9	0	0.0			yes
+Seawater	Bipolaricaulota	7	1	14.3	123	19	15.4	0.912	1	yes
+Seawater	Fermentibacterota	6	0	0.0	33	0	0.0		1	yes
+Seawater	Myxococcota_A	342	268	78.4	94	63	67.0	1.782	0.029	
+Seawater	4484-113	2	0	0.0	9	0	0.0		1	yes
+Seawater	Nitrospinota	786	18	2.3	80	9	11.2	0.185	0.000371	
+Seawater	JADFOP01	8	6	75.0	17	9	52.9	2.667	0.402	yes
+Seawater	DRYD01	1	1	100.0	4	0	0.0			yes
+Seawater	B130-G9	1	0	0.0	6	0	0.0			yes
+Seawater	Bacteroidota_A	612	293	47.9	689	371	53.8	0.787	0.0347	
+Seawater	Armatimonadota	7	0	0.0	29	0	0.0		1	yes
+Seawater	Nanobdellota	186	9	4.8	81	15	18.5	0.224	0.000747	
+Seawater	Hinthialibacterota	6	3	50.0	3	0	0.0	inf	0.464	yes
+Seawater	Halobacteriota	62	18	29.0	246	21	8.5	4.383	6.85e-05	
+Seawater	Hadarchaeota	1	0	0.0	21	0	0.0			yes
+Seawater	Eisenbacteria	11	11	100.0	5	1	20.0	inf	0.00275	yes
+Seawater	Atribacterota	1	1	100.0	24	3	12.5			yes
+Seawater	Poribacteria	236	20	8.5	653	349	53.4	0.081	5.67e-38	
+Seawater	Latescibacterota	370	86	23.2	434	133	30.6	0.685	0.0211	
+Seawater	Margulisbacteria	85	23	27.1	3	0	0.0	inf	0.564	
+Seawater	Fusobacteriota	1	1	100.0	18	18	100.0			yes
+Seawater	Muiribacteriota	38	24	63.2	5	2	40.0	2.571	0.369	
+Seawater	Aquificota	1	0	0.0	166	31	18.7			yes
+Seawater	Unknown Bacteria	8	0	0.0	3	1	33.3	0.000	0.273	yes
+Seawater	Patescibacteriota	333	6	1.8	313	9	2.9	0.620	0.438	
+Seawater	Desulfobacterota_B	66	52	78.8	416	341	82.0	0.817	0.5	
+Seawater	Vulcanimicrobiota	45	24	53.3	0	0	nan			
+Seawater	2-12-FULL-45-22	1	0	0.0	0	0	nan			yes
+Seawater	Bdellovibrionota	424	90	21.2	73	8	11.0	2.189	0.0546	
+Seawater	Calditrichota	7	5	71.4	172	83	48.3	2.681	0.273	yes
+Seawater	Actinomycetota	10652	927	8.7	2808	619	22.0	0.337	1.16e-75	
+Seawater	Deinococcota	78	4	5.1	73	35	47.9	0.059	6.14e-10	
+Seawater	Acidobacteriota	740	48	6.5	1764	336	19.0	0.295	2.94e-17	
+Seawater	Iainarchaeota	5	0	0.0	10	0	0.0		1	yes
+Seawater	Gemmatimonadota	890	141	15.8	813	114	14.0	1.154	0.308	
+Seawater	Sumerlaeota	3	0	0.0	4	2	50.0	0.000	0.429	yes
+Seawater	JAAXHH01	25	2	8.0	112	1	0.9	9.652	0.0856	
+Seawater	Electryoneota	23	1	4.3	8	4	50.0	0.045	0.00981	
+Seawater	Aenigmatarchaeota	4	0	0.0	52	0	0.0		1	yes
+Seawater	Nitrospirota	30	14	46.7	369	26	7.0	11.543	4.96e-08	
+Seawater	UBA8248	66	2	3.0	88	27	30.7	0.071	5.61e-06	
+Seawater	Undinarchaeota	16	0	0.0	2	0	0.0		1	yes
+Seawater	GCA-2686955	11	9	81.8	1	1	100.0			yes
+Seawater	Zixibacteria	3	0	0.0	111	29	26.1	0.000	0.569	yes
+Seawater	Verrucomicrobiota	6311	314	5.0	599	116	19.4	0.218	2.28e-31	
+Seawater	Altiarchaeota	1	0	0.0	12	0	0.0			yes
+Seawater	Krumholzibacteriota	56	22	39.3	72	57	79.2	0.170	7.71e-06	
+Seawater	Bacillota	224	45	20.1	290	71	24.5	0.775	0.244	
+Seawater	Desulfobacterota	204	108	52.9	1648	597	36.2	1.981	5.66e-06	
+Seawater	Caldisericota	1	0	0.0	26	0	0.0			yes
+Seawater	Fibrobacterota	8	4	50.0	8	2	25.0	3.000	0.608	yes
+Seawater	ARS69	1	0	0.0	0	0	nan			yes
+Seawater	Hydrogenedentota	17	7	41.2	35	3	8.6	7.467	0.00902	yes
+Seawater	Bacteroidota	33890	4082	12.0	3542	903	25.5	0.400	5.89e-94	
+Seawater	T1Sed10-126	1	1	100.0	0	0	nan			yes
+Seawater	Joyebacterota	6	0	0.0	18	0	0.0		1	yes
+Seawater	Hydrothermarchaeota	5	1	20.0	26	0	0.0	inf	0.161	yes
+Seawater	Marinisomatota	7025	633	9.0	330	55	16.7	0.495	1.68e-05	
+Seawater	Nanohalarchaeota	5	0	0.0	0	0	nan			yes
+Seawater	SpSt-1190	15	0	0.0	0	0	nan			yes
+Seawater	WOR-3	1	1	100.0	163	23	14.1			yes
+Seawater	Myxococcota	676	450	66.6	159	127	79.9	0.502	0.00113	
+Seawater	Campylobacterota	59	12	20.3	714	190	26.6	0.704	0.356	
+Seawater	Desulfobacterota_I	11	9	81.8	34	8	23.5	14.625	0.00096	yes
+Seawater	Cyanobacteriota	3510	86	2.5	799	130	16.3	0.129	1.46e-44	
+Seawater	Bdellovibrionota_B	43	5	11.6	90	18	20.0	0.526	0.328	
+Seawater	UBA10199	26	0	0.0	4	0	0.0		1	
+Seawater	UBP14	2	0	0.0	26	0	0.0		1	yes
+Seawater	Spirochaetota	77	48	62.3	443	180	40.6	2.418	0.000467	
+Seawater	JAJVIF01	1	0	0.0	7	0	0.0			yes
+Seawater	Zhuqueibacterota	15	0	0.0	125	19	15.2	0.000	0.223	yes
+Seawater	Thermoproteota	2788	652	23.4	1525	521	34.2	0.588	5e-14	
+Seawater	Pseudomonadota	87679	35297	40.3	13860	8708	62.8	0.399	0	
+Estuarine water	Planctomycetota	3	0	0.0	5681	274	4.8	0.000	1	yes
+Estuarine water	Thermoplasmatota	24	0	0.0	13147	55	0.4	0.000	1	
+Estuarine water	Bacteroidota_A	1	0	0.0	1300	664	51.1			yes
+Estuarine water	Armatimonadota	1	0	0.0	35	0	0.0			yes
+Estuarine water	Actinomycetota	42	1	2.4	13418	1545	11.5	0.187	0.084	
+Estuarine water	Acidobacteriota	1	0	0.0	2503	384	15.3			yes
+Estuarine water	Verrucomicrobiota	6	1	16.7	6904	429	6.2	3.019	0.32	yes
+Estuarine water	Bacillota	1	0	0.0	513	116	22.6			yes
+Estuarine water	Bacteroidota	289	20	6.9	37143	4965	13.4	0.482	0.000669	
+Estuarine water	Marinisomatota	5	0	0.0	7350	688	9.4	0.000	1	yes
+Estuarine water	Cyanobacteriota	10	0	0.0	4299	216	5.0	0.000	1	yes
+Estuarine water	Thermoproteota	1	1	100.0	4312	1172	27.2			yes
+Estuarine water	Pseudomonadota	569	230	40.4	100970	43775	43.4	0.886	0.162	
+Marine Porifera tissue	Desulfobacterota_D	206	1	0.5	605	79	13.1	0.032	9.94e-10	
+Marine Porifera tissue	Planctomycetota	47	1	2.1	5637	273	4.8	0.427	0.727	
+Marine Porifera tissue	SAR324	1	0	0.0	2498	1127	45.1			yes
+Marine Porifera tissue	Chloroflexota	2730	484	17.7	7242	582	8.0	2.466	1.12e-40	
+Marine Porifera tissue	Chlamydiota	21	0	0.0	96	1	1.0	0.000	1	
+Marine Porifera tissue	Myxococcota_A	12	0	0.0	424	331	78.1	0.000	2.31e-08	yes
+Marine Porifera tissue	Bacteroidota_A	167	108	64.7	1134	556	49.0	1.903	0.000179	
+Marine Porifera tissue	Tectomicrobia	55	34	61.8	8	7	87.5	0.231	0.243	
+Marine Porifera tissue	Nanobdellota	2	0	0.0	265	24	9.1	0.000	1	yes
+Marine Porifera tissue	Poribacteria	562	306	54.4	327	63	19.3	5.009	7e-26	
+Marine Porifera tissue	Latescibacterota	355	104	29.3	449	115	25.6	1.203	0.264	
+Marine Porifera tissue	Patescibacteriota	3	0	0.0	643	15	2.3	0.000	1	yes
+Marine Porifera tissue	Desulfobacterota_B	373	311	83.4	109	82	75.2	1.652	0.0674	
+Marine Porifera tissue	Bdellovibrionota	29	0	0.0	468	98	20.9	0.000	0.00273	
+Marine Porifera tissue	Actinomycetota	976	257	26.3	12484	1289	10.3	3.104	5.39e-41	
+Marine Porifera tissue	Deinococcota	10	9	90.0	141	30	21.3	33.300	1.95e-05	yes
+Marine Porifera tissue	Acidobacteriota	1219	239	19.6	1285	145	11.3	1.917	9.27e-09	
+Marine Porifera tissue	Gemmatimonadota	499	21	4.2	1204	234	19.4	0.182	1.69e-18	
+Marine Porifera tissue	JAAXHH01	103	1	1.0	34	2	5.9	0.157	0.152	
+Marine Porifera tissue	Aenigmatarchaeota	1	0	0.0	55	0	0.0			yes
+Marine Porifera tissue	Nitrospirota	191	4	2.1	208	36	17.3	0.102	1.48e-07	
+Marine Porifera tissue	UBA8248	84	27	32.1	70	2	2.9	16.105	1.77e-06	
+Marine Porifera tissue	Verrucomicrobiota	72	0	0.0	6838	430	6.3	0.000	0.0226	
+Marine Porifera tissue	Bacteroidota	55	10	18.2	37377	4975	13.3	1.447	0.317	
+Marine Porifera tissue	Myxococcota	1	0	0.0	834	577	69.2			yes
+Marine Porifera tissue	Campylobacterota	3	2	66.7	770	200	26.0	5.700	0.169	yes
+Marine Porifera tissue	Desulfobacterota_I	1	1	100.0	44	16	36.4			yes
+Marine Porifera tissue	Cyanobacteriota	177	2	1.1	4132	214	5.2	0.209	0.0121	
+Marine Porifera tissue	Bdellovibrionota_B	26	0	0.0	107	23	21.5	0.000	0.00723	
+Marine Porifera tissue	Spirochaetota	181	96	53.0	339	132	38.9	1.771	0.00222	
+Marine Porifera tissue	Thermoproteota	343	187	54.5	3970	986	24.8	3.628	7.85e-29	
+Marine Porifera tissue	Pseudomonadota	3196	2320	72.6	98343	41685	42.4	3.600	1.63e-253	
+Marine algae thallus	Planctomycetota	55	5	9.1	5629	269	4.8	1.993	0.189	
+Marine algae thallus	Chloroflexota	4	4	100.0	9968	1062	10.7	inf	0.00013	yes
+Marine algae thallus	Patescibacteriota	2	0	0.0	644	15	2.3	0.000	1	yes
+Marine algae thallus	Bdellovibrionota	5	0	0.0	492	98	19.9	0.000	0.588	yes
+Marine algae thallus	Actinomycetota	18	6	33.3	13442	1540	11.5	3.864	0.0124	yes
+Marine algae thallus	Verrucomicrobiota	30	0	0.0	6880	430	6.2	0.000	0.258	
+Marine algae thallus	Bacillota	34	25	73.5	480	91	19.0	11.874	6.71e-11	
+Marine algae thallus	Bacteroidota	178	57	32.0	37254	4928	13.2	3.090	1.02e-10	
+Marine algae thallus	Cyanobacteriota	6	6	100.0	4303	210	4.9	inf	1.48e-08	yes
+Marine algae thallus	Bdellovibrionota_B	7	0	0.0	126	23	18.3	0.000	0.604	yes
+Marine algae thallus	Spirochaetota	2	0	0.0	518	228	44.0	0.000	0.507	yes
+Marine algae thallus	Pseudomonadota	386	308	79.8	101153	43697	43.2	5.192	1e-48	
+Hydrothermal vent sediment	Aerophobota	16	2	12.5	36	3	8.3	1.571	0.637	yes
+Hydrothermal vent sediment	Planctomycetota	38	2	5.3	5646	272	4.8	1.098	0.705	
+Hydrothermal vent sediment	Asgardarchaeota	26	0	0.0	426	50	11.7	0.000	0.0981	
+Hydrothermal vent sediment	RBG-13-66-14	1	0	0.0	11	0	0.0			yes
+Hydrothermal vent sediment	Chloroflexota	64	30	46.9	9908	1036	10.5	7.556	2.24e-13	
+Hydrothermal vent sediment	Methanobacteriota_B	38	7	18.4	59	9	15.3	1.254	0.781	
+Hydrothermal vent sediment	Auribacterota	1	1	100.0	1	1	100.0			yes
+Hydrothermal vent sediment	Thermoplasmatota	80	9	11.2	13091	46	0.4	35.948	3.6e-11	
+Hydrothermal vent sediment	Cloacimonadota	6	0	0.0	64	8	12.5	0.000	1	yes
+Hydrothermal vent sediment	Thermotogota	41	4	9.8	34	0	0.0	inf	0.121	
+Hydrothermal vent sediment	UBP7	2	0	0.0	28	0	0.0		1	yes
+Hydrothermal vent sediment	Omnitrophota	22	0	0.0	191	14	7.3	0.000	0.37	
+Hydrothermal vent sediment	Thermosulfidibacterota	4	0	0.0	22	0	0.0		1	yes
+Hydrothermal vent sediment	Bipolaricaulota	36	1	2.8	94	19	20.2	0.113	0.0134	
+Hydrothermal vent sediment	Fermentibacterota	2	0	0.0	37	0	0.0		1	yes
+Hydrothermal vent sediment	4484-113	3	0	0.0	8	0	0.0		1	yes
+Hydrothermal vent sediment	Nitrospinota	1	0	0.0	865	27	3.1			yes
+Hydrothermal vent sediment	CAIJMQ01	7	0	0.0	4	0	0.0		1	yes
+Hydrothermal vent sediment	DRYD01	2	0	0.0	3	1	33.3	0.000	1	yes
+Hydrothermal vent sediment	B130-G9	1	0	0.0	6	0	0.0			yes
+Hydrothermal vent sediment	Bacteroidota_A	11	3	27.3	1290	661	51.2	0.357	0.137	yes
+Hydrothermal vent sediment	Armatimonadota	1	0	0.0	35	0	0.0			yes
+Hydrothermal vent sediment	Nanobdellota	7	1	14.3	260	23	8.8	1.717	0.487	yes
+Hydrothermal vent sediment	Halobacteriota	43	13	30.2	265	26	9.8	3.983	0.000739	
+Hydrothermal vent sediment	Hadarchaeota	4	0	0.0	18	0	0.0		1	yes
+Hydrothermal vent sediment	Atribacterota	5	0	0.0	20	4	20.0	0.000	0.549	yes
+Hydrothermal vent sediment	Korarchaeota	6	0	0.0	13	2	15.4	0.000	1	yes
+Hydrothermal vent sediment	Poribacteria	3	0	0.0	886	369	41.6	0.000	0.271	yes
+Hydrothermal vent sediment	Latescibacterota	7	6	85.7	797	213	26.7	16.451	0.0021	yes
+Hydrothermal vent sediment	DYJV01	1	0	0.0	16	16	100.0			yes
+Hydrothermal vent sediment	B1Sed10-29	4	0	0.0	3	0	0.0		1	yes
+Hydrothermal vent sediment	Aquificota	57	7	12.3	110	24	21.8	0.502	0.148	
+Hydrothermal vent sediment	Patescibacteriota	38	1	2.6	608	14	2.3	1.147	0.601	
+Hydrothermal vent sediment	JALSQH01	1	1	100.0	2	0	0.0			yes
+Hydrothermal vent sediment	Synergistota	3	0	0.0	8	0	0.0		1	yes
+Hydrothermal vent sediment	Calditrichota	24	4	16.7	155	84	54.2	0.169	0.000732	
+Hydrothermal vent sediment	Actinomycetota	7	0	0.0	13453	1546	11.5	0.000	1	yes
+Hydrothermal vent sediment	Deinococcota	18	12	66.7	133	27	20.3	7.852	0.000116	yes
+Hydrothermal vent sediment	Acidobacteriota	17	0	0.0	2487	384	15.4	0.000	0.0931	yes
+Hydrothermal vent sediment	Iainarchaeota	5	0	0.0	10	0	0.0		1	yes
+Hydrothermal vent sediment	Gemmatimonadota	1	0	0.0	1702	255	15.0			yes
+Hydrothermal vent sediment	CG03	1	0	0.0	2	1	50.0			yes
+Hydrothermal vent sediment	Aenigmatarchaeota	18	0	0.0	38	0	0.0		1	yes
+Hydrothermal vent sediment	Nitrospirota	15	1	6.7	384	39	10.2	0.632	1	yes
+Hydrothermal vent sediment	Micrarchaeota	7	1	14.3	19	0	0.0	inf	0.269	yes
+Hydrothermal vent sediment	CSSED10-310	1	1	100.0	0	0	nan			yes
+Hydrothermal vent sediment	Undinarchaeota	1	0	0.0	17	0	0.0			yes
+Hydrothermal vent sediment	Zixibacteria	3	0	0.0	111	29	26.1	0.000	0.569	yes
+Hydrothermal vent sediment	Methanobacteriota	1	0	0.0	18	0	0.0			yes
+Hydrothermal vent sediment	Verrucomicrobiota	4	2	50.0	6906	428	6.2	15.136	0.0213	yes
+Hydrothermal vent sediment	Altiarchaeota	1	0	0.0	12	0	0.0			yes
+Hydrothermal vent sediment	Krumholzibacteriota	2	2	100.0	126	77	61.1	inf	0.524	yes
+Hydrothermal vent sediment	Bacillota	1	0	0.0	513	116	22.6			yes
+Hydrothermal vent sediment	Desulfobacterota	126	13	10.3	1726	692	40.1	0.172	7.98e-13	
+Hydrothermal vent sediment	Caldisericota	14	0	0.0	13	0	0.0		1	yes
+Hydrothermal vent sediment	AUK180	2	0	0.0	10	0	0.0		1	yes
+Hydrothermal vent sediment	Bacteroidota	97	26	26.8	37335	4959	13.3	2.391	0.000423	
+Hydrothermal vent sediment	Hydrothermarchaeota	25	0	0.0	6	1	16.7	0.000	0.194	
+Hydrothermal vent sediment	Marinisomatota	9	0	0.0	7346	688	9.4	0.000	1	yes
+Hydrothermal vent sediment	WOR-3	41	8	19.5	123	16	13.0	1.621	0.315	
+Hydrothermal vent sediment	Myxococcota	11	6	54.5	824	571	69.3	0.532	0.329	yes
+Hydrothermal vent sediment	Campylobacterota	173	47	27.2	600	155	25.8	1.071	0.768	
+Hydrothermal vent sediment	UBA4055	1	0	0.0	8	6	75.0			yes
+Hydrothermal vent sediment	UBP14	16	0	0.0	12	0	0.0		1	yes
+Hydrothermal vent sediment	RBG-13-61-14	1	0	0.0	0	0	nan			yes
+Hydrothermal vent sediment	EX4484-52	4	1	25.0	27	0	0.0	inf	0.129	yes
+Hydrothermal vent sediment	Spirochaetota	6	5	83.3	514	223	43.4	6.525	0.0913	yes
+Hydrothermal vent sediment	JAJVIF01	1	0	0.0	7	0	0.0			yes
+Hydrothermal vent sediment	Zhuqueibacterota	23	0	0.0	117	19	16.2	0.000	0.0428	
+Hydrothermal vent sediment	Thermoproteota	190	11	5.8	4123	1162	28.2	0.157	2.06e-14	
+Hydrothermal vent sediment	Desulfobacterota_C	1	0	0.0	2	0	0.0			yes
+Hydrothermal vent sediment	Pseudomonadota	316	109	34.5	101223	43896	43.4	0.688	0.00143	
+Hydrothermal vent fluid/plume	Desulfobacterota_D	1	1	100.0	810	79	9.8			yes
+Hydrothermal vent fluid/plume	Planctomycetota	33	2	6.1	5651	272	4.8	1.276	0.672	
+Hydrothermal vent fluid/plume	Chrysiogenota	3	3	100.0	35	10	28.6	inf	0.0339	yes
+Hydrothermal vent fluid/plume	Asgardarchaeota	11	0	0.0	441	50	11.3	0.000	0.619	yes
+Hydrothermal vent fluid/plume	SAR324	57	13	22.8	2442	1114	45.6	0.352	0.000636	
+Hydrothermal vent fluid/plume	Chloroflexota	171	82	48.0	9801	984	10.0	8.256	2.07e-35	
+Hydrothermal vent fluid/plume	Methanobacteriota_B	27	0	0.0	70	16	22.9	0.000	0.00474	
+Hydrothermal vent fluid/plume	Thermoplasmatota	64	3	4.7	13107	52	0.4	12.347	0.0024	
+Hydrothermal vent fluid/plume	SZUA-182	1	1	100.0	6	0	0.0			yes
+Hydrothermal vent fluid/plume	Cloacimonadota	2	0	0.0	68	8	11.8	0.000	1	yes
+Hydrothermal vent fluid/plume	Thermotogota	16	0	0.0	59	4	6.8	0.000	0.572	yes
+Hydrothermal vent fluid/plume	NPL-UPA2	7	0	0.0	8	0	0.0		1	yes
+Hydrothermal vent fluid/plume	JAHJDO01	1	1	100.0	1	0	0.0			yes
+Hydrothermal vent fluid/plume	Omnitrophota	8	0	0.0	205	14	6.8	0.000	1	yes
+Hydrothermal vent fluid/plume	Thermosulfidibacterota	20	0	0.0	6	0	0.0		1	
+Hydrothermal vent fluid/plume	Bipolaricaulota	20	8	40.0	110	12	10.9	5.444	0.00313	
+Hydrothermal vent fluid/plume	Nitrospinota	13	1	7.7	853	26	3.0	2.651	0.339	yes
+Hydrothermal vent fluid/plume	DRYD01	1	0	0.0	4	1	25.0			yes
+Hydrothermal vent fluid/plume	CAIJMQ01	1	0	0.0	10	0	0.0			yes
+Hydrothermal vent fluid/plume	Bacteroidota_A	30	2	6.7	1271	662	52.1	0.066	2.3e-07	
+Hydrothermal vent fluid/plume	Armatimonadota	2	0	0.0	34	0	0.0		1	yes
+Hydrothermal vent fluid/plume	Nanobdellota	4	1	25.0	263	23	8.7	3.478	0.315	yes
+Hydrothermal vent fluid/plume	Halobacteriota	38	4	10.5	270	35	13.0	0.790	0.8	
+Hydrothermal vent fluid/plume	Hadarchaeota	3	0	0.0	19	0	0.0		1	yes
+Hydrothermal vent fluid/plume	Atribacterota	6	0	0.0	19	4	21.1	0.000	0.54	yes
+Hydrothermal vent fluid/plume	Korarchaeota	11	2	18.2	8	0	0.0	inf	0.485	yes
+Hydrothermal vent fluid/plume	Poribacteria	7	0	0.0	882	369	41.8	0.000	0.0457	yes
+Hydrothermal vent fluid/plume	Latescibacterota	4	0	0.0	800	219	27.4	0.000	0.579	yes
+Hydrothermal vent fluid/plume	DYJV01	16	16	100.0	1	0	0.0			yes
+Hydrothermal vent fluid/plume	B1Sed10-29	1	0	0.0	6	0	0.0			yes
+Hydrothermal vent fluid/plume	Fusobacteriota	4	4	100.0	15	15	100.0		1	yes
+Hydrothermal vent fluid/plume	JAFGBW01	2	0	0.0	6	0	0.0		1	yes
+Hydrothermal vent fluid/plume	Aquificota	109	24	22.0	58	7	12.1	2.057	0.145	
+Hydrothermal vent fluid/plume	Patescibacteriota	23	3	13.0	623	12	1.9	7.638	0.0136	
+Hydrothermal vent fluid/plume	JALSQH01	2	0	0.0	1	1	100.0			yes
+Hydrothermal vent fluid/plume	Desulfobacterota_B	1	0	0.0	481	393	81.7			yes
+Hydrothermal vent fluid/plume	Nitrospirota_B	1	0	0.0	0	0	nan			yes
+Hydrothermal vent fluid/plume	Calditrichota	34	10	29.4	145	78	53.8	0.358	0.013	
+Hydrothermal vent fluid/plume	Actinomycetota	43	5	11.6	13417	1541	11.5	1.014	1	
+Hydrothermal vent fluid/plume	Deinococcota	22	9	40.9	129	30	23.3	2.285	0.112	
+Hydrothermal vent fluid/plume	Acidobacteriota	33	0	0.0	2471	384	15.5	0.000	0.00632	
+Hydrothermal vent fluid/plume	Gemmatimonadota	7	1	14.3	1696	254	15.0	0.946	1	yes
+Hydrothermal vent fluid/plume	PUNC01	1	0	0.0	1	0	0.0			yes
+Hydrothermal vent fluid/plume	UBA3054	1	0	0.0	9	0	0.0			yes
+Hydrothermal vent fluid/plume	UBP6	1	0	0.0	6	0	0.0			yes
+Hydrothermal vent fluid/plume	JAAXHH01	1	0	0.0	136	3	2.2			yes
+Hydrothermal vent fluid/plume	Aenigmatarchaeota	4	0	0.0	52	0	0.0		1	yes
+Hydrothermal vent fluid/plume	Nitrospirota	13	0	0.0	386	40	10.4	0.000	0.379	yes
+Hydrothermal vent fluid/plume	Micrarchaeota	9	0	0.0	17	1	5.9	0.000	1	yes
+Hydrothermal vent fluid/plume	GCA-2686955	1	1	100.0	11	9	81.8			yes
+Hydrothermal vent fluid/plume	Methanobacteriota	16	0	0.0	3	0	0.0		1	yes
+Hydrothermal vent fluid/plume	UBA1439	1	0	0.0	0	0	nan			yes
+Hydrothermal vent fluid/plume	Calescibacteriota	1	1	100.0	0	0	nan			yes
+Hydrothermal vent fluid/plume	Verrucomicrobiota	19	4	21.1	6891	426	6.2	4.047	0.0272	yes
+Hydrothermal vent fluid/plume	Altiarchaeota	1	0	0.0	12	0	0.0			yes
+Hydrothermal vent fluid/plume	Bacillota	23	0	0.0	491	116	23.6	0.000	0.00384	
+Hydrothermal vent fluid/plume	Desulfobacterota	177	47	26.6	1675	658	39.3	0.559	0.000821	
+Hydrothermal vent fluid/plume	Caldisericota	7	0	0.0	20	0	0.0		1	yes
+Hydrothermal vent fluid/plume	Bacteroidota	208	55	26.4	37224	4930	13.2	2.355	5.25e-07	
+Hydrothermal vent fluid/plume	Marinisomatota	73	7	9.6	7282	681	9.4	1.028	0.841	
+Hydrothermal vent fluid/plume	CG2-30-53-67	1	0	0.0	1	1	100.0			yes
+Hydrothermal vent fluid/plume	TA06_A	1	1	100.0	4	1	25.0			yes
+Hydrothermal vent fluid/plume	WOR-3	35	0	0.0	129	24	18.6	0.000	0.00255	
+Hydrothermal vent fluid/plume	Myxococcota	19	14	73.7	816	563	69.0	1.258	0.804	yes
+Hydrothermal vent fluid/plume	Campylobacterota	359	92	25.6	414	110	26.6	0.952	0.806	
+Hydrothermal vent fluid/plume	Desulfobacterota_I	10	1	10.0	35	16	45.7	0.132	0.064	yes
+Hydrothermal vent fluid/plume	Cyanobacteriota	2	1	50.0	4307	215	5.0	19.033	0.0978	yes
+Hydrothermal vent fluid/plume	UBA10199	1	0	0.0	29	0	0.0			yes
+Hydrothermal vent fluid/plume	EX4484-52	1	0	0.0	30	1	3.3			yes
+Hydrothermal vent fluid/plume	Spirochaetota	6	3	50.0	514	225	43.8	1.284	1	yes
+Hydrothermal vent fluid/plume	Zhuqueibacterota	14	2	14.3	126	17	13.5	1.069	1	yes
+Hydrothermal vent fluid/plume	Thermoproteota	119	10	8.4	4194	1163	27.7	0.239	3.31e-07	
+Hydrothermal vent fluid/plume	Pseudomonadota	600	191	31.8	100939	43814	43.4	0.609	8.07e-09	
+Coral tissue	Desulfobacterota_D	11	0	0.0	800	80	10.0	0.000	0.613	yes
+Coral tissue	Planctomycetota	13	2	15.4	5671	272	4.8	3.609	0.127	yes
+Coral tissue	Chrysiogenota	2	2	100.0	36	11	30.6	inf	0.111	yes
+Coral tissue	SAR324	2	2	100.0	2497	1125	45.1	inf	0.203	yes
+Coral tissue	Chloroflexota	93	16	17.2	9879	1050	10.6	1.747	0.0606	
+Coral tissue	Chlamydiota	3	0	0.0	114	1	0.9	0.000	1	yes
+Coral tissue	Omnitrophota	1	0	0.0	212	14	6.6			yes
+Coral tissue	Myxococcota_A	2	2	100.0	434	329	75.8	inf	1	yes
+Coral tissue	Bacteroidota_A	55	38	69.1	1246	626	50.2	2.214	0.00828	
+Coral tissue	Tectomicrobia	4	4	100.0	59	37	62.7	inf	0.288	yes
+Coral tissue	Poribacteria	41	21	51.2	848	348	41.0	1.509	0.199	
+Coral tissue	Latescibacterota	21	4	19.0	783	215	27.5	0.622	0.467	
+Coral tissue	Patescibacteriota	4	0	0.0	642	15	2.3	0.000	1	yes
+Coral tissue	Desulfobacterota_B	8	8	100.0	474	385	81.2	inf	0.362	yes
+Coral tissue	Bdellovibrionota	1	0	0.0	496	98	19.8			yes
+Coral tissue	Actinomycetota	18	4	22.2	13442	1542	11.5	2.205	0.144	yes
+Coral tissue	Acidobacteriota	35	4	11.4	2469	380	15.4	0.709	0.642	
+Coral tissue	Gemmatimonadota	11	0	0.0	1692	255	15.1	0.000	0.387	yes
+Coral tissue	JAAXHH01	7	0	0.0	130	3	2.3	0.000	1	yes
+Coral tissue	Nitrospirota	11	0	0.0	388	40	10.3	0.000	0.612	yes
+Coral tissue	UBA8248	3	0	0.0	151	29	19.2	0.000	1	yes
+Coral tissue	Verrucomicrobiota	10	2	20.0	6900	428	6.2	3.780	0.125	yes
+Coral tissue	Bacillota	12	2	16.7	502	114	22.7	0.681	1	yes
+Coral tissue	Desulfobacterota	24	21	87.5	1828	684	37.4	11.708	6.96e-07	
+Coral tissue	Bacteroidota	51	36	70.6	37381	4949	13.2	15.728	1.09e-20	
+Coral tissue	Marinisomatota	1	0	0.0	7354	688	9.4			yes
+Coral tissue	Myxococcota	3	1	33.3	832	576	69.2	0.222	0.227	yes
+Coral tissue	Campylobacterota	5	2	40.0	768	200	26.0	1.893	0.61	yes
+Coral tissue	Desulfobacterota_I	7	3	42.9	38	14	36.8	1.286	1	yes
+Coral tissue	Cyanobacteriota	10	10	100.0	4299	206	4.8	inf	8.19e-14	yes
+Coral tissue	Bdellovibrionota_B	1	0	0.0	132	23	17.4			yes
+Coral tissue	Spirochaetota	8	1	12.5	512	227	44.3	0.179	0.0848	yes
+Coral tissue	Thermoproteota	31	23	74.2	4282	1150	26.9	7.830	6.2e-08	
+Coral tissue	Pseudomonadota	320	254	79.4	101219	43751	43.2	5.055	1.17e-39	
+Marine Hydrozoa tissue	Desulfobacterota_D	5	0	0.0	806	80	9.9	0.000	1	yes
+Marine Hydrozoa tissue	Planctomycetota	9	2	22.2	5675	272	4.8	5.675	0.0666	yes
+Marine Hydrozoa tissue	Chloroflexota	37	5	13.5	9935	1061	10.7	1.307	0.589	
+Marine Hydrozoa tissue	Bacteroidota_A	37	28	75.7	1264	636	50.3	3.072	0.00241	
+Marine Hydrozoa tissue	Tectomicrobia	2	2	100.0	61	39	63.9	inf	0.538	yes
+Marine Hydrozoa tissue	Poribacteria	33	19	57.6	856	350	40.9	1.962	0.071	
+Marine Hydrozoa tissue	Latescibacterota	8	1	12.5	796	218	27.4	0.379	0.69	yes
+Marine Hydrozoa tissue	Patescibacteriota	1	0	0.0	645	15	2.3			yes
+Marine Hydrozoa tissue	Desulfobacterota_B	5	5	100.0	477	388	81.3	inf	0.59	yes
+Marine Hydrozoa tissue	Bdellovibrionota	1	0	0.0	496	98	19.8			yes
+Marine Hydrozoa tissue	Actinomycetota	9	2	22.2	13451	1544	11.5	2.203	0.277	yes
+Marine Hydrozoa tissue	Acidobacteriota	32	9	28.1	2472	375	15.2	2.188	0.0778	
+Marine Hydrozoa tissue	Gemmatimonadota	3	0	0.0	1700	255	15.0	0.000	1	yes
+Marine Hydrozoa tissue	JAAXHH01	1	0	0.0	136	3	2.2			yes
+Marine Hydrozoa tissue	Nitrospirota	8	0	0.0	391	40	10.2	0.000	1	yes
+Marine Hydrozoa tissue	Verrucomicrobiota	2	0	0.0	6908	430	6.2	0.000	1	yes
+Marine Hydrozoa tissue	Bacillota	12	2	16.7	502	114	22.7	0.681	1	yes
+Marine Hydrozoa tissue	Desulfobacterota	6	6	100.0	1846	699	37.9	inf	0.003	yes
+Marine Hydrozoa tissue	Bacteroidota	63	32	50.8	37369	4953	13.3	6.756	1.15e-12	
+Marine Hydrozoa tissue	Myxococcota	10	10	100.0	825	567	68.7	inf	0.0364	yes
+Marine Hydrozoa tissue	Desulfobacterota_I	1	0	0.0	44	17	38.6			yes
+Marine Hydrozoa tissue	Cyanobacteriota	39	18	46.2	4270	198	4.6	17.628	4.87e-14	
+Marine Hydrozoa tissue	Bdellovibrionota_B	1	0	0.0	132	23	17.4			yes
+Marine Hydrozoa tissue	Spirochaetota	89	0	0.0	431	228	52.9	0.000	4.79e-26	
+Marine Hydrozoa tissue	Thermoproteota	20	15	75.0	4293	1158	27.0	8.122	1.12e-05	
+Marine Hydrozoa tissue	Pseudomonadota	667	525	78.7	100872	43480	43.1	4.880	4.42e-78	
+Animal bone biofilm	Planctomycetota	1	0	0.0	5683	274	4.8			yes
+Animal bone biofilm	Bdellovibrionota	6	4	66.7	491	94	19.1	8.447	0.0155	yes
+Animal bone biofilm	Actinomycetota	1	0	0.0	13459	1546	11.5			yes
+Animal bone biofilm	Acidobacteriota	1	0	0.0	2503	384	15.3			yes
+Animal bone biofilm	Gemmatimonadota	1	0	0.0	1702	255	15.0			yes
+Animal bone biofilm	Bacteroidota	1	0	0.0	37431	4985	13.3			yes
+Animal bone biofilm	Pseudomonadota	279	230	82.4	101260	43775	43.2	6.164	3.98e-41	
+Estuarine sediment	Desulfobacterota_D	11	0	0.0	800	80	10.0	0.000	0.613	yes
+Estuarine sediment	Chloroflexota	15	10	66.7	9957	1056	10.6	16.858	3.4e-07	yes
+Estuarine sediment	Nitrospinota	1	1	100.0	865	26	3.0			yes
+Estuarine sediment	Halobacteriota	4	0	0.0	304	39	12.8	0.000	1	yes
+Estuarine sediment	Desulfobacterota_E	2	0	0.0	12	0	0.0		1	yes
+Estuarine sediment	Desulfobacterota_B	1	1	100.0	481	392	81.5			yes
+Estuarine sediment	Actinomycetota	56	33	58.9	13404	1513	11.3	11.276	1.58e-17	
+Estuarine sediment	Acidobacteriota	3	1	33.3	2501	383	15.3	2.765	0.393	yes
+Estuarine sediment	Gemmatimonadota	5	3	60.0	1698	252	14.8	8.607	0.0263	yes
+Estuarine sediment	Nitrospirota	7	3	42.9	392	37	9.4	7.196	0.0246	yes
+Estuarine sediment	Verrucomicrobiota	6	0	0.0	6904	430	6.2	0.000	1	yes
+Estuarine sediment	Bacillota	4	0	0.0	510	116	22.7	0.000	0.579	yes
+Estuarine sediment	Desulfobacterota	38	19	50.0	1814	686	37.8	1.644	0.132	
+Estuarine sediment	Bacteroidota	70	6	8.6	37362	4979	13.3	0.610	0.293	
+Estuarine sediment	Myxococcota	2	2	100.0	833	575	69.0	inf	1	yes
+Estuarine sediment	Cyanobacteriota	4	2	50.0	4305	214	5.0	19.117	0.014	yes
+Estuarine sediment	Thermoproteota	19	14	73.7	4294	1159	27.0	7.574	3.14e-05	yes
+Estuarine sediment	Pseudomonadota	317	260	82.0	101222	43745	43.2	5.993	1.85e-45	
+Cold seep sediment	Desulfobacterota_D	5	0	0.0	806	80	9.9	0.000	1	yes
+Cold seep sediment	Aerophobota	23	3	13.0	29	2	6.9	2.025	0.644	
+Cold seep sediment	Planctomycetota	85	7	8.2	5599	267	4.8	1.792	0.129	
+Cold seep sediment	Asgardarchaeota	112	13	11.6	340	37	10.9	1.075	0.862	
+Cold seep sediment	RBG-13-66-14	1	0	0.0	11	0	0.0			yes
+Cold seep sediment	BMS3Abin14	8	0	0.0	7	0	0.0		1	yes
+Cold seep sediment	Babelota	7	0	0.0	14	0	0.0		1	yes
+Cold seep sediment	Chloroflexota	321	21	6.5	9651	1045	10.8	0.576	0.0129	
+Cold seep sediment	Methanobacteriota_B	8	4	50.0	89	12	13.5	6.417	0.0237	yes
+Cold seep sediment	SM23-31	2	2	100.0	11	1	9.1	inf	0.0385	yes
+Cold seep sediment	Thermoplasmatota	106	8	7.5	13065	47	0.4	22.611	1.2e-08	
+Cold seep sediment	Arandabacterota	1	0	0.0	11	7	63.6			yes
+Cold seep sediment	Chlamydiota	1	0	0.0	116	1	0.9			yes
+Cold seep sediment	UBA6266	7	0	0.0	1	0	0.0			yes
+Cold seep sediment	SZUA-182	1	0	0.0	6	1	16.7			yes
+Cold seep sediment	Cloacimonadota	21	2	9.5	49	6	12.2	0.754	1	
+Cold seep sediment	JAAXVQ01	4	1	25.0	1	0	0.0			yes
+Cold seep sediment	NPL-UPA2	3	0	0.0	12	0	0.0		1	yes
+Cold seep sediment	JAHJDO01	1	0	0.0	1	1	100.0			yes
+Cold seep sediment	Omnitrophota	65	9	13.8	148	5	3.4	4.596	0.0124	
+Cold seep sediment	UBP18	1	0	0.0	3	0	0.0			yes
+Cold seep sediment	Elusimicrobiota	9	0	0.0	1	0	0.0			yes
+Cold seep sediment	Bipolaricaulota	31	9	29.0	99	11	11.1	3.273	0.0229	
+Cold seep sediment	Fermentibacterota	11	0	0.0	28	0	0.0		1	yes
+Cold seep sediment	Myxococcota_A	2	0	0.0	434	331	76.3	0.000	0.0576	yes
+Cold seep sediment	CAIJMQ01	2	0	0.0	9	0	0.0		1	yes
+Cold seep sediment	Bacteroidota_A	19	9	47.4	1282	655	51.1	0.862	0.82	yes
+Cold seep sediment	Armatimonadota	1	0	0.0	35	0	0.0			yes
+Cold seep sediment	Nanobdellota	19	9	47.4	248	15	6.0	13.980	4.22e-06	yes
+Cold seep sediment	Halobacteriota	39	1	2.6	269	38	14.1	0.160	0.0402	
+Cold seep sediment	Hadarchaeota	5	0	0.0	17	0	0.0		1	yes
+Cold seep sediment	Eisenbacteria	1	1	100.0	15	11	73.3			yes
+Cold seep sediment	Atribacterota	1	0	0.0	24	4	16.7			yes
+Cold seep sediment	Latescibacterota	11	2	18.2	793	217	27.4	0.590	0.736	yes
+Cold seep sediment	B1Sed10-29	1	0	0.0	6	0	0.0			yes
+Cold seep sediment	JAFGBW01	6	0	0.0	2	0	0.0		1	yes
+Cold seep sediment	Muiribacteriota	2	0	0.0	41	26	63.4	0.000	0.151	yes
+Cold seep sediment	Unknown Bacteria	2	0	0.0	9	1	11.1	0.000	1	yes
+Cold seep sediment	Patescibacteriota	67	0	0.0	579	15	2.6	0.000	0.387	
+Cold seep sediment	Bdellovibrionota	4	0	0.0	493	98	19.9	0.000	1	yes
+Cold seep sediment	4572-55	1	0	0.0	1	0	0.0			yes
+Cold seep sediment	Calditrichota	20	12	60.0	159	76	47.8	1.638	0.349	
+Cold seep sediment	Actinomycetota	17	1	5.9	13443	1545	11.5	0.481	0.712	yes
+Cold seep sediment	Acidobacteriota	65	9	13.8	2439	375	15.4	0.885	0.862	
+Cold seep sediment	Iainarchaeota	2	0	0.0	13	0	0.0		1	yes
+Cold seep sediment	UBA6262	11	0	0.0	3	0	0.0		1	yes
+Cold seep sediment	Gemmatimonadota	41	8	19.5	1662	247	14.9	1.389	0.379	
+Cold seep sediment	JABMQX01	1	0	0.0	2	1	50.0			yes
+Cold seep sediment	CG03	1	1	100.0	2	0	0.0			yes
+Cold seep sediment	Sumerlaeota	2	0	0.0	5	2	40.0	0.000	1	yes
+Cold seep sediment	Aenigmatarchaeota	9	0	0.0	47	0	0.0		1	yes
+Cold seep sediment	Nitrospirota	8	0	0.0	391	40	10.2	0.000	1	yes
+Cold seep sediment	Micrarchaeota	1	0	0.0	25	1	4.0			yes
+Cold seep sediment	Blakebacterota	1	0	0.0	1	1	100.0			yes
+Cold seep sediment	Undinarchaeota	1	0	0.0	17	0	0.0			yes
+Cold seep sediment	Zixibacteria	35	8	22.9	79	21	26.6	0.818	0.817	
+Cold seep sediment	Verrucomicrobiota	9	8	88.9	6901	422	6.1	122.825	1.8e-09	yes
+Cold seep sediment	Altiarchaeota	2	0	0.0	11	0	0.0		1	yes
+Cold seep sediment	Krumholzibacteriota	19	14	73.7	109	65	59.6	1.895	0.311	yes
+Cold seep sediment	Bacillota	9	0	0.0	505	116	23.0	0.000	0.219	yes
+Cold seep sediment	Desulfobacterota	183	49	26.8	1669	656	39.3	0.565	0.000965	
+Cold seep sediment	AUK180	10	0	0.0	2	0	0.0		1	yes
+Cold seep sediment	Hydrogenedentota	2	0	0.0	50	10	20.0	0.000	1	yes
+Cold seep sediment	Bacteroidota	94	59	62.8	37338	4926	13.2	11.092	9.59e-29	
+Cold seep sediment	Joyebacterota	9	0	0.0	15	0	0.0		1	yes
+Cold seep sediment	Marinisomatota	40	11	27.5	7315	677	9.3	3.719	0.000815	
+Cold seep sediment	TA06_A	3	0	0.0	2	2	100.0	0.000	0.1	yes
+Cold seep sediment	WOR-3	53	9	17.0	111	15	13.5	1.309	0.638	
+Cold seep sediment	Myxococcota	1	0	0.0	834	577	69.2			yes
+Cold seep sediment	Campylobacterota	8	1	12.5	765	201	26.3	0.401	0.688	yes
+Cold seep sediment	Ratteibacteria	1	1	100.0	5	0	0.0			yes
+Cold seep sediment	EX4484-52	22	0	0.0	9	1	11.1	0.000	0.29	
+Cold seep sediment	Spirochaetota	45	21	46.7	475	207	43.6	1.133	0.754	
+Cold seep sediment	JAJVIF01	1	0	0.0	7	0	0.0			yes
+Cold seep sediment	JAUVQV01	1	0	0.0	0	0	nan			yes
+Cold seep sediment	Thermoproteota	113	8	7.1	4200	1165	27.7	0.198	7.73e-08	
+Cold seep sediment	Zhuqueibacterota	2	1	50.0	138	18	13.0	6.667	0.254	yes
+Cold seep sediment	Desulfobacterota_C	2	0	0.0	1	0	0.0			yes
+Cold seep sediment	Pseudomonadota	209	110	52.6	101330	43895	43.3	1.454	0.0078	
+Marine biofilm	Desulfobacterota_D	1	0	0.0	810	80	9.9			yes
+Marine biofilm	Planctomycetota	192	12	6.2	5492	262	4.8	1.331	0.306	
+Marine biofilm	Asgardarchaeota	4	0	0.0	448	50	11.2	0.000	1	yes
+Marine biofilm	SAR324	24	6	25.0	2475	1121	45.3	0.403	0.062	
+Marine biofilm	Babelota	2	0	0.0	19	0	0.0		1	yes
+Marine biofilm	Chloroflexota	4	2	50.0	9968	1064	10.7	8.368	0.0591	yes
+Marine biofilm	Thermoplasmatota	193	0	0.0	12978	55	0.4	0.000	1	
+Marine biofilm	Bipolaricaulota	3	0	0.0	127	20	15.7	0.000	1	yes
+Marine biofilm	Myxococcota_A	4	4	100.0	432	327	75.7	inf	0.577	yes
+Marine biofilm	DRYD01	1	0	0.0	4	1	25.0			yes
+Marine biofilm	Bacteroidota_A	36	18	50.0	1265	646	51.1	0.958	1	
+Marine biofilm	Latescibacterota	1	1	100.0	803	218	27.1			yes
+Marine biofilm	Patescibacteriota	4	0	0.0	642	15	2.3	0.000	1	yes
+Marine biofilm	Bdellovibrionota	9	3	33.3	488	95	19.5	2.068	0.389	yes
+Marine biofilm	Actinomycetota	126	23	18.3	13334	1523	11.4	1.732	0.0236	
+Marine biofilm	Deinococcota	8	5	62.5	143	34	23.8	5.343	0.0276	yes
+Marine biofilm	Acidobacteriota	12	5	41.7	2492	379	15.2	3.982	0.0258	yes
+Marine biofilm	Verrucomicrobiota	83	5	6.0	6827	425	6.2	0.966	1	
+Marine biofilm	Bacillota	9	3	33.3	505	113	22.4	1.735	0.429	yes
+Marine biofilm	Bacteroidota	761	171	22.5	36671	4814	13.1	1.918	3.24e-12	
+Marine biofilm	Marinisomatota	37	8	21.6	7318	680	9.3	2.693	0.0189	
+Marine biofilm	Myxococcota	14	11	78.6	821	566	68.9	1.652	0.568	yes
+Marine biofilm	Campylobacterota	4	3	75.0	769	199	25.9	8.593	0.0569	yes
+Marine biofilm	Cyanobacteriota	181	35	19.3	4128	181	4.4	5.228	1.17e-12	
+Marine biofilm	Bdellovibrionota_B	30	16	53.3	103	7	6.8	15.673	8.45e-08	
+Marine biofilm	Spirochaetota	4	3	75.0	516	225	43.6	3.880	0.324	yes
+Marine biofilm	Thermoproteota	12	7	58.3	4301	1166	27.1	3.764	0.0226	yes
+Marine biofilm	Pseudomonadota	2017	1225	60.7	99522	42780	43.0	2.052	1.69e-56	
+Brackish sea water	Planctomycetota	279	6	2.2	5405	268	5.0	0.421	0.0306	
+Brackish sea water	SAR324	2	0	0.0	2497	1127	45.1	0.000	0.505	yes
+Brackish sea water	Chloroflexota	44	9	20.5	9928	1057	10.6	2.158	0.0471	
+Brackish sea water	Thermoplasmatota	21	0	0.0	13150	55	0.4	0.000	1	
+Brackish sea water	Myxococcota_A	1	1	100.0	435	330	75.9			yes
+Brackish sea water	Nitrospinota	15	1	6.7	851	26	3.1	2.266	0.381	yes
+Brackish sea water	Bacteroidota_A	32	19	59.4	1269	645	50.8	1.414	0.374	
+Brackish sea water	Nanobdellota	2	0	0.0	265	24	9.1	0.000	1	yes
+Brackish sea water	Latescibacterota	7	6	85.7	797	213	26.7	16.451	0.0021	yes
+Brackish sea water	Patescibacteriota	5	0	0.0	641	15	2.3	0.000	1	yes
+Brackish sea water	Bdellovibrionota	2	0	0.0	495	98	19.8	0.000	1	yes
+Brackish sea water	Actinomycetota	1108	225	20.3	12352	1321	10.7	2.128	7.38e-19	
+Brackish sea water	Acidobacteriota	7	2	28.6	2497	382	15.3	2.215	0.293	yes
+Brackish sea water	Iainarchaeota	1	0	0.0	14	0	0.0			yes
+Brackish sea water	Gemmatimonadota	6	2	33.3	1697	253	14.9	2.854	0.223	yes
+Brackish sea water	Verrucomicrobiota	216	47	21.8	6694	383	5.7	4.583	1.11e-14	
+Brackish sea water	Krumholzibacteriota	6	5	83.3	122	74	60.7	3.243	0.406	yes
+Brackish sea water	Bacillota	14	0	0.0	500	116	23.2	0.000	0.0473	yes
+Brackish sea water	Desulfobacterota	28	14	50.0	1824	691	37.9	1.640	0.239	
+Brackish sea water	Hydrogenedentota	1	0	0.0	51	10	19.6			yes
+Brackish sea water	Bacteroidota	783	124	15.8	36649	4861	13.3	1.230	0.0382	
+Brackish sea water	Marinisomatota	27	15	55.6	7328	673	9.2	12.361	1.89e-09	
+Brackish sea water	Myxococcota	28	24	85.7	807	553	68.5	2.756	0.0609	
+Brackish sea water	Campylobacterota	12	1	8.3	761	201	26.4	0.253	0.201	yes
+Brackish sea water	Cyanobacteriota	271	23	8.5	4038	193	4.8	1.848	0.0133	
+Brackish sea water	Bdellovibrionota_B	18	0	0.0	115	23	20.0	0.000	0.0417	yes
+Brackish sea water	Thermoproteota	45	22	48.9	4268	1151	27.0	2.590	0.00202	
+Brackish sea water	Pseudomonadota	1461	736	50.4	100078	43269	43.2	1.333	5.55e-08	
+Sea ice	Planctomycetota	11	3	27.3	5673	271	4.8	7.475	0.0137	yes
+Sea ice	SAR324	3	0	0.0	2496	1127	45.2	0.000	0.257	yes
+Sea ice	Myxococcota_A	1	1	100.0	435	330	75.9			yes
+Sea ice	Nitrospinota	3	0	0.0	863	27	3.1	0.000	1	yes
+Sea ice	Patescibacteriota	2	0	0.0	644	15	2.3	0.000	1	yes
+Sea ice	Bdellovibrionota	9	0	0.0	488	98	20.1	0.000	0.216	yes
+Sea ice	Actinomycetota	29	4	13.8	13431	1542	11.5	1.234	0.569	
+Sea ice	Verrucomicrobiota	26	1	3.8	6884	429	6.2	0.602	1	
+Sea ice	Bacteroidota	203	89	43.8	37229	4896	13.2	5.156	1.23e-26	
+Sea ice	Myxococcota	8	8	100.0	827	569	68.8	inf	0.064	yes
+Sea ice	Thermoproteota	1	0	0.0	4312	1173	27.2			yes
+Sea ice	Pseudomonadota	442	330	74.7	101097	43675	43.2	3.874	1e-40	
