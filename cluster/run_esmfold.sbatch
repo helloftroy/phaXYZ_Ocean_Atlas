@@ -45,11 +45,18 @@ export PYTHONUNBUFFERED=1
 : "${OUT_DIR:?Set OUT_DIR=<output directory for this FASTA's PDB files>.}"
 : "${N_BATCHES:?Set N_BATCHES=<total batch count> -- must match the --array range used (0..N_BATCHES-1).}"
 
-MINIFORGE_HOME="${MINIFORGE_HOME:-$HOME/miniforge3}"
-CONDA_ENV_NAME="${CONDA_ENV_NAME:-esmfold}"
+if [ ! -f cluster/env_activate.sh ]; then
+  echo "cluster/env_activate.sh is missing -- run ./cluster/setup_env.sh first, then" >&2
+  echo "./cluster/install_esmfold.sh to add ESMFold's packages to that same env." >&2
+  exit 2
+fi
 # shellcheck source=/dev/null
-source "${MINIFORGE_HOME}/etc/profile.d/conda.sh"
-conda activate "${CONDA_ENV_NAME}"
+source cluster/env_activate.sh
+
+# scratch, not $HOME -- the ~2.7GB model-weight cache would blow a small $HOME
+# quota (see cluster/install_esmfold.sh's own note); set before every task, not
+# just once, since each array task is a fresh shell.
+export HF_HOME="${HF_HOME:-/scratch/morrill/users/hmp278/hf_cache}"
 
 echo "Job started: $(date)"
 echo "Host: $(hostname)"

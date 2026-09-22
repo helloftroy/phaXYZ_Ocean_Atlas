@@ -1,24 +1,36 @@
 #!/usr/bin/env bash
-# One-time ESMFold environment setup on the cluster -- separate from
-# cluster/setup_env.sh's main "pha-reference" conda env deliberately: that
-# env is explicitly kept free of GPU/heavy-ML dependencies (BRENDA/UniProt
-# retrieval doesn't need them), and ESMFold's dependency footprint (torch,
-# transformers, a CUDA build) is large enough to deserve its own env
-# rather than risk breaking the main one.
+# ESMFold environment setup on the cluster -- adds to the EXISTING
+# pha-reference env (the one `source cluster/env_activate.sh` activates)
+# rather than creating a separate one: ESMFold only needs torch +
+# transformers + accelerate + einops on top of what's already there
+# (SQLAlchemy, httpx, typer, PyYAML, tenacity, rich) -- not enough new
+# packages to justify a second env and a second activation step in every
+# workflow. If that ever changes (a real dependency conflict surfaces),
+# fall back to a dedicated env -- see the bottom of this file -- but
+# don't default to that; try the shared env first.
 #
 # Uses HuggingFace transformers' EsmForProteinFolding rather than Meta's
-# original fair-esm[esmfold] package -- the original needs openfold's
-# custom CUDA attention kernels compiled against the exact local
-# CUDA/PyTorch version, a common source of cluster-install failures never
-# tested end-to-end here; the transformers port reimplements the same
-# model in plain PyTorch with no custom kernel compilation step. See
+# original fair-esm[esmfold] package deliberately: the original needs
+# openfold's custom CUDA attention kernels compiled against the exact
+# local CUDA/PyTorch version, a common source of cluster-install
+# failures; the transformers port reimplements the same model in plain
+# PyTorch with no custom kernel compilation step. See
 # structure_prediction/run_esmfold.py's own docstring for the same note.
 #
-# Usage:
+# Usage (default -- adds to the existing pha-reference env):
+#   source cluster/env_activate.sh
 #   ./cluster/install_esmfold.sh
-#   # or, to reuse existing scratch space for the (large, ~5GB+ with model
-#   # weights cached) env / HF cache:
-#   CONDA_ENV_PREFIX=/scratch/$USER/conda_envs/esmfold ./cluster/install_esmfold.sh
+#
+# IMPORTANT -- scratch space, not $HOME: the ESMFold model weights
+# (~2.7GB) download on first use into $HF_HOME (default ~/.cache/
+# huggingface), which will blow a small $HOME quota. Point it at scratch
+# BEFORE running this script and before every later run_esmfold.py call
+# (interactive or via sbatch):
+#   export HF_HOME=/scratch/morrill/users/hmp278/hf_cache
+# cluster/run_esmfold.sbatch already sets this default itself, but set it
+# here too if you pre-warm the cache interactively (see the end of this
+# script) so the same cache gets reused instead of a second copy landing
+# in $HOME.
 #
 # NOT tested end-to-end on an actual cluster GPU node yet -- written from
 # documented transformers/ESMFold usage patterns. If a step here fails,
@@ -27,36 +39,15 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."   # repo root (PHA_Ocean_Atlas/)
 
-CONDA_ENV_NAME="${CONDA_ENV_NAME:-esmfold}"
-CONDA_ENV_PREFIX="${CONDA_ENV_PREFIX:-}"
-MINIFORGE_HOME="${MINIFORGE_HOME:-$HOME/miniforge3}"
-CONDA_SH="${MINIFORGE_HOME}/etc/profile.d/conda.sh"
+export HF_HOME="${HF_HOME:-/scratch/morrill/users/hmp278/hf_cache}"
+mkdir -p "${HF_HOME}"
 
-if [ ! -f "${CONDA_SH}" ]; then
-  echo "conda.sh not found at ${CONDA_SH}." >&2
-  echo "Set MINIFORGE_HOME if your (mini)conda/anaconda install lives elsewhere." >&2
+if [ -z "${VIRTUAL_ENV:-}" ] && [ -z "${CONDA_DEFAULT_ENV:-}" ]; then
+  echo "No active env detected -- run 'source cluster/env_activate.sh' first" >&2
+  echo "(from cluster/setup_env.sh's pha-reference env), then re-run this script." >&2
   exit 2
 fi
-# shellcheck source=/dev/null
-source "${CONDA_SH}"
-
-if [ -n "${CONDA_ENV_PREFIX}" ]; then
-  CONDA_CREATE_FLAG=(-p "${CONDA_ENV_PREFIX}")
-  CONDA_ACTIVATE_TARGET="${CONDA_ENV_PREFIX}"
-else
-  CONDA_CREATE_FLAG=(-n "${CONDA_ENV_NAME}")
-  CONDA_ACTIVATE_TARGET="${CONDA_ENV_NAME}"
-fi
-
-if conda env list | grep -qE "^\S*${CONDA_ACTIVATE_TARGET//\//\\/}\s"; then
-  echo "Conda env at/named '${CONDA_ACTIVATE_TARGET}' already exists -- reusing it."
-else
-  echo "Creating conda env: ${CONDA_ACTIVATE_TARGET} (python 3.11) ..."
-  conda create -y "${CONDA_CREATE_FLAG[@]}" python=3.11
-fi
-
-conda activate "${CONDA_ACTIVATE_TARGET}"
-echo "Active env: $(python -c 'import sys; print(sys.prefix)')"
+echo "Installing into active env: ${CONDA_DEFAULT_ENV:-${VIRTUAL_ENV}}"
 
 # CUDA 12.1 build -- matches what's been used elsewhere on this project's
 # gpu-a100 partition (see cluster/install_mmseqs2.sh's GPU-variant notes);
@@ -81,10 +72,17 @@ print("EsmForProteinFolding import OK")
 PYEOF
 
 echo
-echo "Environment ready. The ESMFold model weights (~2.7GB) download on first"
-echo "use via structure_prediction/run_esmfold.py, cached under \$HF_HOME (default"
-echo "~/.cache/huggingface) -- set HF_HOME=/scratch/\$USER/hf_cache first if \$HOME"
-echo "has a small quota. Consider pre-warming the cache once interactively before"
-echo "the first real sbatch array job, so 20+ concurrent array tasks don't all"
-echo "try to download the same weights at once:"
-echo "  python -c \"from transformers import EsmForProteinFolding; EsmForProteinFolding.from_pretrained('facebook/esmfold_v1')\""
+echo "Environment ready (added to the existing pha-reference env, no new env created)."
+echo "HF_HOME is set to ${HF_HOME} for this shell -- re-export it in any new shell/sbatch"
+echo "job before running run_esmfold.py (run_esmfold.sbatch already does this)."
+echo
+echo "Consider pre-warming the model-weight cache once interactively before the first real"
+echo "sbatch array job, so 20+ concurrent array tasks don't all try to download the same"
+echo "~2.7GB of weights at once:"
+echo "  HF_HOME=${HF_HOME} python -c \"from transformers import EsmForProteinFolding; EsmForProteinFolding.from_pretrained('facebook/esmfold_v1')\""
+echo
+echo "--- Fallback: dedicated env instead (only if the shared env approach hits a real"
+echo "    conflict) -- put it on scratch, NOT \$HOME, same quota reasoning as above:"
+echo "  conda create -p /scratch/morrill/users/hmp278/conda_envs/esmfold python=3.11"
+echo "  conda activate /scratch/morrill/users/hmp278/conda_envs/esmfold"
+echo "  <then re-run the pip installs above in that env>"
