@@ -28,7 +28,18 @@ QUERY_SETS="${QUERY_SETS:-uncertain positive_control}"
 # TM-align-based alignment (-a) is slower than the default 3Di+AA search but
 # gives TM-score directly, the metric this comparison actually needs --
 # worth the extra time at this dataset's scale (~7,300 structures total).
-FOLDSEEK_EXTRA_ARGS="${FOLDSEEK_EXTRA_ARGS:--a --alignment-type 1}"
+#
+# -e 10 (much looser than foldseek's default -e 0.001) and a generous
+# --max-seqs deliberately let WEAK hits through too. We have not picked a
+# rescue cutoff yet (see PHA_CLEAN_RESULTS.md section 6) -- if the default
+# e-value threshold silently dropped a candidate with no strong hit from
+# the output entirely, that candidate would vanish from the distribution
+# instead of showing up as a real (bad) data point, which would bias the
+# whole "where should the cutoff go" decision toward looking better than
+# it is. build_structural_evidence_table.py separately double-checks
+# against fold_manifest.tsv for candidates that get NO hit even at -e 10,
+# so those are not silently dropped either.
+FOLDSEEK_EXTRA_ARGS="${FOLDSEEK_EXTRA_ARGS:--a --alignment-type 1 -e 10 --max-seqs 2000}"
 
 if [ ! -x "${FOLDSEEK_BIN}" ]; then
   echo "${FOLDSEEK_BIN} not found/executable -- run ./cluster/install_foldseek.sh first." >&2
@@ -59,15 +70,19 @@ for query_set in ${QUERY_SETS}; do
   "${FOLDSEEK_BIN}" easy-search "${QUERY_DIR}" "${OUT_DIR}/reference_db" \
     "${OUT_DIR}/${query_set}_vs_reference.tsv" "${OUT_DIR}/tmp" \
     ${FOLDSEEK_EXTRA_ARGS} \
-    --format-output "query,target,evalue,bits,alntmscore,qtmscore,ttmscore,lddt,prob,qlen,tlen,alnlen"
+    --format-output "query,target,evalue,bits,prob,alntmscore,qtmscore,ttmscore,lddt,pident,qcov,tcov,qlen,tlen,alnlen"
   echo "wrote ${OUT_DIR}/${query_set}_vs_reference.tsv"
 done
 
 echo
-echo "Done. Columns in each output TSV: query, target, evalue, bits, alntmscore (TM-score"
-echo "normalized by the alignment), qtmscore/ttmscore (normalized by query/target length"
-echo "respectively -- ttmscore is usually the more comparable one across queries of very"
-echo "different lengths), lddt, prob (Foldseek's own hit-confidence probability), qlen,"
-echo "tlen, alnlen. A high ttmscore/lddt against ANY reference is the positive signal to"
-echo "look for -- see PHA_CLEAN_RESULTS.md section 6.3 for how to read these against the"
-echo "positive-control set before trusting the uncertain-tier results."
+echo "Done. Columns in each output TSV: query, target, evalue, bits, prob (foldseek's own"
+echo "hit-confidence probability), alntmscore (TM-score normalized by the alignment),"
+echo "qtmscore/ttmscore (normalized by query/target length respectively -- ttmscore is"
+echo "usually the more comparable one across queries of very different lengths), lddt,"
+echo "pident/qcov/tcov (structural-alignment sequence identity and query/target coverage --"
+echo "verify these are in the units you expect against a real output header, e.g. pident as"
+echo "percent vs fraction, before trusting them downstream; not confirmed live yet), qlen,"
+echo "tlen, alnlen. This is the RAW multi-hit-per-query output -- run"
+echo "structure_prediction/build_structural_evidence_table.py next to collapse it to one"
+echo "best-hit row per candidate (plus explicit no-hit rows for candidates with nothing"
+echo "above even this loose -e 10) before looking at distributions or picking a cutoff."
