@@ -61,6 +61,15 @@ fi
 # shellcheck source=/dev/null
 source cluster/esmfold_pythonpath.sh   # sets PYTHONPATH, HF_HOME, PIP_CACHE_DIR -- all on scratch, not $HOME
 
+# GPU compute nodes have no internet access. install_esmfold.sh pre-downloads
+# the model weights into $HF_HOME on the login node for exactly this reason --
+# HF_HUB_OFFLINE=1 here makes transformers use only that local cache and fail
+# immediately with a clear "not found in cache" error if it's missing, rather
+# than this job hanging (or timing out slowly) trying to reach huggingface.co
+# from a node that can't. If you see that error: run ./cluster/install_esmfold.sh
+# again from a login node first.
+export HF_HUB_OFFLINE=1
+
 echo "Job started: $(date)"
 echo "Host: $(hostname)"
 echo "Array task: ${SLURM_ARRAY_TASK_ID}/${N_BATCHES}"

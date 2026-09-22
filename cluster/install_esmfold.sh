@@ -118,8 +118,19 @@ echo "fair-ocean-agent/pha-reference themselves afterward.)"
 echo
 echo "Environment ready -- packages live on scratch (${PKG_DIR}), imported into the"
 echo "existing ${CONDA_DEFAULT_ENV:-${VIRTUAL_ENV}} env via PYTHONPATH. Nothing written to \$HOME."
+
+# Pre-download the model weights HERE, on the login node (which has internet),
+# not left as a suggestion for later. GPU compute nodes on this cluster (like
+# most HPC clusters) have no internet access -- if run_esmfold.sbatch's first
+# EsmForProteinFolding.from_pretrained() call had to actually reach
+# huggingface.co, it would hang or fail on the GPU node with no useful error.
+# Downloading here once means every later sbatch array task just reads the
+# already-cached weights from $HF_HOME (on scratch) -- also avoids 20+
+# concurrent array tasks each redundantly re-downloading the same ~2.7GB.
 echo
-echo "Consider pre-warming the model-weight cache once interactively before the first real"
-echo "sbatch array job, so 20+ concurrent array tasks don't all try to download the same"
-echo "~2.7GB of weights at once:"
-echo "  python -c \"from transformers import EsmForProteinFolding; EsmForProteinFolding.from_pretrained('facebook/esmfold_v1')\""
+echo "Pre-downloading ESMFold weights (~2.7GB) to \$HF_HOME=${HF_HOME} ..."
+echo "(doing this now, on the login node, because GPU compute nodes have no internet --"
+echo "run_esmfold.sbatch runs with HF_HUB_OFFLINE=1 and will fail fast with a clear error"
+echo "if this step was skipped, instead of hanging trying to reach the network.)"
+python -c "from transformers import AutoTokenizer, EsmForProteinFolding; AutoTokenizer.from_pretrained('facebook/esmfold_v1'); EsmForProteinFolding.from_pretrained('facebook/esmfold_v1')"
+echo "Weights cached."
