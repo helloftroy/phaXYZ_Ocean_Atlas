@@ -1,0 +1,240 @@
+genome	n_phaC	gtdb_species	gtdb_genus	gtdb_phylum	study_id	ecosystem_compartment	latitude_degN	longitude_degE	is_mag	contamination_pct	n_targets_found	n_catalytic_triad_complete	n_hmm_supported	n_no_hit
+BPAM22-1_SAMN07482708_MAG_00000011	10	Bradyrhizobium denitrificans	Bradyrhizobium	Pseudomonadota	BPAM22-1	Seawater	-12.4	130.768	True	1.29	10	10	0	0
+BPAM22-1_SAMN07482710_MAG_00000026	10	Bradyrhizobium denitrificans	Bradyrhizobium	Pseudomonadota	BPAM22-1	Seawater	-12.4	130.768	True	2.23	10	10	0	0
+BPAM22-1_SAMN07482793_MAG_00000044	10	Bradyrhizobium denitrificans	Bradyrhizobium	Pseudomonadota	BPAM22-1	Seawater	-12.4	130.768	True	1.29	10	10	0	0
+RSGB23-1_GCF-000500125-V1_GENO_10000001	9	Legionella pneumophila	Legionella	Pseudomonadota	RSGB23-1	NA			False	0.38	9	9	0	0
+RSGB23-1_GCF-002082905-V2_GENO_10000001	9	Legionella anisa	Legionella	Pseudomonadota	RSGB23-1	NA			False	2.0	9	9	0	0
+BPAM22-1_SAMN08953028_MAG_00000010	8	Bradyrhizobium sp001556045	Bradyrhizobium	Pseudomonadota	BPAM22-1	Seawater	-12.4	130.768	True	3.16	8	8	0	0
+KELL22-1_SAMN22237344_MAG_00000103	8	Unknown JASJEC01	JASJEC01	Pseudomonadota	KELL22-1	Marine sponge tissue	24.6609	-81.4563	True	5.63	8	8	0	0
+RSGB23-1_GCF-004343615-V1_GENO_10000001	8	Paracraurococcus aquatilis	Paracraurococcus	Pseudomonadota	RSGB23-1	NA			False	0.0	8	8	0	0
+TARA_SAMEA6004635_MAG_00000157	8	Unknown Hwanghaeella	Hwanghaeella	Pseudomonadota	TPAC	Seawater	-17.6756	-150.197	True	0.76	8	8	0	0
+CARD22-1_SAMN24292811_MAG_00000010	7	Unknown Desulfoluna	Desulfoluna	Desulfobacterota	CARD22-1	Coral tissue	22.18	39.02	True	1.77	7	7	0	0
+CARD22-1_SAMN24292812_MAG_00000014	7	Unknown Desulfoluna	Desulfoluna	Desulfobacterota	CARD22-1	Coral tissue	22.18	39.02	True	4.23	7	7	0	0
+CHAS20-1_SAMN14350117_MAG_00000061	7	Unknown HK1	Unknown HK1	Pseudomonadota	CHAS20-1	Marine sediment	-17.4742	-149.783	True	8.45	7	7	0	0
+RSGB23-1_GCF-000770585-V1_GENO_10000001	7	Legionella norrlandica	Legionella	Pseudomonadota	RSGB23-1	NA			False	0.95	7	7	0	0
+RSGB23-1_GCF-003176875-V1_GENO_10000001	7	Legionella anisa	Legionella	Pseudomonadota	RSGB23-1	NA			False	1.53	7	7	0	0
+RSGB23-1_GCF-009469605-V1_GENO_10000001	7	Zoogloea oryzae	Zoogloea	Pseudomonadota	RSGB23-1	NA			False	1.09	7	7	0	0
+RSGB23-1_GCF-014109805-V1_GENO_10000001	7	Legionella resiliens	Legionella	Pseudomonadota	RSGB23-1	NA			False	2.67	7	7	0	0
+RSGB23-1_GCF-900699765-V1_GENO_10000001	7	Desulfoluna butyratoxydans	Desulfoluna	Desulfobacterota	RSGB23-1	NA			False	1.29	7	7	0	0
+RSGB23-1_GCF-902498735-V1_GENO_10000001	7	Desulfoluna spongiiphila	Desulfoluna	Desulfobacterota	RSGB23-1	NA			False	1.61	7	7	0	0
+TARA_SAMEA4397363_MAG_00000003	7	Sulfitobacter sp963976125	Sulfitobacter	Pseudomonadota	TOPC	Seawater	79.2026	66.4749	True	0.8	7	7	0	0
+TARA_SAMEA5999008_MAG_00000204	7	Unknown Bradyrhizobium	Bradyrhizobium	Pseudomonadota	TPAC	Seawater	7.8732	-81.7942	True	3.69	7	7	0	0
+ACIN21-1_SAMN05422133_MAG_00000018	6	Antarctobacter sp019392335	Antarctobacter	Pseudomonadota	ACIN21-1	Seawater	19.9897	-52.6367	True	0.68	6	5	1	0
+ACIN21-1_SAMN05422140_MAG_00000006	6	Antarctobacter sp019392335	Antarctobacter	Pseudomonadota	ACIN21-1	Seawater	21.0638	-150.319	True	0.32	6	5	1	0
+ATLA15-1_SAMN03981636-S001_MAG_00000366	6	Unknown JAABRB01	JAABRB01	Pseudomonadota	ATLA15-1	Marine sediment	29.456	-89.887	True	0.53	6	6	0	0
+ATLA15-1_SAMN03981669-S001_MAG_00000037	6	Unknown Desulfosarcinaceae	Unknown Desulfosarcinaceae	Desulfobacterota	ATLA15-1	Marine sediment	29.468	-89.882	True	1.94	6	6	0	0
+ATLA15-1_SAMN03981677-S001_MAG_00000045	6	Unknown JAHIVH01	Unknown JAHIVH01	Desulfobacterota	ATLA15-1	Marine sediment	29.456	-89.887	True	1.94	6	6	0	0
+BPAM22-1_SAMN07482816_MAG_00000014	6	Unknown JABMNR01	JABMNR01	Pseudomonadota	BPAM22-1	Seawater	-42.5967	148.2333	True	1.09	6	6	0	0
+CAOS20-1_SAMN13674977-S001_MAG_00000072	6	Unknown Sphingobium	Sphingobium	Pseudomonadota	CAOS20-1	Seawater	39.3	139.65	True	7.04	6	6	0	0
+CAOS20-1_SAMN13674977-S003_MAG_00000025	6	Unknown EhC02	EhC02	Pseudomonadota	CAOS20-1	Seawater	39.3	139.65	True	0.0	6	6	0	0
+CAOS20-1_SAMN13674978-S011_MAG_00000173	6	Novosphingobium indicum	Novosphingobium	Pseudomonadota	CAOS20-1	Seawater	-67.76	-89.29	True	0.42	6	6	0	0
+CAOS20-1_SAMN13674978-S013_MAG_00000007	6	Unknown CANJQJ01	CANJQJ01	Pseudomonadota	CAOS20-1	Seawater	-67.76	-89.29	True	4.56	6	6	0	0
+CHAS20-1_SAMN14350117_MAG_00000050	6	JASJBI01 sp030066595	JASJBI01	Pseudomonadota	CHAS20-1	Marine sediment	-17.4742	-149.783	True	8.72	6	6	0	0
+CHAS20-1_SAMN14350117_MAG_00000051	6	Unknown CALKHQ01	Unknown CALKHQ01	Pseudomonadota	CHAS20-1	Marine sediment	-17.4742	-149.783	True	1.12	6	6	0	0
+DONG22-1_SAMN19687753_MAG_00000017	6	Unknown HK1	Unknown HK1	Pseudomonadota	DONG22-1	Marine sediment	16.07455	111.7974	True	0.0	6	6	0	0
+KELL22-1_SAMN22237333_MAG_00000019	6	Unknown JASJEC01	JASJEC01	Pseudomonadota	KELL22-1	Marine sponge tissue	24.6609	-81.4563	True	1.41	6	6	0	0
+LUOR22-1_SAMEA13410271_MAG_00000023	6	Unknown Reyranella	Reyranella	Pseudomonadota	LUOR22-1	Seawater	42.1145	3.168478	True	1.09	6	6	0	0
+RSGB23-1_GCA-013519935-V1_GENO_10000001	6	WFHF3C12 sp013519935	WFHF3C12	Pseudomonadota	RSGB23-1	NA			False	0.0	6	6	0	0
+RSGB23-1_GCF-000404245-V1_GENO_10000001	6	Legionella pneumophila	Legionella	Pseudomonadota	RSGB23-1	NA			False	0.19	6	6	0	0
+RSGB23-1_GCF-000455845-V1_GENO_10000001	6	Legionella pneumophila	Legionella	Pseudomonadota	RSGB23-1	NA			False	0.19	6	6	0	0
+RSGB23-1_GCF-000694995-V1_GENO_10000001	6	Legionella pneumophila	Legionella	Pseudomonadota	RSGB23-1	NA			False	0.19	6	6	0	0
+RSGB23-1_GCF-000702385-V1_GENO_10000001	6	Xanthobacter aminoxidans	Xanthobacter	Pseudomonadota	RSGB23-1	NA			False	0.0	6	6	0	0
+RSGB23-1_GCF-000734975-V2_GENO_10000001	6	Vreelandella glaciei	Vreelandella	Pseudomonadota	RSGB23-1	NA			False	0.84	6	6	0	0
+RSGB23-1_GCF-000763905-V1_GENO_10000001	6	Paracoccus halophilus	Paracoccus	Pseudomonadota	RSGB23-1	NA			False	0.0	6	6	0	0
+RSGB23-1_GCF-000812465-V1_GENO_10000001	6	Cupriavidus sp000812465	Cupriavidus	Pseudomonadota	RSGB23-1	NA			False	1.49	6	6	0	0
+RSGB23-1_GCF-000953915-V1_GENO_10000001	6	Legionella pneumophila	Legionella	Pseudomonadota	RSGB23-1	NA			False	0.19	6	6	0	0
+RSGB23-1_GCF-002105285-V1_GENO_10000001	6	Planktotalea arctica	Planktotalea	Pseudomonadota	RSGB23-1	NA			False	0.16	6	6	0	0
+RSGB23-1_GCF-002355855-V1_GENO_10000001	6	Sphingobium cloacae	Sphingobium	Pseudomonadota	RSGB23-1	NA			False	1.87	6	6	0	0
+RSGB23-1_GCF-002741725-V1_GENO_10000001	6	Rhodococcus ruber	Rhodococcus	Actinomycetota	RSGB23-1	NA			False	0.75	6	6	0	0
+RSGB23-1_GCF-003149435-V1_GENO_10000001	6	Sediminicurvatus halobius	Sediminicurvatus	Pseudomonadota	RSGB23-1	NA			False	1.41	6	6	0	0
+RSGB23-1_GCF-003205035-V1_GENO_10000001	6	Legionella pneumophila	Legionella	Pseudomonadota	RSGB23-1	NA			False	0.38	6	6	0	0
+RSGB23-1_GCF-003205045-V1_GENO_10000001	6	Legionella pneumophila	Legionella	Pseudomonadota	RSGB23-1	NA			False	0.32	6	6	0	0
+RSGB23-1_GCF-003205055-V1_GENO_10000001	6	Legionella pneumophila	Legionella	Pseudomonadota	RSGB23-1	NA			False	0.19	6	6	0	0
+RSGB23-1_GCF-003205065-V1_GENO_10000001	6	Legionella pneumophila	Legionella	Pseudomonadota	RSGB23-1	NA			False	0.19	6	6	0	0
+RSGB23-1_GCF-003205115-V1_GENO_10000001	6	Legionella pneumophila	Legionella	Pseudomonadota	RSGB23-1	NA			False	0.19	6	6	0	0
+RSGB23-1_GCF-003205135-V1_GENO_10000001	6	Legionella pneumophila	Legionella	Pseudomonadota	RSGB23-1	NA			False	0.19	6	6	0	0
+RSGB23-1_GCF-003205175-V1_GENO_10000001	6	Legionella pneumophila	Legionella	Pseudomonadota	RSGB23-1	NA			False	0.19	6	6	0	0
+RSGB23-1_GCF-003399765-V1_GENO_10000001	6	AK92 sp003399765	AK92	Pseudomonadota	RSGB23-1	NA			False	1.41	6	6	0	0
+RSGB23-1_GCF-003697265-V1_GENO_10000001	6	Sphingobium yanoikuyae	Sphingobium	Pseudomonadota	RSGB23-1	NA			False	0.0	6	6	0	0
+RSGB23-1_GCF-003844175-V1_GENO_10000001	6	Rhodococcus ruber	Rhodococcus	Actinomycetota	RSGB23-1	NA			False	0.63	6	6	0	0
+RSGB23-1_GCF-004137185-V1_GENO_10000001	6	Legionella pneumophila	Legionella	Pseudomonadota	RSGB23-1	NA			False	0.19	6	6	0	0
+RSGB23-1_GCF-004168975-V1_GENO_10000001	6	Legionella fraseri	Legionella	Pseudomonadota	RSGB23-1	NA			False	0.19	6	6	0	0
+RSGB23-1_GCF-004920575-V1_GENO_10000001	6	Legionella pneumophila	Legionella	Pseudomonadota	RSGB23-1	NA			False	0.19	6	6	0	0
+RSGB23-1_GCF-004920585-V1_GENO_10000001	6	Legionella pneumophila	Legionella	Pseudomonadota	RSGB23-1	NA			False	0.57	6	6	0	0
+RSGB23-1_GCF-005780185-V1_GENO_10000001	6	Halomonas urmiana	Halomonas	Pseudomonadota	RSGB23-1	NA			False	1.43	6	6	0	0
+RSGB23-1_GCF-006363875-V1_GENO_10000001	6	Sphingobium fuliginis	Sphingobium	Pseudomonadota	RSGB23-1	NA			False	0.0	6	6	0	0
+RSGB23-1_GCF-010993675-V1_GENO_10000001	6	Modicisalibacter tunisiensis	Modicisalibacter	Pseudomonadota	RSGB23-1	NA			False	0.0	6	6	0	0
+RSGB23-1_GCF-011683955-V1_GENO_10000001	6	Pseudomaricurvus alkylphenolicus	Pseudomaricurvus	Pseudomonadota	RSGB23-1	NA			False	0.0	6	6	0	0
+RSGB23-1_GCF-017894365-V1_GENO_10000001	6	Aromatoleum bremense	Aromatoleum	Pseudomonadota	RSGB23-1	NA			False	0.41	6	6	0	0
+RSGB23-1_GCF-018531475-V1_GENO_10000001	6	Pseudonocardia sp018531475	Pseudonocardia	Actinomycetota	RSGB23-1	NA			False	2.84	6	6	0	0
+TAOJ22-1_SAMN27365860_MAG_00000012	6	Unknown Sulfitobacter	Sulfitobacter	Pseudomonadota	TAOJ22-1	Seawater	36.155	120.33	True	9.55	6	6	0	0
+TARA_SAMEA2622331_MAG_00000019	6	Novosphingobium indicum	Novosphingobium	Pseudomonadota	TOPC	Seawater	1.9928	-84.553	True	0.46	6	6	0	0
+TARA_SAMEA4397215_MAG_00000062	6	CAXBJY01 sp963976285	CAXBJY01	Pseudomonadota	TOPC	Seawater	72.5199	44.0932	True	4.3	6	6	0	0
+TARA_SAMEA4398238_MAG_00000113	6	Unknown GCA-2731375	Unknown GCA-2731375	Pseudomonadota	TOPC	Seawater	70.9433	-53.5349	True	0.0	6	6	0	0
+TARA_SAMEA5999008_MAG_00000158	6	Unknown Piscinibacter	Piscinibacter	Pseudomonadota	TPAC	Seawater	7.8732	-81.7942	True	5.93	6	6	0	0
+WIND23-1_Gp0561256-S001_MAG_00000086	6	Sulfitobacter sp026421135	Sulfitobacter	Pseudomonadota	WIND23-1	Sea ice	87.3239	107.4423	True	0.0	6	6	0	0
+WIND23-1_Gp0561258-S001_MAG_00000032	6	Sulfitobacter sp013139555	Sulfitobacter	Pseudomonadota	WIND23-1	Sea ice	87.4458	95.6702	True	0.9	6	6	0	0
+WIND23-1_Gp0561260-S001_MAG_00000069	6	Sulfitobacter sp013139555	Sulfitobacter	Pseudomonadota	WIND23-1	Sea ice	87.4122	93.2151	True	8.35	6	6	0	0
+ZHEN22-1_SAMN12826202_MAG_00000306	6	Unknown JAPULJ01	JAPULJ01	Pseudomonadota	ZHEN22-1	Marine sediment	-34.8	54.37	True	8.81	6	6	0	0
+ACIN21-1_SAMN05422113_MAG_00000002	5	Antarctobacter sp019392335	Antarctobacter	Pseudomonadota	ACIN21-1	Seawater	9.22	-163.53	True	1.41	5	4	1	0
+ATLA15-1_SAMN03981636-S001_MAG_00000170	5	Unknown CAIRSR01	Unknown CAIRSR01	Pseudomonadota	ATLA15-1	Marine sediment	29.456	-89.887	True	7.04	5	5	0	0
+ATLA15-1_SAMN03981667-S001_MAG_00000013	5	Unknown JAHIVH01	JAHIVH01	Desulfobacterota	ATLA15-1	Marine sediment	29.435	-89.883	True	0.0	5	5	0	0
+ATLA15-1_SAMN03981669-S001_MAG_00000153	5	Hyphomonas sp000682735	Hyphomonas	Pseudomonadota	ATLA15-1	Marine sediment	29.468	-89.882	True	3.84	5	5	0	0
+ATLA15-1_SAMN03981676-S001_MAG_00000050	5	Unknown JAHIVH01	Unknown JAHIVH01	Desulfobacterota	ATLA15-1	Marine sediment	29.456	-89.887	True	3.06	5	5	0	0
+ATLA15-1_SAMN03981678-S001_MAG_00000050	5	Unknown JAABRB01	JAABRB01	Pseudomonadota	ATLA15-1	Marine sediment	29.456	-89.887	True	5.63	5	5	0	0
+ATLA15-1_SAMN03981678-S001_MAG_00000110	5	Unknown JARRKU01	JARRKU01	Desulfobacterota	ATLA15-1	Marine sediment	29.456	-89.887	True	2.26	5	5	0	0
+BOEU19-1_SAMN09765684_MAG_00000020	5	Henriciella sp013213825	Henriciella	Pseudomonadota	BOEU19-1	Marine sediment	22.75	-158.0	True	2.46	5	5	0	0
+BPAM22-1_SAMN07449441_MAG_00000122	5	Unknown JABMNR01	JABMNR01	Pseudomonadota	BPAM22-1	Seawater	-42.5967	148.2333	True	1.74	5	5	0	0
+BPAM22-1_SAMN07482793_MAG_00000005	5	Sphingomonas paucimobilis	Sphingomonas	Pseudomonadota	BPAM22-1	Seawater	-12.4	130.768	True	3.28	5	3	2	0
+BPAM22-1_SAMN07482804_MAG_00000002	5	Unknown JABMNR01	JABMNR01	Pseudomonadota	BPAM22-1	Seawater	-42.5967	148.2333	True	0.0	5	5	0	0
+BPAM22-1_SAMN07483222_MAG_00000032	5	Unknown Ferrovibrio	Ferrovibrio	Pseudomonadota	BPAM22-1	Seawater	-27.345	153.562	True	0.0	5	5	0	0
+BPAM22-1_SAMN08953030_MAG_00000011	5	Bradyrhizobium sp001556045	Bradyrhizobium	Pseudomonadota	BPAM22-1	Seawater	-12.4	130.768	True	4.23	5	5	0	0
+BRAZ22-1_SAMN16557391-S004_MAG_00000056	5	UBA7957 sp003511825	UBA7957	Pseudomonadota	BRAZ22-1	Hydrothermal vent plume	30.12405	-42.1195	True	0.0	5	5	0	0
+BRYA16-1_SAMN04849236-S002_MAG_00000017	5	CAKZYD01 sp937884085	CAKZYD01	Pseudomonadota	BRYA16-1	Seawater	27.72992	-154.898	True	1.28	5	5	0	0
+CAOS20-1_SAMN13674977-S010_MAG_00000027	5	Unknown JAWQFO01	JAWQFO01	Pseudomonadota	CAOS20-1	Seawater	39.3	139.65	True	1.27	5	5	0	0
+CAOS20-1_SAMN13674977-S010_MAG_00000048	5	Sulfitobacter sp026421135	Sulfitobacter	Pseudomonadota	CAOS20-1	Seawater	39.3	139.65	True	1.32	5	5	0	0
+CAOS20-1_SAMN13674977-S020_MAG_00000060	5	Unknown Sphingobium	Sphingobium	Pseudomonadota	CAOS20-1	Seawater	39.3	139.65	True	2.25	5	5	0	0
+CAOS20-1_SAMN13674978-S005_MAG_00000083	5	Unknown Hyphococcus	Hyphococcus	Pseudomonadota	CAOS20-1	Seawater	-67.76	-89.29	True	1.03	5	5	0	0
+CAOS20-1_SAMN13674978-S005_MAG_00000124	5	Novosphingobium indicum	Novosphingobium	Pseudomonadota	CAOS20-1	Seawater	-67.76	-89.29	True	1.99	5	5	0	0
+CAOS20-1_SAMN13674978-S008_MAG_00000061	5	Novosphingobium indicum	Novosphingobium	Pseudomonadota	CAOS20-1	Seawater	-67.76	-89.29	True	1.84	5	5	0	0
+CAOS20-1_SAMN13674978-S008_MAG_00000082	5	Unknown Hyphococcus	Hyphococcus	Pseudomonadota	CAOS20-1	Seawater	-67.76	-89.29	True	1.41	5	5	0	0
+CAOS20-1_SAMN13674978-S011_MAG_00000090	5	Unknown Hyphococcus	Hyphococcus	Pseudomonadota	CAOS20-1	Seawater	-67.76	-89.29	True	2.2	5	5	0	0
+CAOS20-1_SAMN13674978-S011_MAG_00000111	5	Unknown CANJQJ01	CANJQJ01	Pseudomonadota	CAOS20-1	Seawater	-67.76	-89.29	True	1.52	5	5	0	0
+CAOS20-1_SAMN13674978-S012_MAG_00000015	5	Novosphingobium indicum	Novosphingobium	Pseudomonadota	CAOS20-1	Seawater	-67.76	-89.29	True	1.69	5	5	0	0
+CAOS20-1_SAMN13674978-S012_MAG_00000186	5	Unknown Hyphococcus	Hyphococcus	Pseudomonadota	CAOS20-1	Seawater	-67.76	-89.29	True	1.53	5	5	0	0
+CAOS20-1_SAMN13674978-S029_MAG_00000083	5	Unknown UBA1479	UBA1479	Pseudomonadota	CAOS20-1	Seawater	-67.76	-89.29	True	1.41	5	5	0	0
+CAOS20-1_SAMN13674978-S030_MAG_00000030	5	Unknown Rubrivivax	Rubrivivax	Pseudomonadota	CAOS20-1	Seawater	-67.76	-89.29	True	1.17	5	5	0	0
+CAOS20-1_SAMN13674978-S030_MAG_00000060	5	Unknown UBA1479	UBA1479	Pseudomonadota	CAOS20-1	Seawater	-67.76	-89.29	True	0.0	5	5	0	0
+CAOS20-1_SAMN13674978-S030_MAG_00000078	5	Unknown DAOMNN01	DAOMNN01	Pseudomonadota	CAOS20-1	Seawater	-67.76	-89.29	True	1.04	5	5	0	0
+CAOS20-1_SAMN13674978-S031_MAG_00000115	5	Unknown UBA1479	UBA1479	Pseudomonadota	CAOS20-1	Seawater	-67.76	-89.29	True	0.0	5	5	0	0
+CARD22-1_SAMN24292809_MAG_00000011	5	Unknown JAKSDN01	Unknown JAKSDN01	Pseudomonadota	CARD22-1	Coral tissue	22.18	39.02	True	2.83	5	5	0	0
+CARD22-1_SAMN24292821_MAG_00000019	5	Unknown JAKSDN01	Unknown JAKSDN01	Pseudomonadota	CARD22-1	Coral tissue	22.18	39.02	True	1.52	5	5	0	0
+CARD22-1_SAMN24292837_MAG_00000005	5	Unknown Desulfoluna	Desulfoluna	Desulfobacterota	CARD22-1	Coral tissue	22.18	39.02	True	2.31	5	5	0	0
+CHAS20-1_SAMN14350117_MAG_00000016	5	JAKSBE01 sp030066685	JAKSBE01	Pseudomonadota	CHAS20-1	Marine sediment	-17.4742	-149.783	True	4.16	5	5	0	0
+DONG22-1_SAMN19687762_MAG_00000053	5	Unknown JAJFGK01	JAJFGK01	Pseudomonadota	DONG22-1	Marine sediment	17.07702	111.4736	True	2.04	5	5	0	0
+DUAR15-1_SAMN06266101_MAG_00000003	5	Marinobacter flavimaris	Marinobacter	Pseudomonadota	DUAR15-1	Seawater	43.29	8.1	True	0.0	5	5	0	0
+DUAR15-1_SAMN06266132_MAG_00000007	5	Marinobacter flavimaris	Marinobacter	Pseudomonadota	DUAR15-1	Seawater	38.48	10.16	True	0.0	5	5	0	0
+HARO16-1_SAMN03860272_MAG_00000016	5	Marinobacter salsuginis	Marinobacter	Pseudomonadota	HARO16-1	Seawater	18.34	40.44	True	2.82	5	5	0	0
+KELL22-1_SAMN22237345_MAG_00000027	5	Unknown JASJEC01	JASJEC01	Pseudomonadota	KELL22-1	Marine sponge tissue	24.6609	-81.4563	True	5.63	5	5	0	0
+MCIN21-1_SAMEA7319926_MAG_00000006	5	Unknown Azonexus	Azonexus	Pseudomonadota	MCIN21-1	Freshwater pond sediment	23.80912	90.41704	True	3.93	5	5	0	0
+OBRI24-1_SAMEA115094373_MAG_00000067	5	Hyphomonas sp000682775	Hyphomonas	Pseudomonadota	OBRI24-1	Seawater	-64.75841667	152.0502167	True	1.44	5	4	1	0
+PUEN22-1_SAMN25861445_MAG_00000124	5	Puniceibacterium antarcticum	Puniceibacterium	Pseudomonadota	PUEN22-1	Seawater	69.03	-105.33	True	2.34	5	4	1	0
+RSGB23-1_GCA-003712015-V2_GENO_10000001	5	Pseudomonas aeruginosa	Pseudomonas	Pseudomonadota	RSGB23-1	NA			False	0.63	5	5	0	0
+RSGB23-1_GCA-016966195-V1_GENO_10000001	5	Bordetella bronchiseptica_F	Bordetella	Pseudomonadota	RSGB23-1	NA			False	0.58	5	5	0	0
+RSGB23-1_GCF-000014785-V1_GENO_10000001	5	Alkalilimnicola ehrlichii	Alkalilimnicola	Pseudomonadota	RSGB23-1	NA			False	0.59	5	5	0	0
+RSGB23-1_GCF-000016725-V1_GENO_10000001	5	Acidiphilium multivorum	Acidiphilium	Pseudomonadota	RSGB23-1	NA			False	0.0	5	5	0	0
+RSGB23-1_GCF-000021765-V1_GENO_10000001	5	Thauera aminoaromatica	Thauera	Pseudomonadota	RSGB23-1	NA			False	0.0	5	5	0	0
+RSGB23-1_GCF-000257545-V3_GENO_10000001	5	Pseudomonas_E mandelii	Pseudomonas_E	Pseudomonadota	RSGB23-1	NA			False	1.22	5	5	0	0
+RSGB23-1_GCF-000283275-V1_GENO_10000001	5	Marinobacter psychrophilus	Marinobacter	Pseudomonadota	RSGB23-1	NA			False	0.0	5	5	0	0
+RSGB23-1_GCF-000300275-V1_GENO_10000001	5	Thalassospira profundimaris	Thalassospira	Pseudomonadota	RSGB23-1	NA			False	0.0	5	5	0	0
+RSGB23-1_GCF-000308315-V1_GENO_10000001	5	Tatlockia tunisiensis	Tatlockia	Pseudomonadota	RSGB23-1	NA			False	1.36	5	5	0	0
+RSGB23-1_GCF-000427665-V1_GENO_10000001	5	Geminicoccus roseus	Geminicoccus	Pseudomonadota	RSGB23-1	NA			False	0.0	5	4	0	1
+RSGB23-1_GCF-000695015-V1_GENO_10000001	5	Legionella pneumophila	Legionella	Pseudomonadota	RSGB23-1	NA			False	0.0	5	5	0	0
+RSGB23-1_GCF-000831325-V1_GENO_10000001	5	Thauera aminoaromatica	Thauera	Pseudomonadota	RSGB23-1	NA			False	1.41	5	5	0	0
+RSGB23-1_GCF-000950675-V1_GENO_10000001	5	Legionella pneumophila	Legionella	Pseudomonadota	RSGB23-1	NA			False	0.0	5	5	0	0
+RSGB23-1_GCF-000950695-V1_GENO_10000001	5	Legionella pneumophila	Legionella	Pseudomonadota	RSGB23-1	NA			False	0.0	5	5	0	0
+RSGB23-1_GCF-000950745-V1_GENO_10000001	5	Legionella pneumophila	Legionella	Pseudomonadota	RSGB23-1	NA			False	0.0	5	5	0	0
+RSGB23-1_GCF-000953935-V1_GENO_10000001	5	Legionella pneumophila	Legionella	Pseudomonadota	RSGB23-1	NA			False	0.0	6	6	0	0
+RSGB23-1_GCF-001661075-V1_GENO_10000001	5	Pseudomonas_E silesiensis	Pseudomonas_E	Pseudomonadota	RSGB23-1	NA			False	0.0	5	5	0	0
+RSGB23-1_GCF-002028455-V1_GENO_10000001	5	Zoogloea sp002028455	Zoogloea	Pseudomonadota	RSGB23-1	NA			False	2.6	5	5	0	0
+RSGB23-1_GCF-002148795-V1_GENO_10000001	5	Oceanibaculum nanhaiense	Oceanibaculum	Pseudomonadota	RSGB23-1	NA			False	1.09	5	5	0	0
+RSGB23-1_GCF-002760615-V1_GENO_10000001	5	Puniceibacterium antarcticum	Puniceibacterium	Pseudomonadota	RSGB23-1	NA			False	1.27	5	4	1	0
+RSGB23-1_GCF-002813775-V1_GENO_10000001	5	Thiodictyon syntrophicum	Thiodictyon	Pseudomonadota	RSGB23-1	NA			False	1.71	5	5	0	0
+RSGB23-1_GCF-002849615-V1_GENO_10000001	5	Pollutimonas nitritireducens	Pollutimonas	Pseudomonadota	RSGB23-1	NA			False	0.53	5	5	0	0
+RSGB23-1_GCF-002881635-V1_GENO_10000001	5	Pseudomonas_E frederiksbergensis	Pseudomonas_E	Pseudomonadota	RSGB23-1	NA			False	1.18	5	5	0	0
+RSGB23-1_GCF-002881715-V1_GENO_10000001	5	Pseudomonas_E frederiksbergensis	Pseudomonas_E	Pseudomonadota	RSGB23-1	NA			False	0.0	5	5	0	0
+RSGB23-1_GCF-002881725-V1_GENO_10000001	5	Pseudomonas_E frederiksbergensis	Pseudomonas_E	Pseudomonadota	RSGB23-1	NA			False	0.76	5	5	0	0
+RSGB23-1_GCF-002882075-V1_GENO_10000001	5	Pseudomonas_E mandelii	Pseudomonas_E	Pseudomonadota	RSGB23-1	NA			False	0.0	5	5	0	0
+RSGB23-1_GCF-002882675-V1_GENO_10000001	5	Pseudomonas_E frederiksbergensis	Pseudomonas_E	Pseudomonadota	RSGB23-1	NA			False	0.0	5	5	0	0
+RSGB23-1_GCF-002882695-V1_GENO_10000001	5	Pseudomonas_E frederiksbergensis	Pseudomonas_E	Pseudomonadota	RSGB23-1	NA			False	1.5	5	5	0	0
+RSGB23-1_GCF-002902905-V1_GENO_10000001	5	Achromobacter sp002902905	Achromobacter	Pseudomonadota	RSGB23-1	NA			False	1.4	5	5	0	0
+RSGB23-1_GCF-003072125-V1_GENO_10000001	5	Roseovarius sediminicola	Roseovarius	Pseudomonadota	RSGB23-1	NA			False	0.33	5	5	0	0
+RSGB23-1_GCF-003202205-V1_GENO_10000001	5	Halomonas flagellata	Halomonas	Pseudomonadota	RSGB23-1	NA			False	1.7	5	5	0	0
+RSGB23-1_GCF-003258595-V1_GENO_10000001	5	Acuticoccus sediminis	Acuticoccus	Pseudomonadota	RSGB23-1	NA			False	1.64	5	5	0	0
+RSGB23-1_GCF-003265685-V1_GENO_10000001	5	Piscinibacter caeni	Piscinibacter	Pseudomonadota	RSGB23-1	NA			False	3.46	5	5	0	0
+RSGB23-1_GCF-003399715-V1_GENO_10000001	5	AK92 sp003399765	AK92	Pseudomonadota	RSGB23-1	NA			False	2.86	5	5	0	0
+RSGB23-1_GCF-003600895-V1_GENO_10000001	5	Nocardioides cavernaquae	Nocardioides	Actinomycetota	RSGB23-1	NA			False	2.42	5	5	0	0
+RSGB23-1_GCF-003722355-V1_GENO_10000001	5	Methylocystis hirsuta	Methylocystis	Pseudomonadota	RSGB23-1	NA			False	0.0	5	5	0	0
+RSGB23-1_GCF-003855495-V1_GENO_10000001	5	Methylocystis rosea_A	Methylocystis	Pseudomonadota	RSGB23-1	NA			False	0.47	5	5	0	0
+RSGB23-1_GCF-003990125-V1_GENO_10000001	5	Legionella qingyii	Legionella	Pseudomonadota	RSGB23-1	NA			False	0.0	5	5	0	0
+RSGB23-1_GCF-003990275-V1_GENO_10000001	5	Legionella_A septentrionalis	Legionella_A	Pseudomonadota	RSGB23-1	NA			False	0.0	5	5	0	0
+RSGB23-1_GCF-004137125-V1_GENO_10000001	5	Legionella fraseri	Legionella	Pseudomonadota	RSGB23-1	NA			False	0.19	5	5	0	0
+RSGB23-1_GCF-005144965-V1_GENO_10000001	5	Hankyongella ginsenosidimutans	Hankyongella	Pseudomonadota	RSGB23-1	NA			False	0.43	5	0	5	0
+RSGB23-1_GCF-006175995-V1_GENO_10000001	5	Desulfobotulus mexicanus	Desulfobotulus	Desulfobacterota	RSGB23-1	NA			False	2.26	5	5	0	0
+RSGB23-1_GCF-007830435-V1_GENO_10000001	5	Desulfobotulus alkaliphilus	Desulfobotulus	Desulfobacterota	RSGB23-1	NA			False	1.41	5	5	0	0
+RSGB23-1_GCF-008711285-V1_GENO_10000001	5	Roseibium aquae	Roseibium	Pseudomonadota	RSGB23-1	NA			False	0.21	5	5	0	0
+RSGB23-1_GCF-009177135-V1_GENO_10000001	5	Azospira oryzae	Azospira	Pseudomonadota	RSGB23-1	NA			False	1.11	5	5	0	0
+RSGB23-1_GCF-009469615-V1_GENO_10000001	5	Azonexus sp009469615	Azonexus	Pseudomonadota	RSGB23-1	NA			False	0.71	5	5	0	0
+RSGB23-1_GCF-009872365-V1_GENO_10000001	5	Rhodococcus_F sp009872365	Rhodococcus_F	Actinomycetota	RSGB23-1	NA			False	1.74	5	5	0	0
+RSGB23-1_GCF-011683915-V1_GENO_10000001	5	Pelagibius litoralis	Pelagibius	Pseudomonadota	RSGB23-1	NA			False	1.41	5	5	0	0
+RSGB23-1_GCF-013283055-V1_GENO_10000001	5	Aliiroseovarius crassostreae	Aliiroseovarius	Pseudomonadota	RSGB23-1	NA			False	0.4	5	5	0	0
+RSGB23-1_GCF-900186965-V1_GENO_10000001	5	Legionella_C spiritensis	Legionella_C	Pseudomonadota	RSGB23-1	NA			False	0.0	5	5	0	0
+SANC23-1_SAMEA110646508_MAG_00000041	5	Antarctobacter sp019392335	Antarctobacter	Pseudomonadota	SANC23-1	Seawater	-3.41053	-169.463	True	4.0	5	5	0	0
+SANT17-1_SAMN02905733_MAG_00000083	5	Reyranella sp963923875	Reyranella	Pseudomonadota	SANT17-1	Freshwater river water	-3.86	-23.04	True	1.41	5	5	0	0
+SATI15-1_SAMN03252821_MAG_00000039	5	Reyranella sp963923875	Reyranella	Pseudomonadota	SATI15-1	Freshwater river water	-2.48438	-55.0075	True	4.23	5	5	0	0
+SATI15-1_SAMN03252824_MAG_00000015	5	Reyranella sp963923875	Reyranella	Pseudomonadota	SATI15-1	Freshwater river water	-2.48438	-55.0075	True	1.22	5	5	0	0
+SCHR19-1_SAMN09405918_MAG_00000027	5	Sulfitobacter sp947497275	Sulfitobacter	Pseudomonadota	SCHR19-1	Seawater	53.80196	-128.833	True	0.64	5	5	0	0
+SCHR19-1_SAMN09405945_MAG_00000001	5	Sulfitobacter sp947497275	Sulfitobacter	Pseudomonadota	SCHR19-1	Seawater	53.80196	-128.833	True	0.21	5	5	0	0
+SCHR19-1_SAMN09405950_MAG_00000005	5	Sulfitobacter sp947497275	Sulfitobacter	Pseudomonadota	SCHR19-1	Seawater	53.80196	-128.833	True	2.5	5	5	0	0
+SCHR19-1_SAMN09405953_MAG_00000013	5	Sulfitobacter sp947497275	Sulfitobacter	Pseudomonadota	SCHR19-1	Seawater	53.80196	-128.833	True	1.33	5	5	0	0
+SCHR19-1_SAMN09406119_MAG_00000018	5	Unknown Neptunomonas	Neptunomonas	Pseudomonadota	SCHR19-1	Seawater	53.80196	-128.833	True	0.72	5	5	0	0
+SCRA20-1_SAMN11854482_MAG_00000152	5	Unknown GCA-2731375	GCA-2731375	Pseudomonadota	SCRA20-1	Seawater	10.617	-65.167	True	2.82	5	4	1	0
+SCRA20-1_SAMN11854489_MAG_00000118	5	Unknown JASMHC01	JASMHC01	Pseudomonadota	SCRA20-1	Seawater	10.617	-65.167	True	2.18	5	5	0	0
+SHAF22-1_SAMEA7723491_MAG_00000003	5	Marinobacter manganoxydans	Marinobacter	Pseudomonadota	SHAF22-1	Marine sediment	46.68323	-11.6042	True	1.31	5	5	0	0
+SHAF22-1_SAMEA7723957_MAG_00000006	5	Oceanibaculum nanhaiense	Oceanibaculum	Pseudomonadota	SHAF22-1	Marine sediment	46.68323	-11.6042	True	1.41	5	5	0	0
+SHIN18-1_SAMEA104707374_MAG_00000089	5	Unknown JBFHNV01	JBFHNV01	Pseudomonadota	SHIN18-1	Marine sediment	35.03247	126.3901	True	7.94	5	5	0	0
+SHIN18-1_SAMEA104707374_MAG_00000090	5	Unknown Thiosocius	Thiosocius	Pseudomonadota	SHIN18-1	Marine sediment	35.03247	126.3901	True	2.73	5	5	0	0
+SHIN18-1_SAMEA104707375_MAG_00000052	5	Unknown JBFHNV01	JBFHNV01	Pseudomonadota	SHIN18-1	Marine sediment	35.06167	126.3005	True	1.41	5	5	0	0
+SHIN18-1_SAMEA104707376_MAG_00000071	5	QNFN01 sp009937385	QNFN01	Pseudomonadota	SHIN18-1	Marine sediment	35.10478	126.3338	True	3.23	5	5	0	0
+SOGI22-1_SAMEA6126158_MAG_00000014	5	Unknown JAKSDN01	Unknown JAKSDN01	Pseudomonadota	SOGI22-1	Marine sediment	42.8083	10.14289	True	2.82	5	5	0	0
+SONG20-1_SAMN10739805_MAG_00000103	5	Unknown NVQY01	NVQY01	Pseudomonadota	SONG20-1	Marine sediment	37.33	126.59	True	6.41	5	5	0	0
+SUHA22-1_SAMN20336539_MAG_00000059	5	Unknown Parasphingopyxis	Parasphingopyxis	Pseudomonadota	SUHA22-1	Seawater	10.98753	112.9924	True	0.07	5	5	0	0
+SUMM22-1_SAMN21164839_MAG_00000003	5	Unknown Ga0077536	Unknown Ga0077536	Pseudomonadota	SUMM22-1	Animal bone biofilm	1.35	103.8	True	1.41	5	5	0	0
+TAOJ22-1_SAMN27365854_MAG_00000071	5	Cereibacter_A ovatus	Cereibacter_A	Pseudomonadota	TAOJ22-1	Seawater	36.155	120.33	True	0.93	5	5	0	0
+TAOJ22-1_SAMN27365860_MAG_00000024	5	Unknown Glaciecola	Glaciecola	Pseudomonadota	TAOJ22-1	Seawater	36.155	120.33	True	8.0	5	5	0	0
+TARA_SAMEA2619625_MAG_00000009	5	UBA1479 sp963972065	UBA1479	Pseudomonadota	TOPC	Seawater	41.6686	2.7996	True	1.41	5	5	0	0
+TARA_SAMEA2619815_MAG_00000038	5	UBA4479 sp963974935	UBA4479	Pseudomonadota	TOPC	Seawater	27.16	34.8033	True	1.03	5	5	0	0
+TARA_SAMEA2620204_MAG_00000049	5	Novosphingobium indicum	Novosphingobium	Pseudomonadota	TOPC	Seawater	14.6059	70.0	True	0.55	5	5	0	0
+TARA_SAMEA2621151_MAG_00000014	5	UBA1479 sp002325375	UBA1479	Pseudomonadota	TOPC	Seawater	-8.7789	-17.9098	True	0.62	5	5	0	0
+TARA_SAMEA2621191_MAG_00000001	5	UBA1479 sp002325375	UBA1479	Pseudomonadota	TOPC	Seawater	-8.7986	-17.9142	True	0.0	5	5	0	0
+TARA_SAMEA2621213_MAG_00000023	5	Hyphomonas sp002414505	Hyphomonas	Pseudomonadota	TOPC	Seawater	-20.9354	-35.3344	True	5.17	5	5	0	0
+TARA_SAMEA2621229_MAG_00000023	5	UBA1479 sp002325375	UBA1479	Pseudomonadota	TOPC	Seawater	-21.0292	-35.3923	True	0.0	5	5	0	0
+TARA_SAMEA2621498_MAG_00000018	5	Tistrella mobilis	Tistrella	Pseudomonadota	TOPC	Seawater	-60.2287	-60.5096	True	2.07	5	5	0	0
+TARA_SAMEA2621791_MAG_00000143	5	Tistrella mobilis	Tistrella	Pseudomonadota	TOPC	Seawater	-34.0614	-73.0369	True	2.44	5	5	0	0
+TARA_SAMEA2621854_MAG_00000048	5	Tistrella mobilis	Tistrella	Pseudomonadota	TOPC	Seawater	-31.4424	-93.9573	True	1.16	6	6	0	0
+TARA_SAMEA2622128_MAG_00000010	5	Roseovarius sp002720475	Roseovarius	Pseudomonadota	TOPC	Seawater	-12.9723	-96.0932	True	2.26	5	5	0	0
+TARA_SAMEA2622212_MAG_00000009	5	Novosphingobium indicum	Novosphingobium	Pseudomonadota	TOPC	Seawater	-5.261	-85.2995	True	1.14	5	5	0	0
+TARA_SAMEA2622769_MAG_00000102	5	Roseovarius sp002720475	Roseovarius	Pseudomonadota	TOPC	Seawater	-9.1504	-140.528	True	1.16	5	4	1	0
+TARA_SAMEA2623523_MAG_00000055	5	Sphingobium yanoikuyae_A	Sphingobium	Pseudomonadota	TOPC	Seawater	25.6236	-88.4085	True	2.56	5	5	0	0
+TARA_SAMEA2623523_MAG_00000096	5	UBA1479 sp913030825	UBA1479	Pseudomonadota	TOPC	Seawater	25.6236	-88.4085	True	1.41	5	5	0	0
+TARA_SAMEA4397023_MAG_00000036	5	Nisaea sp963974195	Nisaea	Pseudomonadota	TOPC	Seawater	67.1675	0.3537	True	0.0	5	5	0	0
+TARA_SAMEA4397118_MAG_00000086	5	Sphingobium sp000588875	Sphingobium	Pseudomonadota	TOPC	Seawater	72.5128	44.1569	True	0.15	5	5	0	0
+TARA_SAMEA4397174_MAG_00000080	5	UBA4479 sp963974935	UBA4479	Pseudomonadota	TOPC	Seawater	72.5432	44.1735	True	1.49	5	5	0	0
+TARA_SAMEA4397215_MAG_00000092	5	JACKII01 sp963974445	JACKII01	Pseudomonadota	TOPC	Seawater	72.5199	44.0932	True	1.24	5	5	0	0
+TARA_SAMEA4397255_MAG_00000045	5	CAXBJY01 sp963976285	CAXBJY01	Pseudomonadota	TOPC	Seawater	78.9564	79.2246	True	4.57	5	5	0	0
+TARA_SAMEA4397255_MAG_00000055	5	UBA4479 sp963974935	UBA4479	Pseudomonadota	TOPC	Seawater	78.9564	79.2246	True	1.49	5	5	0	0
+TARA_SAMEA4397295_MAG_00000013	5	CAXBJY01 sp963976285	CAXBJY01	Pseudomonadota	TOPC	Seawater	78.9354	79.0913	True	4.82	5	5	0	0
+TARA_SAMEA4397330_MAG_00000107	5	Sulfitobacter sp963976125	Sulfitobacter	Pseudomonadota	TOPC	Seawater	79.2233	66.5078	True	0.4	5	5	0	0
+TARA_SAMEA4397409_MAG_00000051	5	Sulfitobacter sp963976125	Sulfitobacter	Pseudomonadota	TOPC	Seawater	79.3349	66.1855	True	0.4	5	5	0	0
+TARA_SAMEA4397815_MAG_00000046	5	UBA1479 sp963976055	UBA1479	Pseudomonadota	TOPC	Seawater	71.0704	174.9916	True	0.0	6	6	0	0
+TARA_SAMEA4397920_MAG_00000002	5	Sphingobium sp000588875	Sphingobium	Pseudomonadota	TOPC	Seawater	73.3275	-168.903	True	0.0	5	5	0	0
+TARA_SAMEA4397948_MAG_00000040	5	UBA1479 sp963976055	UBA1479	Pseudomonadota	TOPC	Seawater	71.8895	-154.937	True	0.0	6	6	0	0
+TARA_SAMEA4398027_MAG_00000025	5	Vreelandella glaciei	Vreelandella	Pseudomonadota	TOPC	Seawater	74.2987	-85.9117	True	1.87	5	5	0	0
+TARA_SAMEA4398387_MAG_00000004	5	JACKII01 sp963974445	JACKII01	Pseudomonadota	TOPC	Seawater	61.5427	-55.9973	True	2.82	5	5	0	0
+TARA_SAMEA4398387_MAG_00000149	5	CAXBJY01 sp963976285	CAXBJY01	Pseudomonadota	TOPC	Seawater	61.5427	-55.9973	True	5.48	5	5	0	0
+TARA_SAMEA6003996_MAG_00000107	5	Hyphococcus sp002704915	Hyphococcus	Pseudomonadota	TPAC	Seawater	-17.5184	-149.924	True	2.05	5	5	0	0
+TARA_SAMEA6004479_MAG_00000153	5	Marinobacter manganoxydans	Marinobacter	Pseudomonadota	TPAC	Seawater	-17.4897	-149.755	True	1.41	5	5	0	0
+TARA_SAMEA6017928_MAG_00000057	5	Unknown JAAAPF01	JAAAPF01	Pseudomonadota	TPAC	Hydrozoa tissue	26.65487	127.866	True	0.25	5	5	0	0
+TARA_SAMEA6019342_MAG_00000136	5	CAXBJY01 sp963976285	CAXBJY01	Pseudomonadota	TPAC	Seawater	-17.3678	177.1313	True	2.82	5	5	0	0
+TREM17-1_SAMN05416776_MAG_00000008	5	Vreelandella sp002366715	Vreelandella	Pseudomonadota	TREM17-1	Seawater	46.707	-48.785	True	1.75	5	5	0	0
+TREM17-1_SAMN05416780_MAG_00000010	5	Vreelandella sp002366715	Vreelandella	Pseudomonadota	TREM17-1	Seawater	46.707	-48.785	True	0.0	5	5	0	0
+WANG22-1_SAMN08714533-S077_MAG_00000072	5	Unknown Novosphingobium	Novosphingobium	Pseudomonadota	WANG22-1	Marine biofilm	22.2	39.04	True	1.54	5	5	0	0
+WANG22-1_SAMN08714533-S082_MAG_00000053	5	Unknown Novosphingobium	Novosphingobium	Pseudomonadota	WANG22-1	Marine biofilm	22.2	39.04	True	1.88	5	5	0	0
+WANG22-1_SAMN08714533-S083_MAG_00000056	5	Unknown Novosphingobium	Novosphingobium	Pseudomonadota	WANG22-1	Marine biofilm	22.2	39.04	True	1.88	5	5	0	0
+WANG22-1_SAMN08714533-S105_MAG_00000010	5	Blastomonas delafieldii_A	Blastomonas	Pseudomonadota	WANG22-1	Marine biofilm	22.2	39.04	True	2.35	5	5	0	0
+WANG22-1_SAMN08714533-S110_MAG_00000063	5	Unknown JACOMY01	Unknown JACOMY01	Pseudomonadota	WANG22-1	Marine biofilm	22.2	39.05	True	0.47	5	5	0	0
+WANG22-1_SAMN08714533-S113_MAG_00000047	5	Unknown JACOMY01	Unknown JACOMY01	Pseudomonadota	WANG22-1	Marine biofilm	22.2	39.05	True	0.8	5	5	0	0
+ZHAN22-5_SAMN24541642_MAG_00000011	5	Spectribacter hydrogenooxidans	Spectribacter	Pseudomonadota	ZHAN22-5	Seawater	-62.23	-58.93	True	0.0	5	5	0	0
+ZHEN15-1_SAMN22350792_MAG_00000039	5	Unknown Pseudohalocynthiibacter	Pseudohalocynthiibacter	Pseudomonadota	ZHEN15-1	Estuarine sediment	33.82	120.47	True	2.84	5	5	0	0
+ZHEN15-1_SAMN22350798_MAG_00000023	5	Unknown Rhodobacteraceae	Unknown Rhodobacteraceae	Pseudomonadota	ZHEN15-1	Estuarine sediment	30.95	121.91	True	1.22	5	5	0	0
+ZHEN22-1_SAMN12826204_MAG_00000194	5	Unknown JACKNG01	JACKNG01	Pseudomonadota	ZHEN22-1	Marine sediment	-34.97	54.21	True	0.0	5	5	0	0
