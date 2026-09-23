@@ -40,7 +40,7 @@ project's other scripts don't rely on):
     fragmentation, not real paralogs. Only 2/9 are truly triad-complete.
   - GCF_002082905.2 (L. anisa "FDAARGOS_200", also n_phaC=9) is an FDA-
     ARGOS reference-quality, PacBio+Illumina hybrid assembly: 4 contigs,
-    N50 4.2Mb, 99.76% complete, 1.7% pseudogenes, not suppressed. 7/9 of
+    N50 4.2Mb, 99.76% complete, 1.7% pseudogenes, not suppressed. 8/9 of
     its phaC copies are triad-complete and full-length, occupying 9
     DISTINCT 70%-identity clusters (no redundant near-duplicates) --
     genuinely diverse paralogs, not fragmentation.
@@ -97,7 +97,7 @@ ASSEMBLY_QC = {
         pct_pseudogene=36.9, checkm_complete=66.75, suppressed=True, n_phac_true_triad_frac=2 / 9),
     'RSGB23-1_GCF-002082905-V2_GENO_10000001': dict(
         accession='GCF_002082905.2', strain='L. anisa FDAARGOS_200', n_contigs=4, n50_bp=4234341,
-        pct_pseudogene=1.7, checkm_complete=99.76, suppressed=False, n_phac_true_triad_frac=7 / 9),
+        pct_pseudogene=1.7, checkm_complete=99.76, suppressed=False, n_phac_true_triad_frac=8 / 9),
     'RSGB23-1_GCF-003205035-V1_GENO_10000001': dict(
         accession='GCF_003205035.1', strain='L. pneumophila GC05', n_contigs=112, n50_bp=173439,
         pct_pseudogene=2.1, checkm_complete=98.93, suppressed=False, n_phac_true_triad_frac=5 / 6),
