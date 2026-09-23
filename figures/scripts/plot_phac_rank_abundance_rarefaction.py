@@ -59,8 +59,12 @@ Usage:
 """
 import csv
 import random
+import sys
 from collections import defaultdict
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import _phac_qc
 
 import matplotlib
 matplotlib.use('Agg')
@@ -88,30 +92,47 @@ WELL_SAMPLED_HABITATS = {'Seawater', 'Marine sediment', 'Marine Porifera tissue'
 random.seed(RANDOM_SEED)
 
 # ---------------------------------------------------------------------
-# 1. cluster_id -> set(genome), genome -> set(cluster_id)   [full 20,211 clusters]
+# 1. cluster_id -> set(genome), genome -> set(cluster_id)
 # ---------------------------------------------------------------------
-target_to_genome = {}
+# Two real bugs fixed here (2026-09-22), found while rebuilding section 10:
+#   (a) no bad-query filtering at all -- this script never reflected ANY
+#       reference-query exclusion, not even the original 67-accession one.
+#       Now filters every target_id against the CURRENT _phac_qc bad-target
+#       list, same as every other script in this project.
+#   (b) target_id -> genome was built as a plain dict (target_to_genome[t] =
+#       g), silently keeping only the LAST genome seen for any target_id
+#       that maps to more than one -- and it genuinely does: target_id here
+#       is an NR100 (100%-identity) cluster REPRESENTATIVE, shared by every
+#       genome that happens to carry an identical sequence (confirmed
+#       directly: 28,694 of 128,199 raw target_ids map to more than one
+#       genome). A plain dict understated the true genome universe. Now a
+#       proper one-to-many mapping (target_id -> set(genome)).
+bad_targets = _phac_qc.load_bad_targets()
+
+target_to_genomes = defaultdict(set)
 with open(ROOT / 'phaC_all_genomes_from_nr100_clusters.tsv', newline='') as f:
     r = csv.reader(f, delimiter='\t')
     next(r)  # header
     for target_id, genome in r:
-        target_to_genome[target_id] = genome
+        if target_id in bad_targets:
+            continue
+        target_to_genomes[target_id].add(genome)
 
 cluster_genomes = defaultdict(set)
 genome_clusters = defaultdict(set)
 with open(FA / 'phaC_cluster0.7_cluster.tsv', newline='') as f:
     r = csv.reader(f, delimiter='\t')
     for cluster_id, target_id in r:
-        g = target_to_genome.get(target_id)
-        if g is None:
+        if target_id in bad_targets:
             continue
-        cluster_genomes[cluster_id].add(g)
-        genome_clusters[g].add(cluster_id)
+        for g in target_to_genomes.get(target_id, ()):
+            cluster_genomes[cluster_id].add(g)
+            genome_clusters[g].add(cluster_id)
 
 n_clusters = len(cluster_genomes)
 all_genomes = sorted(genome_clusters)  # sorted first for determinism, shuffled later
 n_genomes_total = len(all_genomes)
-print(f'{n_clusters:,} clusters, {n_genomes_total:,} distinct genomes (from {len(target_to_genome):,} target_id->genome rows)')
+print(f'{n_clusters:,} clusters, {n_genomes_total:,} distinct genomes (from {len(target_to_genomes):,} distinct target_ids)')
 
 sizes = sorted((len(gs) for gs in cluster_genomes.values()), reverse=True)
 n_singletons = sum(1 for s in sizes if s == 1)
