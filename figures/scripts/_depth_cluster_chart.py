@@ -4,16 +4,23 @@ per genome with a resolved depth_m; x = which 70%-identity phaC cluster it
 carries, columns ordered by median depth so a depth-segregation pattern, if
 real, reads as a trend rather than a shuffled grid. Depth runs top-to-bottom
 on y (inverted), matching how depth reads intuitively as a water column.
+
+QC: excludes rows whose best_query is one of 67 confirmed-wrong-gene phaC
+reference proteins -- see _phac_qc.py.
 """
 import csv
 import statistics
+import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import _phac_qc
 
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
-FA = Path('/Users/hellpark/multimodal_seusmbol/fair_ocean_agent')
+FA = Path('/Users/hellpark/multimodal_seusmbol/PHA_Ocean_Atlas/PHA_bioprospecting/omdb_search/results')
 OUT = Path(__file__).resolve().parent.parent
 
 CAT_PALETTE = ['#1B4F9C', '#E0621A', '#1B8A3E', '#C21F6E', '#6A3D9A', '#C2A83E',
@@ -24,6 +31,8 @@ def build_depth_cluster_chart(genus, title, out_name, assignments, rows):
     seen = set()
     points = []
     for r in rows:
+        if _phac_qc.is_bad(r.get('best_query', '')):
+            continue
         if r.get('gtdb_genus', '') != genus or not r.get('depth_m', ''):
             continue
         genome = r['genome']
@@ -77,7 +86,8 @@ def build_depth_cluster_chart(genus, title, out_name, assignments, rows):
               ha='center', fontsize=9.8, color='#5B6E70')
     fig.text(0.5, 0.01,
               'Faint vertical bars show each cluster\'s observed depth range (min–max). A cluster confined to a narrow band at one\n'
-              'end suggests depth-restriction; a cluster spanning the full axis suggests it isn\'t depth-specific.',
+              'end suggests depth-restriction; a cluster spanning the full axis suggests it isn\'t depth-specific. '
+              f'Excludes {len(_phac_qc.BAD_QUERIES)} mislabeled/misannotated phaC references (see _phac_qc.py).',
               ha='center', va='bottom', fontsize=8.3, color='#5B6E70')
 
     fig.subplots_adjust(left=0.13, right=0.97, top=0.86, bottom=0.22)

@@ -37,7 +37,9 @@ CAT_PALETTE = ['#1B4F9C', '#E0621A', '#1B8A3E', '#C21F6E', '#6A3D9A', '#C2A83E',
 MARKERS = ['o', '^', 's', 'D', 'v', 'P', 'X']
 
 GENUS = sys.argv[1] if len(sys.argv) > 1 else 'Sulfitobacter'
-OUT_STEM = f'phaC_{GENUS.lower().replace("_", "")}_overlay'
+# same fix as plot_genus_global_clusters.py -- don't mangle GTDB polyphyletic
+# suffixes like "Pseudomonas_E" into a nonsense word
+OUT_STEM = f'phaC_{GENUS.lower()}_overlay'
 
 eco_rows = {r['cluster_id']: r for r in csv.DictReader(open(FA / 'phaC_cluster0.7_cluster_ecology.tsv', newline=''), delimiter='\t')}
 n_total_genus = sum(1 for r in eco_rows.values() if r['top_genera'].split(' (')[0] == GENUS)

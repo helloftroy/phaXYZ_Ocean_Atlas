@@ -1,0 +1,7 @@
+gtdb_genus	gtdb_species	gtdb_family	gtdb_phylum	n_proteins	median_ocean_temp_C	median_depth_m	studies
+Ferroglobus	Ferroglobus sp015520115	Archaeoglobaceae	Halobacteriota	3	3.859	1319.3	REYS20-1
+Geoglobus	Geoglobus sp015522195	Archaeoglobaceae	Halobacteriota	3	2.999	1599.5	REYS20-1
+Unknown Archaeoglobaceae	Unknown Archaeoglobaceae	Archaeoglobaceae	Halobacteriota	2	3.007	1596.5	REYS20-1
+Geoglobus	Unknown Geoglobus	Archaeoglobaceae	Halobacteriota	1	2.974	1611.2	REYS20-1
+JAADEF01	JAADEF01 sp015520895	JAADEF01	EX4484-52	1	3.021	1591.5	REYS20-1
+JALTID01	JALTID01 sp027004335	JALSQH01	JALSQH01	1	3.817	1329.9	REYS20-1

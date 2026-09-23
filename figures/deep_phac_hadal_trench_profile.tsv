@@ -1,0 +1,17 @@
+depth_m	genome	trench	domain	phylum	genus	compartment	architecture	target_id	cluster_total_genomes	phac_length_aa	biosample
+10899.0	SAWJ20-1_SAMD00080428_MAG_00000008	Mariana Trench	Archaea	Thermoproteota	Nitrosopelagicus	Seawater		OMDBv2.0_AA_G_NR100_000000652125		354	SAMD00080428
+6500.0	SAWJ20-1_SAMD00080443_MAG_00000003	Kuril-Kamchatka Trench	Bacteria	Pseudomonadota	UBA9659	Seawater		OMDBv2.0_AA_G_NR100_000014349935		353	SAMD00080443
+6500.0	SAWJ20-1_SAMD00080443_MAG_00000032	Kuril-Kamchatka Trench	Archaea	Thermoproteota	Nitrosopumilus	Seawater		OMDBv2.0_AA_G_NR100_000095295041		355	SAMD00080443
+9697.0	SAWJ20-1_SAMD00080415_MAG_00000014	Izu-Ogasawara (Bonin) Trench	Archaea	Thermoproteota	Nitrosopumilus	Seawater		OMDBv2.0_AA_G_NR100_000097198729		355	SAMD00080415
+6500.0	SAWJ20-1_SAMD00080443_MAG_00000040	Kuril-Kamchatka Trench	Bacteria	Pseudomonadota	NORP23	Seawater		OMDBv2.0_AA_G_NR100_000160546275		607	SAMD00080443
+7512.0	SAWJ20-1_SAMD00080414_MAG_00000027	Izu-Ogasawara (Bonin) Trench	Bacteria	Pseudomonadota	Casp-alpha2	Seawater		OMDBv2.0_AA_G_NR100_000160409559		617	SAMD00080414
+7512.0	SAWJ20-1_SAMD00080414_MAG_00000028	Izu-Ogasawara (Bonin) Trench	Archaea	Thermoproteota	Nitrosopumilus	Seawater		OMDBv2.0_AA_G_NR100_000160411290		355	SAMD00080414
+7512.0	SAWJ20-1_SAMD00080414_MAG_00000032	Izu-Ogasawara (Bonin) Trench	Bacteria	Pseudomonadota	JAYZAP01	Seawater		OMDBv2.0_AA_G_NR100_000160415544		598	SAMD00080414
+9697.0	SAWJ20-1_SAMD00080415_MAG_00000021	Izu-Ogasawara (Bonin) Trench	Bacteria	Pseudomonadota	Phenylobacterium	Seawater		OMDBv2.0_AA_G_NR100_000160421528		129	SAMD00080415
+6500.0	SAWJ20-1_SAMD00080443_MAG_00000019	Kuril-Kamchatka Trench	Bacteria	Pseudomonadota	JAYZAP01	Seawater		OMDBv2.0_AA_G_NR100_000160535588		598	SAMD00080443
+7000.0	SAWJ20-1_SAMD00080421_MAG_00000016	Japan Trench	Archaea	Thermoproteota	Nitrosopumilus	Seawater		OMDBv2.0_AA_G_NR100_000160449053		288	SAMD00080421
+7000.0	SAWJ20-1_SAMD00080421_MAG_00000019	Japan Trench	Archaea	Thermoproteota	Nitrosopumilus	Seawater		OMDBv2.0_AA_G_NR100_000160450976		355	SAMD00080421
+7900.0	SAWJ20-1_SAMD00080427_MAG_00000001	Mariana Trench	Archaea	Thermoproteota	Nitrosopumilus	Seawater		OMDBv2.0_AA_G_NR100_000160467904		355	SAMD00080427
+7900.0	SAWJ20-1_SAMD00080427_MAG_00000017	Mariana Trench	Archaea	Thermoproteota	Nitrosopelagicus	Seawater		OMDBv2.0_AA_G_NR100_000160481150		354	SAMD00080427
+6500.0	SAWJ20-1_SAMD00080443_MAG_00000016	Kuril-Kamchatka Trench	Archaea	Thermoproteota	Nitrosopelagicus	Seawater		OMDBv2.0_AA_G_NR100_000160534155		354	SAMD00080443
+6500.0	SAWJ20-1_SAMD00080443_MAG_00000024	Kuril-Kamchatka Trench	Bacteria	Pseudomonadota	Casp-alpha2	Seawater		OMDBv2.0_AA_G_NR100_000160540651		429	SAMD00080443

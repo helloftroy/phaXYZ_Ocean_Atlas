@@ -1,0 +1,12 @@
+target_id	genome	woa23_temp_annual_degC	predicted_bin_midpoint_C	temstapro_label	thermophilicity	length_aa	gtdb_phylum	gtdb_family	gtdb_genus	gtdb_species	study_id	depth_m	depth_zone
+OMDBv2.0_AA_G_NR100_000128480347	REYS20-1_SAMN12239309_MAG_00000204	2.999	82.5	80<=	hyperthermophilic	328	Halobacteriota	Archaeoglobaceae	Ferroglobus	Ferroglobus sp015520115	REYS20-1	1599.5	1000-4000m
+OMDBv2.0_AA_G_NR100_000127454734	REYS20-1_SAMN12239301_MAG_00000156	3.859	82.5	80<=	hyperthermophilic	328	Halobacteriota	Archaeoglobaceae	Ferroglobus	Ferroglobus sp015520115	REYS20-1	1319.2	1000-4000m
+OMDBv2.0_AA_G_NR100_000128057316	REYS20-1_SAMN12239307_MAG_00000185	3.859	82.5	80<=	hyperthermophilic	328	Halobacteriota	Archaeoglobaceae	Ferroglobus	Ferroglobus sp015520115	REYS20-1	1319.3	1000-4000m
+OMDBv2.0_AA_G_NR100_000129104741	REYS20-1_SAMN12239314_MAG_00000242	2.974	82.5	80<=	hyperthermophilic	328	Halobacteriota	Archaeoglobaceae	Geoglobus	Geoglobus sp015522195	REYS20-1	1611.2	1000-4000m
+OMDBv2.0_AA_G_NR100_000128435161	REYS20-1_SAMN12239309_MAG_00000147	2.999	82.5	80<=	hyperthermophilic	328	Halobacteriota	Archaeoglobaceae	Geoglobus	Geoglobus sp015522195	REYS20-1	1599.5	1000-4000m
+OMDBv2.0_AA_G_NR100_000127854639	REYS20-1_SAMN12239307_MAG_00000006	3.859	82.5	80<=	hyperthermophilic	328	Halobacteriota	Archaeoglobaceae	Geoglobus	Geoglobus sp015522195	REYS20-1	1319.3	1000-4000m
+OMDBv2.0_AA_G_NR100_000129083209	REYS20-1_SAMN12239314_MAG_00000202	2.974	82.5	80<=	hyperthermophilic	328	Halobacteriota	Archaeoglobaceae	Geoglobus	Unknown Geoglobus	REYS20-1	1611.2	1000-4000m
+OMDBv2.0_AA_G_NR100_000128699032	REYS20-1_SAMN12239311_MAG_00000260	3.021	82.5	80<=	hyperthermophilic	340	EX4484-52	JAADEF01	JAADEF01	JAADEF01 sp015520895	REYS20-1	1591.5	1000-4000m
+OMDBv2.0_AA_G_NR100_000127795137	REYS20-1_SAMN12239305_MAG_00000124	3.817	82.5	80<=	hyperthermophilic	362	JALSQH01	JALSQH01	JALTID01	JALTID01 sp027004335	REYS20-1	1329.9	1000-4000m
+OMDBv2.0_AA_G_NR100_000128750531	REYS20-1_SAMN12239312_MAG_00000058	3.007	82.5	80<=	hyperthermophilic	326	Halobacteriota	Archaeoglobaceae	Unknown Archaeoglobaceae	Unknown Archaeoglobaceae	REYS20-1	1596.5	1000-4000m
+OMDBv2.0_AA_G_NR100_000128749807	REYS20-1_SAMN12239312_MAG_00000058	3.007	82.5	80<=	hyperthermophilic	370	Halobacteriota	Archaeoglobaceae	Unknown Archaeoglobaceae	Unknown Archaeoglobaceae	REYS20-1	1596.5	1000-4000m
