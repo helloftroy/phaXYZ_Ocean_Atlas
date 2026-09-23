@@ -1,22 +1,23 @@
-"""mcl-PHA precursor-supply strategy: phaG (de novo fatty-acid-synthesis
-route) vs. phaJ (beta-oxidation/scavenging route) vs. the canonical phaA+
+"""mcl-PHA precursor-supply route: phaG (the fatty-acid-synthesis-linked
+route) vs. phaJ (the beta-oxidation-linked route) vs. the canonical phaA+
 phaB (scl-PHA) route, mapped onto full pathway architecture rather than
 marginal presence/absence -- and asked whether taxonomy or habitat drives
-which strategy a genome carries.
+which route a genome carries.
 
 Biology, briefly: phaA+phaB (thiolase + reductase) condenses acetyl-CoA
 into (R)-3-hydroxybutyryl-CoA, the canonical scl-PHA (e.g. PHB) precursor
 route. For mcl-PHA, a genome needs a DIFFERENT route to generate longer
 (R)-3-hydroxyacyl-CoA monomers, and there are two independent ways to get
-there: phaJ ((R)-specific enoyl-CoA hydratase) diverts an intermediate out
-of beta-oxidation -- i.e. SCAVENGES existing fatty acids, from the
-environment or a host -- while phaG (3-hydroxyacyl-ACP:CoA transacylase)
-pulls a monomer out of a genome's OWN fatty-acid-synthesis pathway
-instead, i.e. builds precursor DE NOVO from acetyl-CoA/malonyl-CoA,
-without needing any external fatty acid supply at all. Since scavenging is
-normally cheaper than de novo synthesis, phaG being common somewhere would
-be a real signal that fatty acids simply are not available there to
-scavenge -- a lipid-poor niche.
+there: phaJ ((R)-specific enoyl-CoA hydratase) is the BETA-OXIDATION-LINKED
+route -- it diverts an intermediate out of beta-oxidation, of fatty acids
+from the environment or a host -- while phaG (3-hydroxyacyl-ACP:CoA
+transacylase) is the FATTY-ACID-SYNTHESIS-LINKED route -- it connects a
+genome's own fatty-acid-synthesis pathway directly to PHA synthesis,
+pulling a monomer from that pathway instead of from external fatty acid
+breakdown. The beta-oxidation-linked route is normally cheaper to run when
+fatty acids are available to break down, so the FAS-linked route being
+common somewhere would be a real signal that fatty acids simply are not
+available there to break down -- a lipid-poor niche.
 
 Restricted to phaC-positive genomes only (68,424 -- this project's
 verified scope, PHA_CLEAN_RESULTS.md section 2): phaG/phaJ presence in a
@@ -82,9 +83,9 @@ def mcl_strategy(rec):
     if rec['g'] and rec['j']:
         return 'Both (G+J)'
     if rec['g']:
-        return 'De novo only (G)'
+        return 'FAS-linked only (G)'
     if rec['j']:
-        return 'Scavenging only (J)'
+        return 'Beta-oxidation only (J)'
     return 'Neither'
 
 
@@ -101,7 +102,7 @@ for rec in genomes.values():
 print('\nFull A/B/G/J combinations (phaC-positive genomes):')
 for label, n in combo_counts.most_common():
     print(f'  {label:10s} n={n:6,d}  ({100*n/n_total:.1f}%)')
-print('\nMCL precursor strategy (AB-independent):')
+print('\nMCL precursor route (AB-independent):')
 for label, n in sorted(strategy_counts.items(), key=lambda kv: -kv[1]):
     print(f'  {label:22s} n={n:6,d}  ({100*n/n_total:.1f}%)')
 
@@ -195,8 +196,8 @@ for hab in valid_habitats:
     habitat_rows.append({
         'habitat': hab, 'n_phac_positive': n,
         'pct_phaG': f'{100*n_g_h/n:.2f}', 'pct_phaJ': f'{100*n_j_h/n:.2f}',
-        'n_neither': strat.get('Neither', 0), 'n_scavenging_only_J': strat.get('Scavenging only (J)', 0),
-        'n_de_novo_only_G': strat.get('De novo only (G)', 0), 'n_both_GJ': strat.get('Both (G+J)', 0),
+        'n_neither': strat.get('Neither', 0), 'n_beta_oxidation_only_J': strat.get('Beta-oxidation only (J)', 0),
+        'n_fas_linked_only_G': strat.get('FAS-linked only (G)', 0), 'n_both_GJ': strat.get('Both (G+J)', 0),
         'raw_fisher_or_phaG': f'{raw_or:.3f}', 'raw_fisher_p_phaG': f'{raw_p:.3g}',
         'cmh_or_phaG': f'{or_mh:.3f}' if or_mh is not None else '',
         'cmh_p_phaG': f'{cmh_p:.3g}' if cmh_p is not None else '',
@@ -218,9 +219,9 @@ for r in habitat_rows:
 # ---------------------------------------------------------------------
 # plotting
 # ---------------------------------------------------------------------
-STRATEGY_ORDER = ['Neither', 'Scavenging only (J)', 'De novo only (G)', 'Both (G+J)']
-STRATEGY_COLORS = {'Neither': '#C9D2CC', 'Scavenging only (J)': '#1E6E7A',
-                    'De novo only (G)': '#C2622D', 'Both (G+J)': '#7A9B3E'}
+STRATEGY_ORDER = ['Neither', 'Beta-oxidation only (J)', 'FAS-linked only (G)', 'Both (G+J)']
+STRATEGY_COLORS = {'Neither': '#C9D2CC', 'Beta-oxidation only (J)': '#1E6E7A',
+                    'FAS-linked only (G)': '#C2622D', 'Both (G+J)': '#7A9B3E'}
 
 plt.rcParams.update({'font.family': 'DejaVu Sans', 'font.size': 11})
 fig = plt.figure(figsize=(15, 13.5), dpi=300)
@@ -236,7 +237,7 @@ axA.set_yscale('log')
 for i, k in enumerate(combo_order):
     axA.text(i, combo_counts[k] * 1.15, f'{combo_counts[k]:,}', ha='center', fontsize=8.7, color='#20302C')
 axA.set_ylabel('Genomes (log)')
-axA.set_title('A. Full pathway architecture: canonical (AB) x scavenging (J) x de novo (G)',
+axA.set_title('A. Full pathway architecture: canonical (AB) x beta-oxidation-linked (J) x FAS-linked (G)',
                fontsize=12.5, fontweight='bold', loc='left')
 axA.text(0.99, 0.95, f'n={n_total:,} phaC-positive genomes\n{n_g_and_j:,}/{n_g:,} phaG+ genomes ({100*n_g_and_j/n_g:.0f}%) also carry phaJ',
           transform=axA.transAxes, ha='right', va='top', fontsize=9, color='#3A4A46',
@@ -279,28 +280,28 @@ for p in top_phyla:
 phyla_sorted = sorted(top_phyla, key=lambda p: sum(phylum_counts_by_cat[p].values()))
 labels_b = [f'{p} (n={phylum_counts[p]:,})' for p in phyla_sorted]
 stacked_strategy_bar(axB, labels_b, {labels_b[i]: phylum_counts_by_cat[p] for i, p in enumerate(phyla_sorted)},
-                      f'B. MCL precursor strategy by phylum (top {len(top_phyla)})')
+                      f'B. MCL precursor route by phylum (top {len(top_phyla)})')
 
 # Panel C: by habitat
 habitat_counts_by_cat = {}
 for r in habitat_rows:
     hab = r['habitat']
     habitat_counts_by_cat[hab] = {
-        'Neither': r['n_neither'], 'Scavenging only (J)': r['n_scavenging_only_J'],
-        'De novo only (G)': r['n_de_novo_only_G'], 'Both (G+J)': r['n_both_GJ'],
+        'Neither': r['n_neither'], 'Beta-oxidation only (J)': r['n_beta_oxidation_only_J'],
+        'FAS-linked only (G)': r['n_fas_linked_only_G'], 'Both (G+J)': r['n_both_GJ'],
     }
 habitats_sorted = sorted(habitat_counts_by_cat, key=lambda h: sum(habitat_counts_by_cat[h].values()))
 labels_c = [f'{h} (n={sum(habitat_counts_by_cat[h].values()):,})' for h in habitats_sorted]
 stacked_strategy_bar(axC, labels_c, {labels_c[i]: habitat_counts_by_cat[h] for i, h in enumerate(habitats_sorted)},
-                      'C. MCL precursor strategy by habitat', label_fontsize=8.5)
+                      'C. MCL precursor route by habitat', label_fontsize=8.5)
 
 handles = [plt.Rectangle((0, 0), 1, 1, color=STRATEGY_COLORS[s]) for s in STRATEGY_ORDER]
 fig.legend(handles, STRATEGY_ORDER, loc='lower center', ncol=4, fontsize=9.5, frameon=False, bbox_to_anchor=(0.5, -0.01))
 
-fig.suptitle('mcl-PHA precursor-supply strategy: scavenging (phaJ) vs. de novo synthesis (phaG)',
+fig.suptitle('mcl-PHA precursor-supply route: beta-oxidation-linked (phaJ) vs. FAS-linked (phaG)',
              fontsize=16, fontweight='bold', y=0.995)
 fig.text(0.5, 0.965,
-          f'phaC-positive genomes only (n={n_total:,}). "De novo" and "Both" bars are phaG-positive; phaG is rare '
+          f'phaC-positive genomes only (n={n_total:,}). "FAS-linked" and "Both" bars are phaG-positive; phaG is rare '
           f'overall ({100*n_g/n_total:.1f}% of phaC-positive genomes) and mostly co-occurs with phaJ rather than replacing it.',
           ha='center', fontsize=9.3, color='#5B6E70')
 fig.subplots_adjust(left=0.16, right=0.98, top=0.94, bottom=0.06)

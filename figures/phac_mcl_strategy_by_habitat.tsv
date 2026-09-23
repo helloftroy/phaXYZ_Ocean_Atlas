@@ -1,4 +1,4 @@
-habitat	n_phac_positive	pct_phaG	pct_phaJ	n_neither	n_scavenging_only_J	n_de_novo_only_G	n_both_GJ	raw_fisher_or_phaG	raw_fisher_p_phaG	cmh_or_phaG	cmh_p_phaG	n_strata_used
+habitat	n_phac_positive	pct_phaG	pct_phaJ	n_neither	n_beta_oxidation_only_J	n_fas_linked_only_G	n_both_GJ	raw_fisher_or_phaG	raw_fisher_p_phaG	cmh_or_phaG	cmh_p_phaG	n_strata_used
 Marine algae thallus	411	8.52	73.97	102	274	5	30	2.084	0.000133	2.208	2.57e-05	7
 Sea ice	436	7.80	70.18	122	280	8	26	1.892	0.0012	2.070	3.71e-05	7
 Cold seep sediment	432	5.79	35.65	261	146	17	8	1.369	0.151	2.422	9.09e-05	31
