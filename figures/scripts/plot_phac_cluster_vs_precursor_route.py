@@ -28,6 +28,16 @@ every genome carrying an identical sequence). A genome only enters this
 analysis if BOTH pipelines agree it has exactly one phaC target_id; genomes
 where they disagree are excluded and counted, not silently resolved one way.
 
+Both sides of the raw NR100 join are filtered against the CURRENT
+_phac_qc bad-target list (fixed 2026-09-22 -- this script previously had
+no reference-query filtering at all, the same class of bug independently
+found in section 7's rank-abundance script). Getting this right matters
+more here than almost anywhere else in this project: without it, a
+target_id that should have been excluded could make a genuinely single-
+copy genome look multi-copy (wrongly dropping it from this analysis) or
+could itself BE the "single" target counted for a genome that should not
+have qualified at all.
+
 Usage:
     python figures/scripts/plot_phac_cluster_vs_precursor_route.py
 
@@ -47,6 +57,8 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _stats_utils import mantel_haenszel
+import _phac_qc
+bad_targets = _phac_qc.load_bad_targets()
 
 ROOT = Path(__file__).resolve().parent.parent.parent
 OUT = ROOT / 'figures'
@@ -76,13 +88,22 @@ print(f'{len(genome_info):,} phaC-positive genomes; {len(single_copy_a):,} singl
 
 # ---------------------------------------------------------------------
 # 2. genome -> set(target_id) from the raw NR100 join (properly one-to-many
-#    in BOTH directions -- see module docstring)
+#    in BOTH directions -- see module docstring). Filtered against the
+#    CURRENT bad-target list -- this script previously had NO reference-
+#    query filtering at all (found 2026-09-22, same class of bug as
+#    section 7's rank-abundance script): the "single target_id" criterion
+#    was being checked against the raw, uncorrected join, which could
+#    both wrongly call a genome single-copy (its only OTHER target was a
+#    now-excluded one) and wrongly call it multi-copy (one of its targets
+#    was bad and should not have counted at all).
 # ---------------------------------------------------------------------
 genome_targets = defaultdict(set)
 with open(ROOT / 'phaC_all_genomes_from_nr100_clusters.tsv', newline='') as f:
     r = csv.reader(f, delimiter='\t')
     next(r)
     for target_id, genome in r:
+        if target_id in bad_targets:
+            continue
         genome_targets[genome].add(target_id)
 
 single_copy_b = {g for g, targets in genome_targets.items() if len(targets) == 1}
@@ -101,6 +122,8 @@ target_cluster = {}
 with open(FA / 'phaC_cluster0.7_cluster.tsv', newline='') as f:
     r = csv.reader(f, delimiter='\t')
     for cluster_id, target_id in r:
+        if target_id in bad_targets:
+            continue
         target_cluster[target_id] = cluster_id
 
 genome_cluster = {}
