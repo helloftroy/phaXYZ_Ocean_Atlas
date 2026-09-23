@@ -27,10 +27,11 @@ avoids -inf for the (rare) habitat/route combination with zero positives,
 matching a standard small-count correction rather than leaving those cells
 undefined.
 
-Rows are ordered by average-linkage hierarchical clustering on each
-habitat's 4-column enrichment vector, so habitats with similar route
-profiles land next to each other instead of in an arbitrary or purely
-alphabetical order.
+Rows are ordered by the phaAB column, most-enriched to most-depleted --
+simplest single sort that still leaves obviously-related habitats (the
+host-tissue depletions, the estuarine/brackish depletions) clustered
+together in this dataset, and easier to read top-to-bottom than a
+clustering-order row axis.
 
 Significance: same phylum-controlled Cochran-Mantel-Haenszel test as
 plot_phac_mcl_precursor_strategy.py's habitat table (via _stats_utils.py),
@@ -54,7 +55,6 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
-from scipy.cluster.hierarchy import linkage, leaves_list
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _stats_utils import mantel_haenszel
@@ -184,14 +184,11 @@ with open(out_tsv, 'w', newline='') as f:
 print(f'\nwrote {out_tsv} ({len(rows_out)} habitats)')
 
 # ---------------------------------------------------------------------
-# 4. row order via hierarchical clustering on each habitat's 4-route vector
+# 4. row order: by phaAB enrichment, most-enriched to most-depleted
 # ---------------------------------------------------------------------
 habitats = [r['habitat'] for r in rows_out]
 mat = np.array([[enrichment[h][route] for route in ROUTES] for h in habitats])
-if len(habitats) >= 3:
-    order = leaves_list(linkage(mat, method='average', metric='euclidean'))
-else:
-    order = np.arange(len(habitats))
+order = np.argsort(-mat[:, ROUTES.index('phaAB')])
 habitats_ordered = [habitats[i] for i in order]
 mat_ordered = mat[order]
 
@@ -248,7 +245,7 @@ fig.text(0.02, 0.99,
           f'(85.6%/65.2%) and so are mathematically capped near +-0.6, while phaG/Both J&G (baseline '
           f'5.5%/4.4%) can swing several log2 units -- a shared scale would wash out the first two columns.\n'
           f'{len(habitats_ordered)} habitats with ≥{MIN_PHAC_N} phaC-positive genomes shown. '
-          f'* p<0.05, ** p<0.001 (phylum-controlled CMH test). Rows ordered by hierarchical clustering of route profile.',
+          f'* p<0.05, ** p<0.001 (phylum-controlled CMH test). Rows ordered by phaAB enrichment, most- to least-enriched.',
           transform=fig.transFigure, ha='left', va='top', fontsize=7.6, color='#5B6E70', wrap=True)
 
 fig.subplots_adjust(left=0.30, right=0.87, top=0.87, bottom=0.03)
