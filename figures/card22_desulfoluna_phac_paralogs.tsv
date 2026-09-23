@@ -1,0 +1,8 @@
+target_id	protein_length_aa	cluster0.7	triad_complete	pident_to_best_ref	tcov_to_best_ref	ref_accession	best_class_relative	passes_class_trusted_cutoff	own_scaffold	own_gene_index	phaC_vs_phaZ_pident
+OMDBv2.0_AA_G_NR100_000041184878	708	OMDBv2.0_AA_G_NR100_000041568995	False	39.000	0.837	Q5P962	ClassI	False	scaffold_1	393	39.0 vs 44.8 (phaZ higher -- ambiguous)
+OMDBv2.0_AA_G_NR100_000041185226	578	OMDBv2.0_AA_G_NR100_000041185226	True	68.400	1.000	A0A1G5GJJ7	ClassI	False	scaffold_1	741	
+OMDBv2.0_AA_G_NR100_000041185910	577	OMDBv2.0_AA_G_NR100_000153825238	True	91.100	0.991	A0A1G5JKR9	ClassIII	False	scaffold_2	302	
+OMDBv2.0_AA_G_NR100_000041187467	541	OMDBv2.0_AA_G_NR100_000041187467	False	80.600	1.000	A0A1G5GJJ7	ClassI	False	scaffold_9	74	
+OMDBv2.0_AA_G_NR100_000041187468	380	OMDBv2.0_AA_G_NR100_000041187468	True	83.100	1.000	A0ABM7PLX6	ClassIII	True	scaffold_9	75	
+OMDBv2.0_AA_G_NR100_000041187880	372	OMDBv2.0_AA_G_NR100_000041571908	True	87.000	0.981	A0ABM7PCP4	ClassIII	True	scaffold_12	82	
+OMDBv2.0_AA_G_NR100_000041189118	736	OMDBv2.0_AA_G_NR100_000041189118	True	41.000	0.881	Q5P962	ClassI	False	scaffold_27	32	41.0 vs 43.6 (phaZ higher -- ambiguous)
