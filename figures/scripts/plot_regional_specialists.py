@@ -3,16 +3,18 @@
 cosmopolitan -- rather than the whole 20,211-cluster set, which would be
 unplottable as a map.
 
-Selection: from fair_ocean_agent/phaC_cluster0.7_cluster_ecology.tsv,
+Selection: from PHA_bioprospecting/omdb_search/results/phaC_cluster0.7_cluster_ecology.tsv,
 candidates need geo_mean_resultant_length > 0.85 (a circular-statistics
 concentration measure: 1.0 = every genome pulls the same compass direction
 from Earth's center, i.e. genuinely one place; 0 = uniformly scattered) and
 enough genomes with resolved depth (n_genomes_with_depth >= 8) to make the
 "average depth" legend entry meaningful -- most candidates have zero depth
 coverage (depth metadata is sparse project-wide), so this filter matters.
-The final 12 were then hand-picked from that candidate pool for global
-spread and biological interest (surface vs. abyssal, vent-associated
-archaea, Arctic vs. tropical), not just top-N by genome count.
+16 were then hand-picked from that candidate pool for global spread and
+biological interest (surface vs. abyssal, vent-associated archaea, Arctic
+vs. tropical), not just top-N by genome count -- see SELECTED's comments
+below for which 4 were added in the most recent pass, after a depth-data
+fix roughly doubled the candidate pool.
 
 Two things this script does NOT take from the ecology TSV at face value:
   - Position: uses the TSV's own geo_centroid_lat/lon (a proper circular
@@ -32,11 +34,31 @@ Overlap handling: any two selected clusters within OVERLAP_KM of each other
 anchor dot connected by a thin leader line to an offset, larger label
 marker -- otherwise two colored dots would sit exactly on top of each
 other and be unreadable.
+
+QC: excludes rows whose best_query is one of the 67 confirmed-wrong-gene
+phaC reference proteins found by the full reference-query audit (see
+figures/PHA_CLEAN_RESULTS.md section 1.4) -- see _phac_qc.py.
+phaC_cluster0.7_cluster_ecology.tsv was regenerated with the same filter
+applied in pipeline/cluster_ecology.py.
+
+History: the original 16 hand-picked clusters lost 5 entirely to
+contamination after the first reference-query audit (67 accessions), and
+then -- because all three earlier passes only ever re-checked survivors
+of the prior hand-picked list rather than re-scanning the full candidate
+pool -- 9 of the remaining 11 turned out to ALSO be contamination once
+the deeper 2026-09-22 fix (219 accessions) landed, leaving just 2. Rather
+than re-check survivors a third time, SELECTED below was rebuilt from a
+genuine fresh scan of the full corrected ecology table against the same
+selection criteria that were always the actual definition of "regional
+specialist" -- see the comment above SELECTED itself for details.
 """
 import csv
 import math
 import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import _phac_qc
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 from phaatlas.pipeline import sequence_clustering as sc
@@ -48,32 +70,56 @@ import matplotlib.patheffects as pe
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
 
-FA = Path('/Users/hellpark/multimodal_seusmbol/fair_ocean_agent')
+FA = Path('/Users/hellpark/multimodal_seusmbol/PHA_Ocean_Atlas/PHA_bioprospecting/omdb_search/results')
 OUT = Path(__file__).resolve().parent.parent
 
 # hand-picked from the candidate pool (see module docstring) for global
 # spread + biological interest; the Sydney pair is deliberately kept in to
 # demonstrate the overlap/leader-line handling this figure needed.
+#
+# Depth coverage roughly doubled after fixing ncbi_depth.py's SAMEA/SAMD
+# accession-resolution bug and the "99999" sentinel-depth bug (see
+# conversation history) -- cluster-ecology was regenerated on the
+# corrected depth file, growing the >=8-genomes-with-depth candidate pool
+# from 99 to 161 clusters. The 4 marked NEW below were added from that
+# larger pool, same hand-picking criteria (geographic spread + biological
+# interest) as the original 12.
 SELECTED = [
-    '000033545441',  # SHLQ01, Sydney AU -- overlaps with the next one
-    '000034200129',  # SHLQ01, Sydney AU
-    '000140439260',  # Moritella, NE Pacific, abyssal
-    '000067604172',  # Thermococcus/Pyrococcus, S. Atlantic, hydrothermal-vent depth
-    '000045952813',  # UBA4427, sub-Arctic (Davis Strait)
-    '000005303736',  # UBA4582, N. Atlantic (Norwegian shelf)
-    '000232749406',  # Crocosphaera, tropical N. Pacific
-    '000012716247',  # JACZQZ01, NW Pacific (Philippine Sea)
+    # Rebuilt from scratch 2026-09-22, against the post-phaC-fix
+    # phaC_cluster0.7_cluster_ecology.tsv, rather than re-checking survivors
+    # of the older hand-picked lists (which is all earlier passes had done --
+    # see the two REMOVED blocks below this comment in git history). A fresh
+    # scan of the SAME selection criteria (geo_mean_resultant_length > 0.85,
+    # n_genomes_with_depth >= 8) found 55 qualifying clusters, not the 2
+    # that survived from the old list -- picked 16 of those 55 here for
+    # genuinely global spread (every populated ocean basin/region
+    # represented, not just wherever the old hand-picked survivors happened
+    # to be) plus taxonomic diversity (5 phyla represented, not just
+    # Pseudomonadota).
+    '000004410215',  # IMCC9063, Baltic Sea (largest candidate by genome count, 152)
+    '000199571761',  # Sulfitobacter, high Arctic (~84N, near Svalbard)
+    '000234626934',  # UBA10347, Norwegian Sea (Actinomycetota)
+    '000033884939',  # CALLCD01, Sydney, Australia
+    '000088671462',  # JACZTE01, tropical W. Pacific (Mariana region) (Chloroflexota)
+    '000036533161',  # Hyphomonas, Arctic (Siberian side, ~83N/113E -- distinct longitude from the Sulfitobacter Arctic entry)
+    '000077443878',  # Henriciella, Adriatic/N. Mediterranean
     '000226102035',  # Robiginitomaculum_A, mid N. Atlantic
-    '000018400463',  # Rs1, N. Pacific (Hawaii), abyssal
-    '000001867111',  # BACL27, Baltic Sea
     '000027486053',  # Algiphilus, Southern Ocean (south of Australia)
+    '000159242036',  # Nitrosotenuis, equatorial Atlantic (Thermoproteota, archaeal)
+    '000128699032',  # Ferroglobus, near New Zealand (Halobacteriota, archaeal)
+    '000183127334',  # Tectiglobus, E. Mediterranean (Aegean)
+    '000236050034',  # Janibacter, South China Sea (Actinomycetota)
+    '000159611932',  # CAIYZJ01, South Atlantic
+    '000192647371',  # JAVJON01, South Pacific
+    '000113256229',  # Qipengyuania_C, true Southern Ocean/sub-Antarctic (~66S)
 ]
 
-OVERLAP_KM = 300
+OVERLAP_KM = 500
 OFFSET_DEG = 7.0
 
 CAT_PALETTE = ['#1E6E7A', '#C9622D', '#8B5FBF', '#3E8914', '#C2A83E', '#B33951',
-               '#4A7FB5', '#D98E04', '#6B4226', '#6FA88A', '#9E3B3B', '#7A7A7A']
+               '#4A7FB5', '#D98E04', '#6B4226', '#6FA88A', '#9E3B3B', '#7A7A7A',
+               '#2E86AB', '#E36414', '#5C4B8A', '#7CB518']
 
 
 def haversine_km(lat1, lon1, lat2, lon2):
@@ -88,7 +134,13 @@ def haversine_km(lat1, lon1, lat2, lon2):
 # ---- load ecology rows for the selected clusters ----
 eco_rows = {r['cluster_id'][-12:]: r for r in csv.DictReader(open(FA / 'phaC_cluster0.7_cluster_ecology.tsv', newline=''), delimiter='\t')}
 clusters = []
+missing = [s for s in SELECTED if s not in eco_rows]
+if missing:
+    print(f'{len(missing)} of {len(SELECTED)} hand-picked clusters no longer exist post-QC-fix '
+          f'(their entire membership was mislabeled-reference hits, not real phaC): {missing}')
 for short_id in SELECTED:
+    if short_id not in eco_rows:
+        continue
     r = eco_rows[short_id]
     genus = r['top_genera'].split(' (')[0]
     clusters.append({
@@ -108,6 +160,8 @@ seen_genomes = {fid: set() for fid in full_ids}
 with open(FA / 'phaC_unique_targets_with_metadata_depth.tsv', newline='') as f:
     reader = csv.DictReader(f, delimiter='\t')
     for row in reader:
+        if _phac_qc.is_bad(row.get('best_query', '')):
+            continue
         cid = assignments.get(row.get('target_id', ''))
         if cid not in full_ids:
             continue
@@ -198,9 +252,21 @@ for c in clusters:
                    edgecolor='#20302C', linewidth=1.0, zorder=4)
 
     label_text = c['genus']
+    # flip the label to the LEFT of its point (and right-align it) near the
+    # +180 map edge -- a fixed rightward offset clips off-canvas there.
+    # Found with a real point (Ferroglobus, lon=179.5) once the fresh
+    # candidate scan started picking clusters this close to the antimeridian.
+    # Also drop it BELOW the point rather than above: labels default to the
+    # upper-right, so a merely-horizontal flip still collided with CALLCD01's
+    # label (lat=-33.7, ~2,700km west but same upper band) -- the two grew
+    # toward each other. Below is a vertical band nothing else there uses.
+    near_right_edge = c['disp_lon'] > 155
+    xytext = (-6, -8) if near_right_edge else (6, 6)
+    ha = 'right' if near_right_edge else 'left'
+    va = 'top' if near_right_edge else 'baseline'
     ax.annotate(label_text, xy=(c['disp_lon'], c['disp_lat']), xycoords=ccrs.PlateCarree()._as_mpl_transform(ax),
-                xytext=(6, 6), textcoords='offset points', fontsize=8.3, fontweight='bold',
-                color='#20302C', style='italic', zorder=5,
+                xytext=xytext, textcoords='offset points', fontsize=8.3, fontweight='bold',
+                color='#20302C', style='italic', zorder=5, ha=ha, va=va,
                 path_effects=[pe.withStroke(linewidth=2.2, foreground='white')])
 
 fig.suptitle('PhaC Regional Specialists: 70%-Identity Clusters Concentrated in One Place',
@@ -213,23 +279,28 @@ fig.text((MAP_LEFT + 0.99) / 2, 0.905,
 # ---- legend: color, "genome" (dominant genus), average depth ----
 legend_lines = []
 for c in sorted(clusters, key=lambda c: (c['mean_depth'] is None, c['mean_depth'] or 0)):
-    depth_str = f"{c['mean_depth']:.0f} m avg depth (n={c['n_with_depth']})" if c['mean_depth'] is not None else 'no depth data'
+    depth_str = f"{c['mean_depth']:.0f} m (n={c['n_with_depth']})" if c['mean_depth'] is not None else 'no depth data'
     legend_lines.append((c['color'], c['genus'], depth_str, c['n_genomes']))
 
 legend_x, legend_y0, dy = 0.03, 0.10, 0.058
 fig.text(legend_x, legend_y0 + dy * len(legend_lines) + 0.03, 'Genome\n(dominant genus)', fontsize=11.5, fontweight='bold', color='#20302C', va='bottom')
-fig.text(legend_x + 0.145, legend_y0 + dy * len(legend_lines) + 0.03, 'Avg. depth', fontsize=11.5, fontweight='bold', color='#20302C', va='bottom')
+fig.text(legend_x + 0.205, legend_y0 + dy * len(legend_lines) + 0.03, 'Avg. depth', fontsize=11.5, fontweight='bold', color='#20302C', va='bottom')
 for i, (color, genus, depth_str, n_genomes) in enumerate(legend_lines):
     y = legend_y0 + dy * (len(legend_lines) - 1 - i)
     fig.patches.append(plt.Rectangle((legend_x, y - 0.012), 0.018, 0.024, transform=fig.transFigure,
                                       facecolor=color, edgecolor='#20302C', linewidth=0.7, zorder=10))
     fig.text(legend_x + 0.028, y, f'{genus}', fontsize=11, style='italic', fontweight='bold', va='center')
-    fig.text(legend_x + 0.145, y, f'{depth_str}', fontsize=10, color='#5B6E70', va='center')
+    fig.text(legend_x + 0.205, y, f'{depth_str}', fontsize=10, color='#5B6E70', va='center')
 
+n_leader = sum(1 for c in clusters if c['needs_leader'])
+overlap_clause = (
+    "Clusters within a few hundred km of each other are shown as small true-position dots with a leader line to an offset label."
+    if n_leader else "No two shown clusters are close enough to need this figure's leader-line overlap handling."
+)
+missing_clause = f" {len(missing)} of the original {len(SELECTED)} hand-picked clusters were dropped (all-spurious membership, QC fix)." if missing else ""
 footnote = (
-    "Circle size ~ genome count (sqrt-scaled). Sydney, Australia pair (SHLQ01) sit ~1 km apart — shown as small true-position\n"
-    "dots connected by a thin leader line to offset, larger label markers, rather than overlapping illegibly. Average depth is the\n"
-    "mean depth_m across distinct genomes with resolved depth in that cluster (missing values dropped, not imputed as zero)."
+    f"Circle size ~ genome count (sqrt-scaled). {overlap_clause}\n"
+    f"Average depth = mean depth_m across genomes with resolved depth (missing dropped, not imputed as zero).{missing_clause}"
 )
 fig.text((MAP_LEFT + 0.99) / 2, 0.015, footnote, ha='center', va='bottom', fontsize=8.4, color='#5B6E70')
 
