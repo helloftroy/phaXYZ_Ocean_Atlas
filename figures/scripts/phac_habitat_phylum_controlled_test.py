@@ -23,18 +23,12 @@ different question, deliberately not collapsed into one number):
      between the habitat and the rest of the ocean, that is real evidence
      the habitat effect is not just a composition artifact.
      Formula: standard Mantel-Haenszel combined OR and chi-square (Mantel &
-     Haenszel 1959); implemented directly here rather than via statsmodels
-     (not installed everywhere this project's scripts run) -- the formula is
-     short enough to audit by eye:
-       OR_MH = sum(a_i*d_i/n_i) / sum(b_i*c_i/n_i)
-       CMH   = (sum(a_i) - sum(E_i))^2 / sum(Var_i),  ~ chi-square, df=1
-       E_i   = (a_i+b_i)(a_i+c_i)/n_i
-       Var_i = (a_i+b_i)(c_i+d_i)(a_i+c_i)(b_i+d_i) / (n_i^2 (n_i-1))
-     where a_i/b_i/c_i/d_i are the phaC-positive/negative x in-habitat/
-     outside-habitat counts within phylum stratum i. Strata where the
-     phylum is entirely absent from one side (a+b=0 or c+d=0) contribute
-     zero to both the statistic and its variance, so they are skipped
-     rather than distorting anything by inclusion.
+     Haenszel 1959); implemented in `_stats_utils.mantel_haenszel` (shared
+     with plot_phac_mcl_precursor_strategy.py's phaG/phaJ-vs-habitat test)
+     rather than via statsmodels (not installed everywhere this project's
+     scripts run) -- see that module for the formula, short enough to
+     audit by eye. Here, a_i/b_i/c_i/d_i are the phaC-positive/negative x
+     in-habitat/outside-habitat counts within phylum stratum i.
   3. Phylum-standardized expected rate (direct standardization): what phaC
      rate would this habitat show if each of its phyla had the SAME phaC
      rate they show everywhere else in the ocean, weighted by this
@@ -73,10 +67,11 @@ import sys
 from collections import defaultdict
 from pathlib import Path
 
-from scipy.stats import fisher_exact, chi2
+from scipy.stats import fisher_exact
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import _phac_qc
+from _stats_utils import mantel_haenszel
 
 ROOT = Path(__file__).resolve().parent.parent.parent
 OUT = ROOT / 'figures'
@@ -132,37 +127,6 @@ for g, c, p, ph in genomes:
 
 habitats = [c for c, rows in by_habitat.items() if len(rows) >= MIN_N]
 print(f'{len(habitats)} habitats with >= {MIN_N} genomes\n')
-
-
-def mantel_haenszel(strata):
-    """strata: list of (a, b, c, d) 2x2 tables (phaC+/- x in-habitat/outside, one per phylum).
-    Returns (OR_MH, cmh_chi2, p_value, n_strata_used)."""
-    num_or = den_or = 0.0
-    sum_a = sum_e = sum_var = 0.0
-    n_used = 0
-    for a, b, c, d in strata:
-        n = a + b + c + d
-        if n <= MIN_STRATUM_N:
-            continue
-        if (a + b) == 0 or (c + d) == 0:  # phylum absent from one side -- contributes nothing
-            continue
-        n_used += 1
-        num_or += a * d / n
-        den_or += b * c / n
-        e = (a + b) * (a + c) / n
-        if n > 1:
-            var = (a + b) * (c + d) * (a + c) * (b + d) / (n * n * (n - 1))
-        else:
-            var = 0.0
-        sum_a += a
-        sum_e += e
-        sum_var += var
-    if den_or == 0 or sum_var == 0 or n_used == 0:
-        return None, None, None, n_used
-    or_mh = num_or / den_or
-    cmh_stat = (abs(sum_a - sum_e)) ** 2 / sum_var
-    p = chi2.sf(cmh_stat, df=1)
-    return or_mh, cmh_stat, p, n_used
 
 
 habitat_rows = []

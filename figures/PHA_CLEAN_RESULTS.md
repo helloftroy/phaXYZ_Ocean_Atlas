@@ -286,3 +286,35 @@ Built directly from the raw mmseqs2 cluster membership file (`phaC_cluster0.7_cl
 **Overall framing for reviewers:** none of the four panels show saturation. This is a first atlas of phaC diversity built from whatever metagenomes happen to be public, not a complete survey — Panel C in particular gives a concrete, quantified reason to expect that further sampling of unusual/host-associated/deep-sea habitats specifically (not just more sampling anywhere) would keep finding new clusters faster than more sequencing of already-well-sampled open water.
 
 **Files:** `figures/scripts/plot_phac_rank_abundance_rarefaction.py`; `figures/phac_rank_abundance_rarefaction.png`/`.pdf`.
+
+## 8. mcl-PHA precursor supply: de novo synthesis (phaG) vs. scavenging (phaJ)
+
+A genome with phaC alone can make scl-PHA (via the canonical phaA+phaB route: acetyl-CoA condensed into (R)-3-hydroxybutyryl-CoA), but mcl-PHA needs a different, longer precursor, and there are two independent gene routes to it: `phaJ` ((R)-specific enoyl-CoA hydratase) diverts an intermediate out of beta-oxidation — i.e. **scavenges** fatty acids already present, from the environment or a host — while `phaG` (3-hydroxyacyl-ACP:CoA transacylase) pulls a monomer out of the genome's own fatty-acid-synthesis pathway instead — i.e. builds the precursor **de novo**, with no external fatty acid supply needed at all. Since scavenging is normally cheaper than building from scratch, a habitat or lineage leaning on phaG specifically is a plausible signal that fatty acids simply are not available there to scavenge — a lipid-poor niche. `figures/scripts/plot_phac_mcl_precursor_strategy.py` maps this onto full pathway architecture (all A/B/G/J combinations, not marginal presence/absence) across the 68,424 verified phaC-positive genomes, then asks whether taxonomy or habitat drives the choice (`figures/phac_mcl_precursor_strategy.png`).
+
+**phaG is rare and mostly an add-on, not a replacement for phaJ.** Full architecture: ABJ 47.4% (32,441), AB-only 25.9% (17,697), phaC-only 17.1% (11,684), J-only 5.8% (3,971), ABGJ 2.7% (1,848), ABG 0.8% (573), G-only 0.2% (134), GJ 0.1% (76). Collapsed to an AB-independent "MCL strategy" axis: scavenging-only (J, no G) 53.2%, neither G nor J 42.9%, both G and J 2.8%, de novo-only (G, no J) just 1.0%. Critically, **1,924/2,631 phaG-positive genomes (73.1%) also carry phaJ** — genomes essentially never rely on de novo synthesis exclusively; phaG shows up mostly as a hedge alongside scavenging, not as an alternative strategy replacing it. That tempers a simple "G vs. J, pick one" framing — the real split is closer to "J-only vs. J-plus-G," with pure G-only genomes a genuine rarity (707/68,424, 1.0%).
+
+**Taxonomy:** phaG usage varies by an order of magnitude across the phyla with enough genomes to assess (≥200 phaC-positive each, `figures/phac_mcl_strategy_by_phylum.tsv`): Bacillota 13.5% (n=416), Bacteroidota 6.5% (n=5,259), Pseudomonadota 4.1% (n=49,499, the dominant phylum by genome count) down to Poribacteria 0.8% (n=369) and several phyla near-zero. So there is a real taxonomic signal — but the question that actually matters for the habitat story below is whether a habitat's phaG rate survives controlling for which phyla live there, the same concern §5.3.1 raised for phaC prevalence itself.
+
+**Habitat, phylum-controlled** (Cochran-Mantel-Haenszel, same method as §5.3.1, trait swapped from "is phaC positive" to "is phaG positive" among phaC-positive genomes; `figures/phac_mcl_strategy_by_habitat.tsv`):
+
+| Habitat | n | % phaG | % phaJ | CMH odds ratio | CMH p |
+|---|---|---|---|---|---|
+| Marine algae thallus | 411 | 8.5% | 74.0% | 2.21 | 2.6×10⁻⁵ |
+| Sea ice | 436 | 7.8% | 70.2% | 2.07 | 3.7×10⁻⁵ |
+| Cold seep sediment | 432 | 5.8% | 35.7% | 2.42 | 9.1×10⁻⁵ |
+| Marine biofilm | 1,566 | 5.2% | 63.0% | 1.52 | 3.2×10⁻⁴ |
+| Animal bone biofilm | 234 | 4.3% | 71.8% | 1.27 | 0.459 |
+| Seawater | 45,425 | 3.4% | 52.7% | 0.95 | 0.336 |
+| Marine sediment | 3,907 | 3.4% | 56.2% | 1.27 | 0.015 |
+| Brackish sea water | 1,282 | 2.9% | 50.5% | 0.83 | 0.259 |
+| Estuarine sediment | 355 | 2.8% | 74.1% | 0.85 | 0.621 |
+| Coral tissue | 462 | 2.6% | 66.5% | 0.88 | 0.652 |
+| Hydrothermal vent fluid/plume | 626 | 2.6% | 39.6% | 1.17 | 0.535 |
+| Estuarine water | 253 | 2.4% | 45.5% | 0.64 | 0.273 |
+| Marine Porifera tissue | 4,525 | 1.5% | 74.7% | 0.51 | 3.4×10⁻⁷ |
+| Hydrothermal vent sediment | 337 | 0.9% | 38.9% | 0.44 | 0.144 |
+| Marine Hydrozoa tissue | 681 | 0.9% | 75.2% | 0.26 | 4.6×10⁻⁴ |
+
+**A clear, phylum-controlled pattern, and it lines up with the lipid-availability hypothesis.** Four habitats show significantly *elevated* phaG after phylum control — algae thallus surfaces, sea ice, cold seep sediment, and biofilm (CMH OR 1.5-2.4, p from 3×10⁻⁴ to 9×10⁻⁵) — none of them a nutrient-rich host tissue; algae surfaces and sea ice in particular are classic oligotrophic-relative-to-free-fatty-acid niches. Two habitats go the other way, significantly *depleted* for phaG — sponge tissue (OR 0.51, p=3.4×10⁻⁷) and hydrozoa tissue (OR 0.26, p=4.6×10⁻⁴) — both host-associated animal tissues, exactly where scavengeable host lipids should be most abundant, and both showing high phaJ instead (74.7% and 75.2% respectively). The remaining habitats (seawater, sediment, brackish/estuarine categories, hydrothermal vent categories, coral, whale-fall bone biofilm) show no significant phaG effect either way once phylum is controlled. Read as a whole: the habitats where scavenging fatty acids should be easiest (animal tissue) show the least reliance on de novo synthesis, and several of the habitats where free fatty acids are plausibly scarcer (ice, algal surfaces, cold seep sediment, biofilm) show more of it — a real, phylum-independent association, consistent with the "lipid-poor niches favor de novo synthesis" hypothesis. This is a correlational, habitat-category-level read, not a direct lipid-availability measurement — no such measurement exists in this dataset — so it should be reported as a supporting pattern, not a proven mechanism.
+
+**Files:** `figures/scripts/plot_phac_mcl_precursor_strategy.py`, `figures/scripts/_stats_utils.py` (shared Mantel-Haenszel implementation, factored out of `phac_habitat_phylum_controlled_test.py` for reuse here); `figures/phac_mcl_precursor_strategy.png`/`.pdf`, `figures/phac_mcl_strategy_by_phylum.tsv`, `figures/phac_mcl_strategy_by_habitat.tsv`.
