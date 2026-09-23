@@ -50,7 +50,7 @@ Genomes with at least one verified hit, per family, out of the full ocean-genome
 | phaB | Acetoacetyl-CoA reductase | 174,573 |
 | phaA | β-ketothiolase | 184,489 |
 | phaJ | (R)-specific enoyl-CoA hydratase | 86,056 |
-| phaC | PHA synthase | 68,424 |
+| phaC | PHA synthase | 31,464 |
 | phaR_regulator | PHA-responsive transcriptional regulator | 20,292 |
 | phaF | Granule-associated phasin/regulator | 19,902 |
 | phaY | Intracellular PHA oligomer hydrolase | 18,375 |
@@ -64,11 +64,13 @@ Genomes with at least one verified hit, per family, out of the full ocean-genome
 
 \* phaD's verified count is small because essentially none of the reference sequences originally retrieved for it turned out to be genuine matches to its defined identity ("PHA regulatory protein PhaD") — every high-volume candidate resolved, on inspection, to a different protein. The 823 genomes retained here come from the long tail of lower-volume references that did check out; this family should be treated as sparse/exploratory going forward rather than well-characterized, pending a fresh, more targeted reference search specifically for phaD.
 
+**phaC's count dropped from 68,424 to 31,464 on 2026-09-22**, after a deeper, direct InterPro-domain re-verification found the original reference audit (§1.4, an initial 67-accession exclusion list) was not exhaustive for phaC specifically. Root cause: the tooling used to re-check reference queries against real domain data had a positive-marker check defined for every other family except phaC itself, so phaC references only ever got a negative/blacklist check — which a differently-wrong protein (e.g. a misannotated acyl-CoA synthetase, or a real PhaC fused to an unrelated domain, with the fusion partner dominating most of its recruited hits) passes easily. A full direct UniProt/InterPro check of all 1,867 previously-accepted phaC references (not just recruitment statistics) found 152 more that lack the confirmed PHA-synthase marker domain (IPR051321), each individually spot-verified against live UniProt records. `FAMILY_BAD_QUERIES["phaC"]` is now 219 accessions (was 67); every phaC-derived number in this document from here on reflects the corrected set. See §3 for how concentrated the removed genomes were in the weak-evidence tiers.
+
 phaM (granule/nucleoid protein) returned zero hits in the original search and is not yet meaningfully represented in this dataset.
 
 ## 3. phaC evidence tiers: catalytic triad, HMM, and verified pathway context
 
-For all 68,424 verified phaC genomes, five evidence tiers were built, strongest evidence first and mutually exclusive:
+**Rebuilt 2026-09-22 against the corrected 31,464-genome phaC set (§2).** For all 31,464 verified phaC genomes, five evidence tiers were built, strongest evidence first and mutually exclusive:
 
 1. **Catalytic triad complete** — the Cys-Asp-His catalytic triad (confirmed via P23608/Cupriavidus necator PhaC1 numbering: Cys319 in a G-x-C-x-G lipase-box-like motif, Asp480, His508) is present at all three expected positions, located by projecting every target onto the project's own 625-column PhaC profile HMM via `hmmalign`.
 2. **HMM-supported (no triad)** — hits at least one of 6 independently-built PhaC profile HMMs (Pfam PF07167, this project's own 822-sequence model, NCBIFam TIGR01838/01839/01836 for Class I/II/III, PANTHER PTHR36837) but the triad wasn't resolvable (usually because the alignment doesn't reach that far — see below).
@@ -80,45 +82,44 @@ For all 68,424 verified phaC genomes, five evidence tiers were built, strongest 
 
 | Tier | Genomes | % |
 |---|---|---|
-| Catalytic triad complete | 28,737 | 42.0% |
-| HMM-supported (no triad) | 3,790 | 5.5% |
-| No HMM/triad, ≥5 other PHA genes | 4,620 | 6.8% |
-| No HMM/triad, 1–4 other PHA genes | 30,050 | 43.9% |
-| phaC only | 1,227 | 1.8% |
+| Catalytic triad complete | 28,407 | 90.3% |
+| HMM-supported (no triad) | 3,030 | 9.6% |
+| No HMM/triad, ≥5 other PHA genes | 12 | 0.04% |
+| No HMM/triad, 1–4 other PHA genes | 15 | 0.05% |
+| phaC only | 0 | 0.0% |
 
-Two things stand out immediately against the pre-audit version of this same breakdown. First, the highest-confidence tier is much larger than it looked before verification (triad-complete alone is 42.0%, versus the old HMM-supported figure of 23.5%) — a direct effect of the reference cleanup concentrating genuine signal rather than diluting it across contaminated hits. Second, the "≥5 other genes" tier collapsed from 37.9% of the dataset (pre-audit) to 6.8% now — because most of the genomes that used to qualify were only reaching 5+ genes by counting phaD/phaE/phaG hits that turned out to be a different protein entirely (§1.4, and see `PHA_ALL_FAMILIES_REFERENCE_AUDIT.md`). The "1-4 other genes" tier is now the single largest bucket (43.9%) — a large population of phaC calls that remain genuinely uncertain at the direct-evidence level even after full verification, not resolved one way or the other by this analysis. Only 1.8% of genomes have phaC standing completely alone with no other supporting evidence of any kind.
+**This is a dramatically different picture than the pre-fix version of this table** (which read 42.0% / 5.5% / 6.8% / 43.9% / 1.8%). The three weak-evidence tiers — which together held 52.5% of the dataset before the phaC reference-query fix (§2) — have collapsed to 27 genomes total (0.09%), and the strong-evidence tiers now cover 99.9% of the dataset. This is not a coincidence or a methodology change: it is the direct, mechanical consequence of removing 152 phaC reference queries that lacked the real PHA-synthase domain. A genome whose only "phaC evidence" was a weak partial match to one of those misannotated/fusion references never had real HMM or triad support to begin with — removing that genome from the dataset doesn't change its tier, it removes exactly the kind of case that used to populate the weak tiers. **The entire premise of §6 (structure prediction to resolve tiers with no direct evidence) is now moot at its original scale** — there are 27 such genomes left, not the ~35,900 (52.5%) the structure-prediction pipeline was built to handle. See §6 for how that section is being revised.
 
 ### Taxonomy
 
 | Tier | Distinct phyla | Distinct genera | % Pseudomonadota |
 |---|---|---|---|
-| Catalytic triad complete | 42 | 2,005 | 86.1% |
-| HMM-supported (no triad) | 44 | 747 | 63.1% |
-| ≥5 other PHA genes | 38 | 925 | 71.8% |
-| 1–4 other PHA genes | 82 | 2,415 | 60.6% |
-| phaC only | 28 | 248 | 66.9% |
+| Catalytic triad complete | 42 | 2,002 | 86.0% |
+| HMM-supported (no triad) | 36 | 644 | 77.8% |
+| ≥5 other PHA genes | 3 | 7 | 50.0% |
+| 1–4 other PHA genes | 6 | 12 | 60.0% |
+| phaC only | — | — | (0 genomes) |
 
 ![phylum composition](phac_verified_group_phylum_composition.png)
 
-The taxonomic pattern found before the audit survives correction, essentially unchanged: the tier with the strongest direct protein evidence (catalytic triad) is the most Pseudomonadota-dominated (86.1% — the phylum nearly every curated PhaC reference comes from), while the "1-4 other genes" tier — now the largest single group, and genuinely unresolved at the protein level — is both the most taxonomically diverse by far (82 distinct phyla, more than double any other tier) and the least Pseudomonadota-heavy (60.6%), picking up real share in Bacteroidota (16.3% of that tier), Marinisomatota, SAR324, and Verrucomicrobiota. This is consistent with the same interpretation as before: genomes lacking direct confirmation skew toward lineages current PhaC references simply cover less well, not toward a biologically different (less real) population.
+The two statistically meaningful tiers (triad-complete and HMM-supported, 31,437 of 31,464 genomes) still show the same qualitative pattern as before — direct protein evidence skews Pseudomonadota-heavy (86.0%), consistent with the reference set's own taxonomic origin. **The bottom three rows are no longer meaningful percentages** — at n=12, n=15, and n=0, "50.0% Pseudomonadota" and "60.0% Pseudomonadota" describe 6/12 and 9/15 genomes respectively, not a real distribution; the phylum-composition figure's bottom bars should be read as "here are the handful of remaining unresolved genomes," not as population statistics. The 27 residual genomes span only 3-6 phyla combined (Pseudomonadota, Desulfobacterota, Chloroflexota, Actinomycetota, Thermoproteota, Campylobacterota, Halobacteriota) — small enough now to list individually rather than summarize; see `figures/scripts/plot_phac_triad_hmm_pathway_groups.py`'s companion analysis output for the full genome ID list.
 
-### Location / habitat — the sponge signal reverses
+### Location / habitat
 
-This is the one pattern that did **not** survive verification. Before the audit, marine-sponge-tissue genomes looked enriched in the high-gene-count ("≥5 other genes") tier. With verified gene counts, that's no longer true — it's reversed:
+Marine-sponge-tissue representation by tier, against the corrected dataset-wide baseline (8.31%, up from the pre-fix 6.5% — the baseline itself shifted because sponge-tissue genomes were not disproportionately among the excluded ones):
 
-| Tier | Marine sponge tissue | vs. dataset-wide baseline (6.5%) |
+| Tier | Marine sponge tissue | vs. baseline |
 |---|---|---|
-| Catalytic triad complete | 8.7% | **1.32x enriched** |
-| HMM-supported (no triad) | 7.1% | 1.09x |
-| ≥5 other PHA genes | 4.0% | **0.62x depleted** |
-| 1–4 other PHA genes | 5.1% | 0.78x |
-| phaC only | 0.6% | 0.09x depleted |
+| Catalytic triad complete (n=28,407) | 8.56% | 1.03x |
+| HMM-supported, no triad (n=3,030) | 5.87% | 0.71x |
+| ≥5 other PHA genes (n=12) | 25.0% | 3.0x (n=3 sponge genomes — not a real rate) |
+| 1–4 other PHA genes (n=15) | 0.0% | 0x (n=0 — not a real rate) |
 
-Sponge-associated genomes are now enriched in the *highest*-confidence tier (catalytic triad complete, 1.32x baseline) and depleted in the tier that used to look sponge-rich. The most likely explanation: the old "≥5 other genes ⇒ sponge-enriched" signal was an artifact of exactly the contamination this audit removed — phaD, phaE, and phaG lost 67-99% of their genomes to the antiporter-locus naming collision (§1.4), and whatever taxonomic/habitat skew existed among the specific mislabeled reference sequences responsible would have shown up as a spurious pattern in the uncorrected pathway-richness counts. This is a concrete example of why the reference audit mattered beyond just shrinking numbers: at least one previously-reported ecological pattern in this dataset was not real.
+**The sponge-tissue story from the pre-fix version of this document (§3's old "sponge signal reverses" finding) is now essentially gone for the two tiers large enough to measure.** Both meaningful tiers sit close to baseline (1.03x, 0.71x) — nowhere near the earlier 1.32x/0.62x split, and nowhere near the original pre-audit "≥5 other genes ⇒ sponge-enriched" claim either. This is consistent with the emerging pattern across this whole reference-query saga: apparent ecological/taxonomic enrichment in the *weak-evidence* tiers has repeatedly turned out to be an artifact of which specific mislabeled or promiscuous references happened to be recruiting hits in those tiers, not a real biological signal — and each round of reference cleanup has made that specific signal weaker, not stronger. Read the flat 1.03x/0.71x result as the more trustworthy one.
 
-Depth shows no comparably dramatic pattern: median resolved depth is 10-20 m across every tier, and every tier reaches down to hadal-trench depths (max 9,700-10,900 m) at similar rates (~5-7% of depth-resolved genomes below 1,000 m in every tier, phaC-only included). Depth/water-column position does not track evidence tier the way sponge association does.
+Depth: median resolved depth is 10 m (triad-complete, n=10,003/28,407 with depth data) and 20 m (HMM-supported, n=1,216/3,030), both reaching to hadal-trench depths (max 10,899 m and 9,697 m respectively) at similar rates (~6-7% below 1,000 m in both tiers) — unchanged in character from the pre-fix finding that depth does not track evidence tier.
 
-**Files:** `figures/scripts/plot_phac_triad_hmm_pathway_groups.py`, `figures/scripts/plot_phac_verified_group_phylum.py`; `/tmp/phac_verified_triad_hmm_group.pkl` (genome → tier label, 68,424 entries) and `/tmp/verified_phac_genome_targets.pkl` (genome → verified target_ids) if continuing this analysis.
+**Files:** `figures/scripts/plot_phac_triad_hmm_pathway_groups.py`, `figures/scripts/plot_phac_verified_group_phylum.py`; `/tmp/phac_verified_triad_hmm_group.pkl` (genome → tier label, 31,464 entries, rebuilt 2026-09-22) and `/tmp/verified_phac_genome_targets.pkl` (genome → verified target_ids, re-filtered against the current 219-accession exclusion list at classification time rather than trusted as pre-filtered — see that script's docstring) if continuing this analysis.
 
 ## 4. Sequence evidence against the full audited reference set
 
