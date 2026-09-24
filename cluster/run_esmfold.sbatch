@@ -16,6 +16,8 @@
 #   positive_control_representatives.faa     (428 seqs, median 420aa) -> N_BATCHES=4 (confirmed working)
 #   audited_reference_set.faa              (1,875 seqs, median 578aa) -> try N_BATCHES=20
 #   all_phac_dedup_representatives.faa    (15,880 seqs, median 444aa) -> N_BATCHES=20 (see below)
+#   legionella_top2_representatives.faa      (18 seqs, the W1046/FDAARGOS_200 deep-dive
+#     pair's own copies, section 9.2) -> N_BATCHES=1, single non-array job is fine
 # uncertain_cluster_representatives.faa was rebuilt 2026-09-24 by
 # structure_prediction/build_uncertain_set_v2.py -- a hand-curated 605-
 # sequence set (down from the original 4,992), see that script's docstring
@@ -47,6 +49,10 @@
 #   # the comprehensive all_phac_dedup run:
 #   sbatch --account=191001-364393 --array=0-19 \
 #     --export=ALL,FASTA=structure_prediction/all_phac_dedup_representatives.faa,OUT_DIR=structure_prediction/esmfold_out/all_phac_dedup,N_BATCHES=20 \
+#     cluster/run_esmfold.sbatch
+#   # the tiny Legionella top-2-genomes run (18 seqs, a couple minutes):
+#   sbatch --account=191001-364393 --array=0-0 \
+#     --export=ALL,FASTA=structure_prediction/legionella_top2_representatives.faa,OUT_DIR=structure_prediction/esmfold_out/legionella_top2,N_BATCHES=1 \
 #     cluster/run_esmfold.sbatch
 #
 # Resumable: run_esmfold.py skips any target_id whose .pdb already exists
