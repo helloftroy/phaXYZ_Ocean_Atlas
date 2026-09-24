@@ -8,17 +8,21 @@
 # --array MUST cover exactly 0..N_BATCHES-1. Sizing guide (very rough,
 # no live timing confirmed yet -- see structure_prediction/run_esmfold.py's
 # own note that this hasn't been run end-to-end on a real GPU node):
-#   uncertain_cluster_representatives.faa  (4,992 seqs, median 413aa) -> try N_BATCHES=40
+#   uncertain_cluster_representatives.faa    (605 seqs, median 475aa, 7 >700aa) -> try N_BATCHES=6
 #   positive_control_representatives.faa     (428 seqs, median 420aa) -> try N_BATCHES=4
 #   audited_reference_set.faa              (1,875 seqs, median 578aa) -> try N_BATCHES=20
+# uncertain_cluster_representatives.faa was rebuilt 2026-09-24 by
+# structure_prediction/build_uncertain_set_v2.py -- a hand-curated 605-
+# sequence set (down from the original 4,992), see that script's docstring
+# and PHA_CLEAN_RESULTS.md section 9.6 for what it contains and why.
 # Adjust after watching how long the first few array tasks actually take
 # (each task's own stdout logs a per-sequence time) -- these are starting
 # guesses sized to keep each task comfortably under a few hours, not a
 # measured throughput number.
 #
 # Usage:
-#   sbatch --account=191001-364393 --array=0-39 \
-#     --export=ALL,FASTA=structure_prediction/uncertain_cluster_representatives.faa,OUT_DIR=structure_prediction/esmfold_out/uncertain,N_BATCHES=40 \
+#   sbatch --account=191001-364393 --array=0-5 \
+#     --export=ALL,FASTA=structure_prediction/uncertain_cluster_representatives.faa,OUT_DIR=structure_prediction/esmfold_out/uncertain,N_BATCHES=6 \
 #     cluster/run_esmfold.sbatch
 #
 # Resumable: run_esmfold.py skips any target_id whose .pdb already exists

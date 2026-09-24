@@ -414,6 +414,24 @@ Picked for biotechnology/synbio potential, against two explicit criteria: copy c
 
 **Files:** `figures/scripts/plot_modicisalibacter_phac_deep_dive.py`; `figures/modicisalibacter_phac_deep_dive.png`/`.pdf`, `figures/modicisalibacter_phac_paralogs.tsv`, `figures/modicisalibacter_cross_genome_conservation.tsv`.
 
+### 9.6 Rebuilt the ESMFold "uncertain" input set around what §9.1–9.5 actually found uncertain
+
+§6's original `structure_prediction/uncertain_cluster_representatives.faa` (4,992 sequences) was built against the pre-fix tier definitions and marked STALE there — the "no direct evidence" tiers it sampled from collapsed to 27 genomes total after the 2026-09-22 phaC fix, so almost none of those 4,992 sequences still correspond to anything genuinely uncertain about this dataset. Replaced with a 605-sequence, hand-picked set (`structure_prediction/build_uncertain_set_v2.py`) built from five sources, each tied to a specific open question raised in §9.1–9.5 rather than a broad generic sample:
+
+1. **Modicisalibacter zincidurans** — all 10 distinct phaC target_ids across all 6 sister genomes (§9.5). Includes the paralog confidently phaC by reference identity but structurally atypical on every TIGRFAM class HMM (738aa) — exactly the case a folded structure can help resolve where sequence HMMs did not.
+2. **Desulfoluna (CARD22-1 study)** — all 8 distinct target_ids across both CARD22-1 genomes (§9.4), including the two phaC/phaZ-ambiguous copies (708aa/736aa).
+3. **"Unknown HK1"** — all 330 distinct target_ids across all 167 phaC-positive genomes of this species (§9.5's runner-up candidate, still worth resolving structurally given its size and sponge-symbiont prevalence).
+4. **The 26 distinct targets behind §3's two smallest evidence tiers** ("No HMM/triad, ≥5 other PHA genes" + "1-4 other PHA genes", 27 genomes total) — pathway-context evidence only, zero direct sequence evidence. Small enough now to fold every member rather than sample.
+5. **273 targets dataset-wide with <50% identity to their nearest non-self phaC** in the all-vs-all self-search (264 with a resolved hit below 50%, plus 9 with no self-hit at all even at the loose e-value cutoff used — the most extreme form of divergent). Same self-search table and re-filtering discipline as §7's/§9's divergent35 table, at 50% instead of 35% and applied per-target rather than one representative per genome, since the goal is folding specific proteins, not a genome-level count.
+
+6 targets are shared across more than one source (mostly divergent-and-HK1 or divergent-and-no-support overlaps) — real convergent evidence, not double-counting, since the FASTA and manifest both dedupe to one row per target_id (`uncertain_set_v2_provenance.tsv` records every source that flagged each one).
+
+**Length filter, applied deliberately unevenly.** The project's usual 150-700aa fragment filter is applied to sources 4-5 (where it serves its original purpose of excluding likely-unfoldable fragments from a generic scan) but *not* to sources 1-3, which are hand-picked, already-investigated candidates — 3 of them (the CARD22-1 708aa/736aa pair, the Modicisalibacter 738aa paralog) are over 700aa specifically because their unusual length is part of why they are worth a fold, and the 150aa floor is still applied everywhere (a fold from under 150 residues isn't structurally interpretable regardless of how the candidate was picked). Final set: 152-741aa, median 475aa, 7 sequences over 700aa kept on purpose.
+
+`structure_prediction/fold_manifest.tsv`'s 428 `positive_control` and 1,875 `reference` rows (already built and not touched by this rebuild) are carried over unchanged; only its 4,992 `uncertain` rows were replaced with the new 605. `cluster/run_esmfold.sbatch`'s sizing guidance updated accordingly (try `N_BATCHES=6`, down from 40).
+
+**Files:** `structure_prediction/build_uncertain_set_v2.py`; `structure_prediction/uncertain_cluster_representatives.faa` (605 seqs, rebuilt), `structure_prediction/fold_manifest.tsv` (rebuilt), `structure_prediction/uncertain_set_v2_provenance.tsv`.
+
 ## 10. Does phaC cluster identity pair with precursor route?
 
 If a phaC synthase's substrate arrives via a different upstream pathway (FAS-linked vs. beta-oxidation-linked), that is a plausible source of real selective pressure on the synthase itself — a testable version of "the phaC structure should pair up with these proteins." `figures/scripts/plot_phac_cluster_vs_precursor_route.py` asks this directly: within a phaC_cluster0.7 cluster (70%-identity group), is %phaG elevated or depleted relative to baseline, after controlling for phylum?
