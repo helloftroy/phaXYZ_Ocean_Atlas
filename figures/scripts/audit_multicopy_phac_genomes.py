@@ -43,13 +43,30 @@ does not scale past a handful of hand-picked genomes):
      completeness 66.75%) shows 96.0% here. Treat this signal as weaker
      than 1-3, not a substitute for them.
 
-  5. n_scaffolds_known -- distinct scaffolds among the subset of a
+  5. n_phaC_contigs / max_phaC_on_single_contig -- among the subset of a
      genome's own targets whose phaC_cluster_sequences.faa "rep=" example
      happens to be this same genome (a target shared identically with
-     another genome only records one arbitrary rep, so this is a lower
-     bound on true scaffold count, not exhaustive -- n_targets_scaffold_known
-     reports how many of the genome's targets this could even be checked
-     for, so the reader can judge how much to trust it per genome).
+     another genome only records one arbitrary rep, so this is a LOWER
+     bound on true contig count/max-per-contig, not exhaustive --
+     n_phaC_contigs_known_of reports how many of the genome's targets this
+     could even be checked for, so the reader can judge how much to trust
+     it per genome): n_phaC_contigs is the number of distinct scaffolds
+     those targets fall on; max_phaC_on_single_contig is the largest
+     number of them found on any one scaffold. Both matter for reading
+     section 9.4's contig-map style finding at scale: a genome with many
+     copies spread across many different contigs (high n_phaC_contigs,
+     low max_phaC_on_single_contig) is a different biological story than
+     one with several copies piled on the same contig (which could be a
+     real tandem cluster, like section 9.4's phaE-phaC-phaJ operon, or a
+     single mis-assembled/fragmented region -- this table cannot tell
+     those apart by itself, only flag genomes worth a closer look).
+     This pass is local-only, same as 1-4 (no network calls, run against
+     all 3,176 genomes) -- for a genome with incomplete
+     n_phaC_contigs_known_of coverage picked for an actual deep dive, a
+     direct fetch of that genome's own gene calls (as section 9.4 did for
+     CARD22-1) resolves the gap completely; that is not done here for all
+     3,176 genomes, only worth doing by hand for whichever few are
+     shortlisted next.
 
 Composite call (LEGIT_TRIAD_MIN / LEGIT_CLUSTER_MIN / ARTIFACT_TRIAD_MAX /
 ARTIFACT_CLUSTER_MAX below): "likely_legit" if pct_triad_complete >= 0.6
@@ -200,13 +217,15 @@ for g, r in multi.items():
     n_clusters_known = sum(1 for t in tids if t in member_to_cluster)
     pct_distinct = len(clusters) / n_clusters_known if n_clusters_known else None
 
-    own_scaffolds = set()
+    own_scaffold_counts = Counter()
     n_scaffold_known = 0
     for t in tids:
         rg_s = scaffold_of.get(t)
         if rg_s and rg_s[0] == g:
-            own_scaffolds.add(rg_s[1])
+            own_scaffold_counts[rg_s[1]] += 1
             n_scaffold_known += 1
+    n_phac_contigs = len(own_scaffold_counts)
+    max_on_one_contig = max(own_scaffold_counts.values()) if own_scaffold_counts else 0
 
     comp, contam = genome_qc.get(g, ('', ''))
     contam_f = float(contam) if contam else None
@@ -233,7 +252,8 @@ for g, r in multi.items():
         'median_protein_length_aa': median_len if median_len is not None else '',
         'n_distinct_cluster07': len(clusters), 'n_clusters_known_of': n_clusters_known,
         'pct_distinct_clusters': f'{pct_distinct:.3f}' if pct_distinct is not None else '',
-        'n_scaffolds_known': len(own_scaffolds), 'n_targets_scaffold_known_of': n_scaffold_known,
+        'n_phaC_contigs': n_phac_contigs, 'max_phaC_on_single_contig': max_on_one_contig,
+        'n_phaC_contigs_known_of': n_scaffold_known,
         'checkm_completeness': comp, 'checkm_contamination': contam,
         'legitimacy_call': call,
     })
