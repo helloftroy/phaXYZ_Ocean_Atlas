@@ -35,15 +35,17 @@ phaC_cluster0.7_cluster_ecology.tsv summary file, which predates that
 exclusion and also only ever recorded each cluster's top-5 genera/phyla/
 studies rather than true distinct counts.
 
-Two groups highlighted with a dashed bounding box, per the two specific
-cases this project expanded on earlier: the 16 regional-specialist
-clusters (figures/phaC_regional_specialists.png, section 5 --
-geographically concentrated, mostly single-location too) and the 3
-Sulfitobacter clusters with >200 genomes each that were found to be
-genuinely global instead (figures/phaC_sulfitobacter_overlay.png,
-section 5.2) -- the same cluster IDs those two figures already used,
-picked out here again by the identical selection logic rather than a
-hardcoded list where that logic already exists in a script.
+The 16 regional-specialist clusters (figures/phaC_regional_specialists.png,
+section 5) and the 3 Sulfitobacter clusters with >200 genomes each found
+to be genuinely global instead (figures/phaC_sulfitobacter_overlay.png,
+section 5.2) are identified in the underlying data (same cluster IDs
+those two figures already used) but not drawn as a highlight on the
+plot -- a bounding-box treatment was tried and dropped: it necessarily
+also enclosed unrelated clusters sharing similar coordinates, and for
+the regional specialists specifically read as "these are all
+single-location," which is wrong for several of them (e.g. IMCC9063
+spans 31 distinct nearby stations). Plain, uncluttered points read more
+honestly here.
 
 Usage:
     python figures/scripts/plot_phac_cluster_landscape.py
@@ -61,7 +63,6 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
-from matplotlib.patches import FancyBboxPatch
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -181,7 +182,7 @@ for bucket in (1, 2, 3, 4):
     ys = np.array([c['n_locations'] for c in pts], dtype=float) + rng.uniform(-0.32, 0.32, len(pts))
     zorder = 2 + bucket
     ax.scatter(xs, ys, s=26 if bucket > 1 else 14, color=CLASS_COLOR[bucket],
-               alpha=0.9 if bucket > 1 else 0.3, linewidth=0, zorder=zorder, label=CLASS_LABEL[bucket])
+               alpha=0.9 if bucket > 1 else 0.55, linewidth=0, zorder=zorder, label=CLASS_LABEL[bucket])
 
 ax.set_xscale('log')
 ax.set_yscale('asinh')
@@ -205,24 +206,15 @@ ax.spines['top'].set_visible(False)
 ax.spines['right'].set_visible(False)
 
 
-def draw_box(ids, color, label, label_xy, pad_x=1.35, pad_y_add=0.6):
-    pts = [c for c in clusters if c['cluster_id'] in ids]
-    x0, x1 = min(c['n_genomes'] for c in pts) / pad_x, max(c['n_genomes'] for c in pts) * pad_x
-    y0, y1 = max(0.5, min(c['n_locations'] for c in pts) - pad_y_add), max(c['n_locations'] for c in pts) + pad_y_add
-    rect = FancyBboxPatch((x0, y0), x1 - x0, y1 - y0, boxstyle='round,pad=0,rounding_size=0',
-                            linewidth=1.8, edgecolor=color, facecolor='none', linestyle='--', zorder=10)
-    ax.add_patch(rect)
-    ax.annotate(label, xy=(x1, y1), xytext=label_xy, textcoords='data', fontsize=10, color=color, fontweight='bold',
-                ha='left', arrowprops=dict(arrowstyle='-', color=color, lw=1.2, shrinkA=0, shrinkB=4))
-    # ring the exact points, not just the box -- the box necessarily also
-    # encloses unrelated clusters that happen to share similar coordinates
-    ax.scatter([c['n_genomes'] for c in pts], [c['n_locations'] for c in pts], s=90, facecolor='none',
-               edgecolor=color, linewidth=1.4, zorder=11)
-    return pts
-
-
-draw_box(regional_ids, '#7A5FA0', '16 regional specialists\n(single region, but sometimes many nearby\nstations -- section 5)', (2.2, 130))
-draw_box(sulfitobacter_ids, '#B33951', 'the 3 truly global\nSulfitobacter clusters (section 5.2)', (9, 220))
+# A bounding box around the 16 regional-specialist / 3 Sulfitobacter
+# clusters was tried and dropped: it necessarily also enclosed unrelated
+# clusters sharing similar coordinates, and for the regional specialists
+# specifically read as "these are all single-location," which is wrong
+# for several of them (e.g. IMCC9063 spans 31 distinct nearby stations,
+# still geographically concentrated but not one sampling event) --
+# misleading in a way plain data points aren't. regional_ids/
+# sulfitobacter_ids are kept (and still printed above) for anyone who
+# wants to re-add a highlight later, just not rendered as a box now.
 
 class_handles = [mpatches.Patch(color=CLASS_COLOR[b], label=CLASS_LABEL[b]) for b in (1, 2, 3, 4)]
 leg1 = ax.legend(handles=class_handles, loc='lower right', title='Color: # distinct GTDB classes', fontsize=9.5,
