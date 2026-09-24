@@ -6,16 +6,18 @@ taxonomic breadth (how many different lineages independently carry it)
 at once, rather than one dimension at a time.
 
 x = log10(n_genomes carrying the cluster) -- abundance/recurrence.
-y = n_distinct_studies carrying the cluster (asinh-scaled: log-like
-    spread for the long tail, but doesn't collapse the dense 1-5 range
-    the way a log axis would) -- geographic/sampling recurrence. Not
-    exactly the same thing as "sampling locations" (one study can span
-    many locations, as TARA Oceans does throughout this dataset, and
-    conversely several studies can independently sample one small
+y = n_distinct sampling locations carrying the cluster (asinh-scaled:
+    log-like spread for the long tail, but doesn't collapse the dense 1-5
+    range the way a log axis would) -- geographic recurrence. A location
+    is a rounded (lat, lon) pair, not a sample_id or study_id: checked
+    directly that sample_id over-counts (1,154 of 3,086 distinct
+    locations in this dataset have >1 sample_id at the identical
+    coordinate -- repeat visits, multiple depths/size-fractions at the
+    same station) and study_id can under- or over-count in either
+    direction (one study, e.g. TARA Oceans, spans many locations;
+    conversely several independent studies can concentrate on one small
     region -- UBA10347 below is exactly that case, 14 studies but still
-    geographically concentrated per its own geo_mean_resultant_length),
-    but it is the readily-available, defensible proxy for "how many
-    independent sampling efforts found this."
+    geographically concentrated per its own geo_mean_resultant_length).
 color = n_distinct GTDB classes among the cluster's genomes, bucketed
     (1/2/3/4+) rather than a continuous scale: nearly every cluster
     (97.6%) is confined to a single phylum, confirming the flat-color
@@ -36,7 +38,7 @@ studies rather than true distinct counts.
 Two groups highlighted with a dashed bounding box, per the two specific
 cases this project expanded on earlier: the 16 regional-specialist
 clusters (figures/phaC_regional_specialists.png, section 5 --
-geographically concentrated, mostly single-study too) and the 3
+geographically concentrated, mostly single-location too) and the 3
 Sulfitobacter clusters with >200 genomes each that were found to be
 genuinely global instead (figures/phaC_sulfitobacter_overlay.png,
 section 5.2) -- the same cluster IDs those two figures already used,
@@ -113,16 +115,28 @@ with open(FA / 'phaC_cluster0.7_cluster.tsv', newline='') as f:
 
 print(f'{len(cluster_genomes):,} clusters with >=1 QC-passing genome')
 
+def location_of(r):
+    """Rounded (lat, lon) as a proxy for "one sampling location" -- distinct
+    from sample_id, which over-counts: 1,154 of 3,086 distinct locations in
+    this dataset have >1 sample_id at the identical coordinate (repeat
+    visits, multiple depths/size-fractions at the same station), confirmed
+    directly against genome_family_matrix.tsv before picking this over the
+    simpler sample_id count."""
+    if not r['latitude_degN'] or not r['longitude_degE']:
+        return None
+    return (round(float(r['latitude_degN']), 3), round(float(r['longitude_degE']), 3))
+
+
 clusters = []
 for cid, genomes in cluster_genomes.items():
     known = [gmeta[g] for g in genomes if g in gmeta]
     if not known:
         continue
     n_genomes = len(genomes)
-    n_studies = len(set(r['study_id'] for r in known))
+    n_locations = len({loc for r in known if (loc := location_of(r)) is not None})
     n_classes = len(set(r['gtdb_class'] for r in known))
     top_genus = max(set(r['gtdb_genus'] for r in known), key=lambda g: sum(1 for r in known if r['gtdb_genus'] == g))
-    clusters.append({'cluster_id': cid, 'n_genomes': n_genomes, 'n_studies': n_studies,
+    clusters.append({'cluster_id': cid, 'n_genomes': n_genomes, 'n_locations': n_locations,
                       'n_classes': n_classes, 'top_genus': top_genus})
 
 clusters.sort(key=lambda c: -c['n_genomes'])
@@ -154,7 +168,7 @@ def bucket_of(n_classes):
     return min(n_classes, 4)
 
 
-# jitter: n_genomes and n_studies are both small integers, so unjittered
+# jitter: n_genomes and n_locations are both small integers, so unjittered
 # points overlap heavily into a sparse-looking grid (confirmed live on
 # the first render -- most of the 4,340 clusters were invisible, stacked
 # under a handful of grid points) -- a small multiplicative/additive
@@ -164,7 +178,7 @@ rng = np.random.default_rng(0)
 for bucket in (1, 2, 3, 4):
     pts = [c for c in clusters if bucket_of(c['n_classes']) == bucket]
     xs = np.array([c['n_genomes'] for c in pts], dtype=float) * rng.uniform(0.85, 1.18, len(pts))
-    ys = np.array([c['n_studies'] for c in pts], dtype=float) + rng.uniform(-0.32, 0.32, len(pts))
+    ys = np.array([c['n_locations'] for c in pts], dtype=float) + rng.uniform(-0.32, 0.32, len(pts))
     zorder = 2 + bucket
     ax.scatter(xs, ys, s=26 if bucket > 1 else 14, color=CLASS_COLOR[bucket],
                alpha=0.9 if bucket > 1 else 0.3, linewidth=0, zorder=zorder, label=CLASS_LABEL[bucket])
@@ -176,12 +190,12 @@ ax.set_yscale('asinh')
 # ticks (-10^0, -10^-1, ...) that confirmed live looked like a rendering
 # bug on the first pass. Explicit ylim + explicit positive-only ticks
 # (plain integers, not scientific notation) fixes it.
-ax.set_ylim(0.55, 100)
-YTICKS = [1, 2, 3, 5, 10, 20, 30, 50, 80]
+ax.set_ylim(0.55, 350)
+YTICKS = [1, 2, 3, 5, 10, 20, 50, 100, 200, 300]
 ax.set_yticks(YTICKS)
 ax.set_yticklabels([str(t) for t in YTICKS])
 ax.set_xlabel('Genomes carrying the cluster (log scale)')
-ax.set_ylabel('Independent studies carrying the cluster (asinh scale)')
+ax.set_ylabel('Distinct sampling locations carrying the cluster (asinh scale)')
 ax.set_title('The phaC cluster landscape: recurrence vs. geographic spread vs. taxonomic breadth',
               fontsize=15, fontweight='bold')
 ax.grid(True, which='major', color='#E4E8E5', linewidth=0.6, zorder=0)
@@ -194,7 +208,7 @@ ax.spines['right'].set_visible(False)
 def draw_box(ids, color, label, label_xy, pad_x=1.35, pad_y_add=0.6):
     pts = [c for c in clusters if c['cluster_id'] in ids]
     x0, x1 = min(c['n_genomes'] for c in pts) / pad_x, max(c['n_genomes'] for c in pts) * pad_x
-    y0, y1 = max(0.5, min(c['n_studies'] for c in pts) - pad_y_add), max(c['n_studies'] for c in pts) + pad_y_add
+    y0, y1 = max(0.5, min(c['n_locations'] for c in pts) - pad_y_add), max(c['n_locations'] for c in pts) + pad_y_add
     rect = FancyBboxPatch((x0, y0), x1 - x0, y1 - y0, boxstyle='round,pad=0,rounding_size=0',
                             linewidth=1.8, edgecolor=color, facecolor='none', linestyle='--', zorder=10)
     ax.add_patch(rect)
@@ -202,13 +216,13 @@ def draw_box(ids, color, label, label_xy, pad_x=1.35, pad_y_add=0.6):
                 ha='left', arrowprops=dict(arrowstyle='-', color=color, lw=1.2, shrinkA=0, shrinkB=4))
     # ring the exact points, not just the box -- the box necessarily also
     # encloses unrelated clusters that happen to share similar coordinates
-    ax.scatter([c['n_genomes'] for c in pts], [c['n_studies'] for c in pts], s=90, facecolor='none',
+    ax.scatter([c['n_genomes'] for c in pts], [c['n_locations'] for c in pts], s=90, facecolor='none',
                edgecolor=color, linewidth=1.4, zorder=11)
     return pts
 
 
-draw_box(regional_ids, '#7A5FA0', '16 regional specialists\n(single region, mostly single-study -- section 5)', (2.2, 42))
-draw_box(sulfitobacter_ids, '#B33951', 'the 3 truly global\nSulfitobacter clusters (section 5.2)', (10, 55))
+draw_box(regional_ids, '#7A5FA0', '16 regional specialists\n(single region, but sometimes many nearby\nstations -- section 5)', (2.2, 130))
+draw_box(sulfitobacter_ids, '#B33951', 'the 3 truly global\nSulfitobacter clusters (section 5.2)', (9, 220))
 
 class_handles = [mpatches.Patch(color=CLASS_COLOR[b], label=CLASS_LABEL[b]) for b in (1, 2, 3, 4)]
 leg1 = ax.legend(handles=class_handles, loc='lower right', title='Color: # distinct GTDB classes', fontsize=9.5,
