@@ -217,8 +217,13 @@ def build_circos_chart(genome_order, genome_label, genome_band_color, band_legen
     legend2 = ax.legend(handles=band_handles, loc='upper center', bbox_to_anchor=(0.72, -0.04), fontsize=8, frameon=False,
                title='Genome group', title_fontsize=8.5)
 
-    subtitle_text = fig.text(0.5, 0.945, subtitle, ha='center', fontsize=9, color='#5B6E70')
-    suptitle_text = fig.suptitle(title, fontsize=15, fontweight='bold', y=0.98)
+    # subtitle/title y positions must leave room for however many lines the
+    # subtitle has -- fixed y=0.945/0.98 (validated on the 2-line Modicisalibacter/
+    # CARD22-1 subtitles) collided with the title for HK1's 3-line subtitle, so
+    # both are pushed apart proportionally to the extra line count.
+    n_subtitle_lines = subtitle.count('\n') + 1
+    suptitle_text = fig.suptitle(title, fontsize=15, fontweight='bold', y=0.98 + 0.006 * (n_subtitle_lines - 2))
+    subtitle_text = fig.text(0.5, 0.945 - 0.02 * (n_subtitle_lines - 2), subtitle, ha='center', fontsize=9, color='#5B6E70')
 
     # bbox_inches='tight' does not reliably auto-discover legends placed via
     # bbox_to_anchor outside the axes' own data limits (confirmed live: both
