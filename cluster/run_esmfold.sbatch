@@ -15,7 +15,7 @@
 #   uncertain_cluster_representatives.faa    (605 seqs, median 475aa, 7 >700aa) -> N_BATCHES=6 (confirmed working)
 #   positive_control_representatives.faa     (428 seqs, median 420aa) -> N_BATCHES=4 (confirmed working)
 #   audited_reference_set.faa              (1,875 seqs, median 578aa) -> try N_BATCHES=20
-#   all_phac_dedup_representatives.faa    (15,880 seqs, median 444aa) -> try N_BATCHES=160
+#   all_phac_dedup_representatives.faa    (15,880 seqs, median 444aa) -> N_BATCHES=20 (see below)
 # uncertain_cluster_representatives.faa was rebuilt 2026-09-24 by
 # structure_prediction/build_uncertain_set_v2.py -- a hand-curated 605-
 # sequence set (down from the original 4,992), see that script's docstring
@@ -25,15 +25,28 @@
 # all verified phaC diversity (short sequences and >=95%-identical near-
 # duplicates collapsed out) -- meant as a comprehensive structural atlas
 # for future figures, not a hand-picked subset; point OUT_DIR at
-# structure_prediction/esmfold_out/all_phac_dedup for it. Adjust N_BATCHES
-# after watching how long the first few array tasks actually take (each
-# task's own stdout logs a per-sequence time) -- 160 is a starting guess
-# sized to keep each task comfortably under a few hours, not a measured
-# throughput number, extrapolated from the confirmed 605-sequence run.
+# structure_prediction/esmfold_out/all_phac_dedup for it.
+#
+# N_BATCHES=20 for this one is deliberately NOT the naive scale-up from the
+# confirmed 605-sequence run (~101 seqs/task, ~10min/task there -> a naive
+# 26x scale-up to 15,880 seqs would keep ~10min/task but need N_BATCHES=160).
+# 160 short-lived array tasks is wasteful of SLURM scheduling overhead for
+# not much benefit -- confirmed live that ~10min/task is too fine-grained,
+# so this instead targets ~1-2hr/task: 20 batches -> ~794 seqs/task -> ~79
+# minutes/task at the same ~5.9sec/seq rate, comfortably under the 12-hour
+# limit even accounting for this set's slightly longer tail (max 1024aa vs.
+# 741aa before). Re-derive if the confirmed per-sequence rate turns out
+# different here (longer median could shift this either way) -- watch the
+# first array task's own stdout (logs per-sequence time) before assuming
+# 20 is still right at a much larger scale.
 #
 # Usage:
 #   sbatch --account=191001-364393 --array=0-5 \
 #     --export=ALL,FASTA=structure_prediction/uncertain_cluster_representatives.faa,OUT_DIR=structure_prediction/esmfold_out/uncertain,N_BATCHES=6 \
+#     cluster/run_esmfold.sbatch
+#   # the comprehensive all_phac_dedup run:
+#   sbatch --account=191001-364393 --array=0-19 \
+#     --export=ALL,FASTA=structure_prediction/all_phac_dedup_representatives.faa,OUT_DIR=structure_prediction/esmfold_out/all_phac_dedup,N_BATCHES=20 \
 #     cluster/run_esmfold.sbatch
 #
 # Resumable: run_esmfold.py skips any target_id whose .pdb already exists
