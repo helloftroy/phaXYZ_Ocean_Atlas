@@ -1,0 +1,6 @@
+target_id	protein_length_aa	cluster0.7	n_sister_genomes_sharing_cluster	triad_complete	pident_to_best_ref	best_class_relative	passes_class_trusted_cutoff	own_scaffold	own_gene_index	phaC_vs_phaZ_pident
+OMDBv2.0_AA_G_NR100_000054866076	561	OMDBv2.0_AA_G_NR100_000139783925	6	True	43.500	None	False			43.5 vs 44.5 (phaZ comparable/higher -- ambiguous)
+OMDBv2.0_AA_G_NR100_000054867173	640	OMDBv2.0_AA_G_NR100_000148602748	6	True	74.800	ClassI	True			
+OMDBv2.0_AA_G_NR100_000246007748	589	OMDBv2.0_AA_G_NR100_000061282509	2	True	98.800	ClassI	False	scaffold_5	114	
+OMDBv2.0_AA_G_NR100_000246007752	598	OMDBv2.0_AA_G_NR100_000139783925	6	True	43.900	None	False	scaffold_5	118	43.9 vs 46.1 (phaZ comparable/higher -- ambiguous)
+OMDBv2.0_AA_G_NR100_000246008371	738	OMDBv2.0_AA_G_NR100_000139753017	6	True	68.900	None	False	scaffold_25	41	
