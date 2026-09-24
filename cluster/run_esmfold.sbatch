@@ -5,20 +5,31 @@
 # structure_prediction/build_fold_inputs.py), pointing FASTA/OUT_DIR at
 # each in turn.
 #
-# --array MUST cover exactly 0..N_BATCHES-1. Sizing guide (very rough,
-# no live timing confirmed yet -- see structure_prediction/run_esmfold.py's
-# own note that this hasn't been run end-to-end on a real GPU node):
-#   uncertain_cluster_representatives.faa    (605 seqs, median 475aa, 7 >700aa) -> try N_BATCHES=6
-#   positive_control_representatives.faa     (428 seqs, median 420aa) -> try N_BATCHES=4
+# --array MUST cover exactly 0..N_BATCHES-1. Sizing guide -- the
+# uncertain/positive_control pair below has now actually been run
+# end-to-end (confirmed live: completed without crashing, and ran
+# noticeably faster than the Foldseek step that follows it -- see
+# cluster/run_foldseek.sbatch), so N_BATCHES for those two is closer to
+# a real number than a guess; audited_reference_set.faa and
+# all_phac_dedup_representatives.faa are still sized by extrapolation:
+#   uncertain_cluster_representatives.faa    (605 seqs, median 475aa, 7 >700aa) -> N_BATCHES=6 (confirmed working)
+#   positive_control_representatives.faa     (428 seqs, median 420aa) -> N_BATCHES=4 (confirmed working)
 #   audited_reference_set.faa              (1,875 seqs, median 578aa) -> try N_BATCHES=20
+#   all_phac_dedup_representatives.faa    (15,880 seqs, median 444aa) -> try N_BATCHES=160
 # uncertain_cluster_representatives.faa was rebuilt 2026-09-24 by
 # structure_prediction/build_uncertain_set_v2.py -- a hand-curated 605-
 # sequence set (down from the original 4,992), see that script's docstring
 # and PHA_CLEAN_RESULTS.md section 9.6 for what it contains and why.
-# Adjust after watching how long the first few array tasks actually take
-# (each task's own stdout logs a per-sequence time) -- these are starting
-# guesses sized to keep each task comfortably under a few hours, not a
-# measured throughput number.
+# all_phac_dedup_representatives.faa (structure_prediction/
+# build_all_phac_dedup_set.py) is a separate, broader run covering nearly
+# all verified phaC diversity (short sequences and >=95%-identical near-
+# duplicates collapsed out) -- meant as a comprehensive structural atlas
+# for future figures, not a hand-picked subset; point OUT_DIR at
+# structure_prediction/esmfold_out/all_phac_dedup for it. Adjust N_BATCHES
+# after watching how long the first few array tasks actually take (each
+# task's own stdout logs a per-sequence time) -- 160 is a starting guess
+# sized to keep each task comfortably under a few hours, not a measured
+# throughput number, extrapolated from the confirmed 605-sequence run.
 #
 # Usage:
 #   sbatch --account=191001-364393 --array=0-5 \
