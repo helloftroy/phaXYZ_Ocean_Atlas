@@ -23,6 +23,23 @@ merged into one "genome" bin. Checked directly below via each genome's own
 CheckM-style contamination score (from phaC_unique_targets_with_metadata_depth.tsv)
 rather than assumed.
 
+Rebuilt again 2026-09-24 with two more corrections layered on top of
+n_phaC, following section 9.12's structural resolution of the
+no_hmm_triad_support population (0/19 have a real catalytic triad by any
+mechanism checked -- not phaC): (1) decrement n_phaC by 1 for every
+genome carrying one of those 19 directly-excluded target_ids (via
+phaC_all_genomes_from_nr100_clusters.tsv's genome join -- 23 genomes
+affected, since a few of the 19 are NR100 100%-identity representatives
+shared across more than one genome); (2) drop the 85 genomes
+figures/phac_multicopy_legitimacy_audit.tsv's composite audit (section
+9.3) called `likely_artifact` outright, rather than trusting their
+n_phaC at all -- that call already means the genome's own copies mostly
+fail the triad-completeness/distinct-cluster checks, i.e. look like
+assembly fragmentation, not real paralogs. Both are small corrections
+(23 + 85 genomes out of ~31,000) but the right thing to apply now that
+section 9.12 gives a concrete, checked reason for the first one instead
+of a suspicion.
+
 Usage:
     python figures/scripts/plot_phac_multicopy_genomes.py
 
@@ -44,6 +61,7 @@ from scipy.stats import fisher_exact
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _stats_utils import mantel_haenszel
+import _phac_qc
 
 ROOT = Path(__file__).resolve().parent.parent.parent
 OUT = ROOT / 'figures'
@@ -69,6 +87,37 @@ with open(FA / 'genome_family_matrix.tsv', newline='') as f:
         if n <= 0:
             continue
         genomes[row['genome']] = {'n_phac': n, 'phylum': row['gtdb_phylum']}
+
+n_before_corrections = len(genomes)
+
+# correction 1: decrement n_phaC for genomes carrying one of the 19
+# section-9.12-excluded target_ids (structurally confirmed to have no
+# real catalytic triad, canonical or alternative -- not phaC)
+bad_target_hits = defaultdict(int)
+with open(ROOT / 'phaC_all_genomes_from_nr100_clusters.tsv', newline='') as f:
+    for row in csv.DictReader(f, delimiter='\t'):
+        if row['target_id'] in _phac_qc.BAD_TARGET_IDS and row['genome'] in genomes:
+            bad_target_hits[row['genome']] += 1
+for g, n_bad in bad_target_hits.items():
+    genomes[g]['n_phac'] = max(0, genomes[g]['n_phac'] - n_bad)
+n_dropped_to_zero = sum(1 for g in bad_target_hits if genomes[g]['n_phac'] == 0)
+genomes = {g: r for g, r in genomes.items() if r['n_phac'] > 0}
+print(f'correction 1: {len(bad_target_hits)} genomes had >=1 of the 19 excluded target_ids '
+      f'(n_phaC decremented accordingly; {n_dropped_to_zero} dropped out of the phaC-positive set entirely)')
+
+# correction 2: drop genomes the section-9.3 composite legitimacy audit
+# called likely_artifact outright (assembly-fragmentation signature, not
+# trusted at all rather than just decremented)
+likely_artifact = set()
+with open(OUT / 'phac_multicopy_legitimacy_audit.tsv', newline='') as f:
+    for row in csv.DictReader(f, delimiter='\t'):
+        if row['legitimacy_call'] == 'likely_artifact':
+            likely_artifact.add(row['genome'])
+n_artifact_removed = sum(1 for g in genomes if g in likely_artifact)
+genomes = {g: r for g, r in genomes.items() if g not in likely_artifact}
+print(f'correction 2: {n_artifact_removed} likely_artifact genomes dropped entirely '
+      f'(of {len(likely_artifact)} total in the legitimacy audit)')
+print(f'{n_before_corrections:,} -> {len(genomes):,} phaC-positive genomes after both corrections\n')
 
 n_total = len(genomes)
 copy_dist = Counter(r['n_phac'] for r in genomes.values())

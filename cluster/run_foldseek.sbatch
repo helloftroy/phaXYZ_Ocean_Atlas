@@ -25,7 +25,18 @@
 #     cluster/run_foldseek.sbatch
 #
 #SBATCH --job-name=pha_foldseek
-#SBATCH --partition=service
+# Foldseek's own search is CPU-multithreaded, not GPU-accelerated, in this
+# project's setup, so a plain CPU partition is the semantically right
+# choice -- but "service" (this codebase's placeholder name for that,
+# confirmed via cluster/README.md's own note to "confirm the real
+# partition name for your account with sinfo") turned out not to be the
+# one to use for a job this size. gpu-a100 is the only other partition
+# name confirmed working anywhere in this repo (run_esmfold.sbatch,
+# run_colabfold.sbatch) -- used here without requesting --gres=gpu since
+# this job doesn't need the GPU itself, just real CPUs. If a dedicated
+# CPU-only partition name is available on this account (check with
+# `sinfo`), swap it in here instead.
+#SBATCH --partition=gpu-a100
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=64G
 #SBATCH --time=24:00:00

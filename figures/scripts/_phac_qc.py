@@ -75,17 +75,50 @@ BAD_QUERIES = frozenset(f'UNIPROT:{acc}' for acc in (
 # single accession -- prefer BAD_QUERIES / is_bad() in new code
 BAD_QUERY = 'UNIPROT:C7BNH2'
 
+# Target-level exclusions, as opposed to BAD_QUERIES above (which excludes by
+# best_query, i.e. a bad *reference*). These are individual candidates ruled
+# out directly by their own structure, not by which reference recruited them
+# -- excluding by best_query doesn't apply here since these 19 don't share
+# one bad reference (12/19 best-match Q5P962, which is itself a legitimate,
+# if weakly-annotated, reference that also recruits many genuine targets --
+# see PHA_CLEAN_RESULTS.md section 9.7).
+#
+# All 19 are the full no_hmm_triad_support population from section 9.6's
+# uncertain-set build (figures/structural_no_hmm_triad_active_site_audit.tsv
+# + _no_cys_alternative_triad_audit.tsv, section 9.12): every one of them
+# was checked directly against its own ESMFold structure for a real
+# catalytic triad, canonical Cys-Asp-His or alternative Ser/Thr-Asp-His, and
+# none was found -- 15/19 have no cysteine anywhere in the sequence at all
+# (ruling out the canonical mechanism outright), the other 4 have a
+# cysteine but 8-17A from the nearest His (an order of magnitude looser
+# than the 2.4-3.4A seen in every confirmed-real triad in this project),
+# and all 15 no-cysteine ones were also checked for a Ser/Thr alternative
+# and found none plausible either. No active site by any mechanism checked
+# -- not phaC.
+BAD_TARGET_IDS = frozenset((
+    'OMDBv2.0_AA_G_NR100_000000013407', 'OMDBv2.0_AA_G_NR100_000007484248', 'OMDBv2.0_AA_G_NR100_000012946226',
+    'OMDBv2.0_AA_G_NR100_000018865739', 'OMDBv2.0_AA_G_NR100_000057104467', 'OMDBv2.0_AA_G_NR100_000057745835',
+    'OMDBv2.0_AA_G_NR100_000060086046', 'OMDBv2.0_AA_G_NR100_000098889079', 'OMDBv2.0_AA_G_NR100_000101178016',
+    'OMDBv2.0_AA_G_NR100_000111006886', 'OMDBv2.0_AA_G_NR100_000111912241', 'OMDBv2.0_AA_G_NR100_000160099602',
+    'OMDBv2.0_AA_G_NR100_000187164299', 'OMDBv2.0_AA_G_NR100_000204524282', 'OMDBv2.0_AA_G_NR100_000211778674',
+    'OMDBv2.0_AA_G_NR100_000218113895', 'OMDBv2.0_AA_G_NR100_000218537902', 'OMDBv2.0_AA_G_NR100_000225793822',
+    'OMDBv2.0_AA_G_NR100_000236086924',
+))
+
 
 def is_bad(best_query):
     return best_query in BAD_QUERIES
 
 
 def load_bad_targets(path=None):
-    """Returns the set of target_ids whose best_query is one of the
-    confirmed-bad reference proteins -- for filtering files (like the
-    cluster-assignment TSVs) that don't carry best_query themselves."""
+    """Returns the set of target_ids that should be excluded from any
+    figure or analysis: either their best_query is one of the confirmed-bad
+    reference proteins (BAD_QUERIES), or the target itself was directly
+    ruled out by its own structure (BAD_TARGET_IDS) -- for filtering files
+    (like the cluster-assignment TSVs) that don't carry best_query
+    themselves."""
     path = path or FA / 'phaC_unique_targets_with_metadata.tsv'
-    bad = set()
+    bad = set(BAD_TARGET_IDS)
     with open(path, newline='') as f:
         for row in csv.DictReader(f, delimiter='\t'):
             if row['best_query'] in BAD_QUERIES:
