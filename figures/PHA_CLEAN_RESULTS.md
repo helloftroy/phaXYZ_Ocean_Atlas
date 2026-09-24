@@ -476,6 +476,18 @@ Not yet run: this is the prepared input + infrastructure, not new results — `s
 
 **Files:** `structure_prediction/build_all_phac_dedup_set.py`; `structure_prediction/all_phac_dedup_representatives.faa` (15,880 seqs), `structure_prediction/all_phac_dedup_clusters.tsv`; `cluster/run_foldseek.sbatch` (new); `cluster/run_esmfold.sbatch` (sizing guidance updated).
 
+### 9.9 Chord diagram: phaC paralogs across genomes (`figures/modicisalibacter_circos.png`)
+
+A prototype for a genome-to-genome protein-similarity visualization, validated on a small, already-understood case before applying it to the larger HK1/CARD22-1 sets. Not a circular-genome plot — each sector is one *genome* (arranged around a circle), each dot is one of that genome's own phaC copies, and chords connect copies from *different* genomes that fall in the same 70%-identity paralog cluster; chord opacity/width scales with the exact pairwise %identity between the two specific proteins (computed directly with the same Biopython BLOSUM62 global-alignment method as §9.4/9.5, not read off the cluster threshold). Node color encodes paralog cluster.
+
+**Case**: Modicisalibacter zincidurans's 6 genomes plus one representative genome each from the four outside genera §9.5's addendum found sharing its paralog clusters — Cobetia, Vreelandella, Halomonas, Marinobacter (highest-completeness/lowest-contamination genome per genus, each contributing its *full* phaC complement, not just the one target that connected it). 10 genomes, 31 protein instances (20 distinct sequences — several Modicisalibacter sister genomes share identical copies), 80 chords.
+
+**What it shows directly, visually, that the text-only version of §9.5's addendum could not**: the Halomonadaceae-specific paralog (...602748, orange) and the broader cross-family paralog (...783925, teal) both fan out densely across nearly every sector, including into Cobetia/Vreelandella/Halomonas — real, extensive sharing, not a couple of isolated hits. The 738aa "structurally atypical" paralog (...753017, dark green) forms chords *only* among the 6 Modicisalibacter genomes — visually confirms it has no relatives in this outside set, matching §9.5's addendum finding that it was genus-restricted. The 98.8%-structural-identity paralog (...282509, maroon) appears as a single thin chord between just 2 of the 6 Modicisalibacter genomes (the only two that carry it) plus isolated unconnected dots elsewhere — visually distinguishes "rare within Modicisalibacter itself" from "absent outside it," two different things the aggregate cluster-membership counts alone did not separate as clearly.
+
+**Same method is meant to extend to HK1 and CARD22-1 next** (piece 5 of the current multi-part request) — that is a materially bigger case (167 HK1 genomes, far more total copies), so this smaller prototype was built first specifically to catch layout/legibility problems (label rotation, legend placement, duplicate genome labels — all hit and fixed here) before scaling up.
+
+**Files:** `figures/scripts/plot_modicisalibacter_circos.py`; `figures/modicisalibacter_circos.png`/`.pdf`, `figures/modicisalibacter_circos_nodes.tsv`.
+
 ## 10. Does phaC cluster identity pair with precursor route?
 
 If a phaC synthase's substrate arrives via a different upstream pathway (FAS-linked vs. beta-oxidation-linked), that is a plausible source of real selective pressure on the synthase itself — a testable version of "the phaC structure should pair up with these proteins." `figures/scripts/plot_phac_cluster_vs_precursor_route.py` asks this directly: within a phaC_cluster0.7 cluster (70%-identity group), is %phaG elevated or depleted relative to baseline, after controlling for phylum?
