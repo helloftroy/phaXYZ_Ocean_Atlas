@@ -238,7 +238,8 @@ RADIUS_STEP = 1.05
 MAX_DEPTH = 4  # domain/phylum/class/order -- deterministic, same fact the base detailed script relies on
 MAX_R = MAX_DEPTH * RADIUS_STEP  # == what draw_radial_dendrogram will return as max_r; needed up front
 RING_GAP = 0.05          # gap (units of MAX_R) between phylum band outer edge and multicopy ring start
-RING_MAX_LEN = 0.34      # multicopy ring max length (units of MAX_R) at 100%-of-scale
+RING_MAX_LEN = 0.20      # multicopy ring max length (units of MAX_R) at 100%-of-scale -- shortened
+                          # from an original 0.34 per direct feedback that the ring read as too long/thin
 LABEL_MARGIN = 0.06      # extra clearance (units of MAX_R) past the longest possible bar, before labels start
 # label_radius_offset is in units of radius_step (draw_radial_dendrogram computes
 # label_r = leaf_r + radius_step*offset -- NOT max_r*offset), so RING_GAP/RING_MAX_LEN/
@@ -251,10 +252,35 @@ LABEL_RADIUS_OFFSET = (0.65 * RADIUS_STEP + (RING_GAP + RING_MAX_LEN + LABEL_MAR
 angle_of, max_r = rd.draw_radial_dendrogram(
     ax, root, radius_step=RADIUS_STEP, edge_color='#D8DED7', edge_width=0.7,
     label_levels=(4,), label_fontsize=6.3, label_radius_offset=LABEL_RADIUS_OFFSET,
-    leaf_size_fn=lambda path, count: 6 + 70 * (count / max(n for _, n in paths)),
+    leaf_size_fn=lambda path, count: 0,  # replaced by the thick tick marks below -- a low-count
+                                          # leaf's dot (min size 6px) was confirmed live to be
+                                          # nearly invisible among 104 leaves at this figure size
     leaf_color_fn=branch_color, edge_color_fn=branch_color,
     show_internal_dots=True, internal_dot_size=5, internal_dot_color='#DDE2DB',
 )
+
+def leaf_nodes(node, path=()):
+    count, children = node
+    if not children:
+        yield path, node
+    for label, child in children.items():
+        yield from leaf_nodes(child, path + (label,))
+
+
+# ---- leaf cluster-count marker: a short thick radial tick, not a dot --
+# linewidth (not marker size) carries the count, so even a count near the
+# bottom of the range stays visibly a solid mark rather than shrinking to
+# a near-invisible point.
+TICK_HALF_LEN = 0.045 * MAX_R
+max_leaf_count = max(n for _, n in paths)
+for path, node in leaf_nodes(root):
+    count = node[0]
+    angle = angle_of[id(node)]
+    lw = 1.3 + 7.5 * (count / max_leaf_count)
+    r0, r1 = max_r - TICK_HALF_LEN, max_r + TICK_HALF_LEN
+    x0, y0 = r0 * math.cos(angle), r0 * math.sin(angle)
+    x1, y1 = r1 * math.cos(angle), r1 * math.sin(angle)
+    ax.plot([x0, x1], [y0, y1], color=branch_color(path, count), linewidth=lw, solid_capstyle='round', zorder=3)
 
 # ---- outer colored clade ring, one wedge per phylum (depth 2) ----
 ring_r0 = max_r * 1.05
@@ -287,14 +313,6 @@ for label, child in phylum_nodes:
                 path_effects=[pe.withStroke(linewidth=2.2, foreground='white')])
 
 # ---- outer multicopy ring: one radial bar per leaf, starting past the phylum band ----
-def leaf_nodes(node, path=()):
-    count, children = node
-    if not children:
-        yield path, node
-    for label, child in children.items():
-        yield from leaf_nodes(child, path + (label,))
-
-
 BAR_COLOR = '#1E6E7A'
 mc_r0 = ring_r1 + RING_GAP * max_r
 for path, node in leaf_nodes(root):
@@ -306,7 +324,7 @@ for path, node in leaf_nodes(root):
     r1 = mc_r0 + RING_MAX_LEN * max_r * (pct / MAX_PCT_FOR_SCALE)
     x0, y0 = mc_r0 * math.cos(angle), mc_r0 * math.sin(angle)
     x1, y1 = r1 * math.cos(angle), r1 * math.sin(angle)
-    ax.plot([x0, x1], [y0, y1], color=BAR_COLOR, linewidth=1.6, solid_capstyle='round', zorder=2, alpha=0.85)
+    ax.plot([x0, x1], [y0, y1], color=BAR_COLOR, linewidth=3.2, solid_capstyle='round', zorder=2, alpha=0.85)
 
 # reference guide rings at 20/40/60% multicopy
 REF_LABEL_ANGLE = math.radians(-63)  # empty whitespace in the lower-right, clear of every branch/label
@@ -320,9 +338,9 @@ for pct_ref in (20, 40, 60):
     ax.text(lx, ly, f'{pct_ref}%', fontsize=7, color='#9AA5A0', ha='center', va='bottom', zorder=0)
 
 legend_handles = [
-    mlines.Line2D([], [], marker='o', color='none', markerfacecolor='#7A7A7A', markeredgecolor='#7A7A7A', markersize=8,
-                  label='Dot size: host-specific (single-phylum) cluster count at that order'),
-    mlines.Line2D([], [], color=BAR_COLOR, linewidth=3.5, solid_capstyle='round',
+    mlines.Line2D([], [], color='#7A7A7A', linewidth=4.5, solid_capstyle='round',
+                  label='Inner tick thickness: host-specific (single-phylum) cluster count at that order'),
+    mlines.Line2D([], [], color=BAR_COLOR, linewidth=4.5, solid_capstyle='round',
                   label=f'Outer bar: % of that order’s phaC-positive genomes with >=2 copies (0-{MAX_PCT_FOR_SCALE:.0f}% scale)'),
 ]
 ax.legend(handles=legend_handles, loc='upper left', fontsize=10, frameon=False)
@@ -341,7 +359,7 @@ fig.text(0.5, 0.935,
           f'top {TOP_K_CLASSES} classes/phylum, top {TOP_K_ORDERS} orders/class, {n_leaves} leaves total. Outer teal ring: genome-level multi-copy rate per leaf (section 9).',
           ha='center', fontsize=10.5, color='#5B6E70')
 fig.text(0.5, 0.015,
-          'Outer colored band = phylum. Leaf dot size = host-specific cluster count at that order. Outer teal bars = % of that leaf’s own phaC-positive genomes with >=2 copies\n'
+          'Outer colored band = phylum. Inner tick thickness = host-specific cluster count at that order. Outer teal bars = % of that leaf’s own phaC-positive genomes with >=2 copies\n'
           '(same two QC corrections as section 9: no_hmm_triad_support exclusion + likely_artifact genomes dropped). Classes/orders beyond the top few per parent are folded into one\n'
           '"N smaller ..." leaf (grey) rather than omitted.',
           ha='center', fontsize=8.6, color='#5B6E70')
