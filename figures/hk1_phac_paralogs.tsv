@@ -1,0 +1,8 @@
+target_id	protein_length_aa	own_scaffold	own_gene_index	best_query	pident_to_best_ref	triad_complete_structural	triad_complete_alignment_column
+OMDBv2.0_AA_G_NR100_000043713232	664	scaffold_159	4	UNIPROT:A0A1Y6C941	66.4	True	True
+OMDBv2.0_AA_G_NR100_000043713384	603	scaffold_181	3	UNIPROT:B6IMP7	54.0	True	True
+OMDBv2.0_AA_G_NR100_000043714967	323	scaffold_463	6	UNIPROT:A0A3N6LPC2	34.8	True	True
+OMDBv2.0_AA_G_NR100_000043711722	737	scaffold_6	8	UNIPROT:Q5P962	55.4	True	False
+OMDBv2.0_AA_G_NR100_000043712486	464	scaffold_67	10	UNIPROT:A0A840XMK5	72.3	True	True
+OMDBv2.0_AA_G_NR100_000043715851	610	scaffold_691	2	UNIPROT:A0ABU1JHK2	59.3	True	True
+OMDBv2.0_AA_G_NR100_000043715885	275	scaffold_701	4	UNIPROT:A0ABQ0CC89	64.5	True	True
