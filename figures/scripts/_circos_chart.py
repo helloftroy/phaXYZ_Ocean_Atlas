@@ -45,7 +45,8 @@ def _polar(r, deg):
 
 def build_circos_chart(genome_order, genome_label, genome_band_color, band_legend,
                         cluster_label_fn, out_stem, title, subtitle,
-                        bad_targets, struct_qtm=None, qtm_min=0.5, figsize=13):
+                        bad_targets, struct_qtm=None, qtm_min=0.5, figsize=13,
+                        require_triad_complete=False, focal_genomes=frozenset()):
     """
     genome_order: list of genome ids, sector order around the circle
     genome_label: dict genome -> display label (must be pre-disambiguated,
@@ -62,6 +63,15 @@ def build_circos_chart(genome_order, genome_label, genome_band_color, band_legen
         not the same as failing the structural check and should not be
         silently treated as a rejection (a genome left with zero targets
         after this is dropped from genome_order too)
+    require_triad_complete: if True, additionally drops every target that
+        isn't triad-complete by the hybrid check in _triad_filter.py
+        (structural geometry where a PDB exists, the older alignment-column
+        flag as fallback where it doesn't -- see that module's docstring
+        for why the structural check takes precedence when both exist)
+    focal_genomes: set of genome ids to draw with a bold dark outline on
+        their sector band, for the specific genome(s) a figure is actually
+        about (e.g. the two CARD22-1 deep-dive genomes) as distinct from
+        the other genomes shown around them for context
     """
     genome_targets = defaultdict(set)
     with open(ROOT / 'phaC_all_genomes_from_nr100_clusters.tsv', newline='') as f:
@@ -79,6 +89,16 @@ def build_circos_chart(genome_order, genome_label, genome_band_color, band_legen
             genome_targets[g] = kept
         print(f'structural filter (qtm>={qtm_min}): dropped {n_dropped} confirmed-below-threshold targets; '
               f'{n_no_data} targets had no structural data at all and were kept by default (not treated as a failure)')
+
+    if require_triad_complete:
+        import _triad_filter
+        all_candidate_tids = {t for s in genome_targets.values() for t in s}
+        triad_complete_ids = _triad_filter.load_triad_complete_set(all_candidate_tids)
+        n_before = sum(len(v) for v in genome_targets.values())
+        for g in list(genome_targets):
+            genome_targets[g] = genome_targets[g] & triad_complete_ids
+        n_after = sum(len(v) for v in genome_targets.values())
+        print(f'triad-complete filter: dropped {n_before - n_after} non-triad-complete targets ({n_after} remain)')
 
     genome_order = [g for g in genome_order if genome_targets.get(g)]
     all_tids = set()
@@ -165,9 +185,11 @@ def build_circos_chart(genome_order, genome_label, genome_band_color, band_legen
     node_size = 70 if n_genomes <= 20 else max(18, 70 - 2 * (n_genomes - 20))
 
     for g in genome_order:
+        is_focal = g in focal_genomes
         wedge = mpatches.Wedge((0, 0), R_OUTER + 0.05, sector_start[g] - sector_span[g], sector_start[g],
-                                 width=0.09, facecolor=genome_band_color.get(g, '#E5E5E5'), edgecolor='#8B8F8C',
-                                 linewidth=0.5, zorder=2)
+                                 width=0.09, facecolor=genome_band_color.get(g, '#E5E5E5'),
+                                 edgecolor='#20302C' if is_focal else '#8B8F8C',
+                                 linewidth=2.6 if is_focal else 0.5, zorder=2.5 if is_focal else 2)
         ax.add_patch(wedge)
         mid = sector_start[g] - sector_span[g] / 2
         x, y = _polar(R_LABEL, mid)

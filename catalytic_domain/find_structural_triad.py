@@ -148,6 +148,51 @@ def find_triad_for_target(target_id, nucleophile='C'):
     return find_triad(seqs[target_id], residues, nucleophile=nucleophile)
 
 
+# "Tight" cutoff established in catalytic_domain/audit_divergent35_structural_triad.py:
+# both key hydrogen-bond legs (nucleophile-His, His-Asp) <=4.5A -- generous
+# relative to the 2.4-3.4A every confirmed-real triad in this project actually
+# shows, but a clean separator from the double-digit-Angstrom "best available"
+# combinations the no_hmm_triad_support population's non-triads show instead.
+TIGHT_CUTOFF_A = 4.5
+
+
+def _is_tight(triad):
+    return triad is not None and triad['nuc_his_dist_A'] <= TIGHT_CUTOFF_A and triad['his_asp_dist_A'] <= TIGHT_CUTOFF_A
+
+
+def structural_triad_complete_batch(target_ids):
+    """For every target_id with a folded PDB, resolves triad-completeness
+    directly from structure: canonical Cys first, then Ser/Thr as an
+    alternative nucleophile if Cys isn't tight (same method/order as
+    audit_divergent35_structural_triad.py). Returns {target_id: True/False},
+    with target_ids that have no PDB simply absent from the result (caller
+    decides how to handle "unknown" -- see _triad_filter.py's fallback to
+    the alignment-column triad_complete flag for those).
+
+    Batched rather than one-target-at-a-time (unlike find_triad_for_target)
+    because the latter re-scans the ~80MB source FASTA on every single call
+    -- fine for a handful of one-off audit lookups, wasteful when checking
+    an entire circos target set (up to 3 nucleophiles x dozens of targets).
+    """
+    ids_with_pdb = [t for t in target_ids if (PDB_DIR / f'{t}.pdb').exists()]
+    seqs = load_sequences(ids_with_pdb)
+    result = {}
+    for t in ids_with_pdb:
+        if t not in seqs:
+            continue
+        residues = parse_pdb_residues(PDB_DIR / f'{t}.pdb')
+        seq = seqs[t]
+        best = find_triad(seq, residues, nucleophile='C')
+        if not _is_tight(best):
+            for nuc in ('S', 'T'):
+                alt = find_triad(seq, residues, nucleophile=nuc)
+                if _is_tight(alt):
+                    best = alt
+                    break
+        result[t] = _is_tight(best)
+    return result
+
+
 if __name__ == '__main__':
     import sys
     for tid in sys.argv[1:]:

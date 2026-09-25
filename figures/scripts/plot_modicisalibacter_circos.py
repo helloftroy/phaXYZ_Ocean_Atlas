@@ -40,12 +40,15 @@ Outputs:
     figures/modicisalibacter_circos.png / .pdf
     figures/modicisalibacter_circos_nodes.tsv
 """
+import csv
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import _phac_qc
 from _circos_chart import build_circos_chart
+
+ROOT = Path(__file__).resolve().parent.parent.parent
 
 MODZ_GENOMES = [
     'DUAR15-1_SAMN06266142_MAG_00000002', 'RSGB23-1_GCF-000731955-V1_GENO_10000001',
@@ -62,12 +65,14 @@ GENOME_ORDER = MODZ_GENOMES + list(OUTSIDE_GENOMES.values())
 GENOME_LABEL = {g: f'M.z. {g.split("_")[0]}-{g.split("_")[1][-4:]}' for g in MODZ_GENOMES}
 GENOME_LABEL.update({g: f'{genus} ({g.split("_")[0]})' for genus, g in OUTSIDE_GENOMES.items()})
 
-BAND_COLOR = {**{g: '#DCEDEA' for g in MODZ_GENOMES},
-              OUTSIDE_GENOMES['Cobetia']: '#F3E3D3', OUTSIDE_GENOMES['Vreelandella']: '#EFD9E8',
-              OUTSIDE_GENOMES['Halomonas']: '#E3E9F7', OUTSIDE_GENOMES['Marinobacter']: '#EAF0DC'}
-BAND_LEGEND = [('#DCEDEA', 'Modicisalibacter zincidurans (6 genomes)'), ('#F3E3D3', 'Cobetia (outside genus)'),
-               ('#EFD9E8', 'Vreelandella (outside genus)'), ('#E3E9F7', 'Halomonas (outside genus)'),
-               ('#EAF0DC', 'Marinobacter (outside genus)')]
+FOCAL_GENOMES = {'ZHEN20-1_SAMN07748058_MAG_00000118'}  # the genome used for the structure renders (section 9.11)
+
+BAND_COLOR = {**{g: '#4FA8A0' for g in MODZ_GENOMES},
+              OUTSIDE_GENOMES['Cobetia']: '#E2954F', OUTSIDE_GENOMES['Vreelandella']: '#C77AB0',
+              OUTSIDE_GENOMES['Halomonas']: '#5D8FD1', OUTSIDE_GENOMES['Marinobacter']: '#8FBB52'}
+BAND_LEGEND = [('#4FA8A0', 'Modicisalibacter zincidurans (6 genomes)'), ('#E2954F', 'Cobetia (outside genus)'),
+               ('#C77AB0', 'Vreelandella (outside genus)'), ('#5D8FD1', 'Halomonas (outside genus)'),
+               ('#8FBB52', 'Marinobacter (outside genus)')]
 
 KNOWN_CLUSTER_NAME = {
     'OMDBv2.0_AA_G_NR100_000148602748': 'paralog 602748 (Class I)',
@@ -82,10 +87,17 @@ def cluster_label(c):
 
 
 bad_targets = _phac_qc.load_bad_targets()
+
+struct_qtm = {}
+with open(ROOT / 'structural_evidence_best_hit.tsv', newline='') as f:
+    for row in csv.DictReader(f, delimiter='\t'):
+        struct_qtm[row['candidate_id']] = float(row['qtmscore'])
+
 build_circos_chart(
     genome_order=GENOME_ORDER, genome_label=GENOME_LABEL, genome_band_color=BAND_COLOR, band_legend=BAND_LEGEND,
     cluster_label_fn=cluster_label, out_stem='modicisalibacter_circos', bad_targets=bad_targets,
+    struct_qtm=struct_qtm, qtm_min=0.5, require_triad_complete=True, focal_genomes=FOCAL_GENOMES,
     title='phaC paralogs across Modicisalibacter zincidurans and its closest outside relatives',
-    subtitle='Each sector = one genome; each dot = one phaC copy. Chords connect copies from different genomes '
-             'sharing the same 70%-identity paralog cluster;\nchord opacity/width = exact pairwise %identity between those two proteins.',
+    subtitle='Each sector = one genome; each dot = one triad-complete phaC copy (qtmscore>=0.5). Chords connect copies from different genomes\n'
+             'sharing the same 70%-identity paralog cluster; chord opacity/width = exact pairwise %identity between those two proteins.',
 )

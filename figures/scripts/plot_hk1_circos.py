@@ -68,16 +68,16 @@ GENOME_ORDER = sorted((g for g, s in confirmed.items() if len(s) >= 3),
                        key=lambda g: (genomes_meta[g]['sample_source'], g))
 
 HABITAT_COLOR = {
-    'Marine sponge tissue': '#F0DDEE', 'Geodia barretti tissue': '#E8CDEA', 'Agelas tissue': '#EAD6F2',
-    'Porites panamensis tissue': '#F3E3D3',
-    'Marine sediment': '#DCEDEA', 'Freshwater lake sediment': '#E3E9F7',
+    'Marine sponge tissue': '#C77AB0', 'Geodia barretti tissue': '#9A5AA6', 'Agelas tissue': '#7B68C4',
+    'Porites panamensis tissue': '#E2954F',
+    'Marine sediment': '#4FA8A0', 'Freshwater lake sediment': '#5D8FD1',
 }
 BAND_COLOR = {g: HABITAT_COLOR[genomes_meta[g]['sample_source']] for g in GENOME_ORDER}
 BAND_LEGEND = [
-    ('#F0DDEE', 'Marine sponge tissue (KELL22-1)'), ('#E8CDEA', 'Geodia barretti tissue (LUOR22-1)'),
-    ('#EAD6F2', 'Agelas tissue (PANK22-1)'), ('#F3E3D3', 'Coral tissue, Porites panamensis (TPAC)'),
-    ('#DCEDEA', 'Marine sediment (DONG22-1, SOGI22-1, CHAS20-1)'),
-    ('#E3E9F7', 'Freshwater lake sediment (SILV23-1)'),
+    ('#C77AB0', 'Marine sponge tissue (KELL22-1)'), ('#9A5AA6', 'Geodia barretti tissue (LUOR22-1)'),
+    ('#7B68C4', 'Agelas tissue (PANK22-1)'), ('#E2954F', 'Coral tissue, Porites panamensis (TPAC)'),
+    ('#4FA8A0', 'Marine sediment (DONG22-1, SOGI22-1, CHAS20-1)'),
+    ('#5D8FD1', 'Freshwater lake sediment (SILV23-1)'),
 ]
 
 
@@ -96,9 +96,9 @@ def cluster_label(c):
 build_circos_chart(
     genome_order=GENOME_ORDER, genome_label=GENOME_LABEL, genome_band_color=BAND_COLOR, band_legend=BAND_LEGEND,
     cluster_label_fn=cluster_label, out_stem='hk1_circos', bad_targets=bad_targets,
-    struct_qtm=struct_qtm, qtm_min=0.5, figsize=15,
+    struct_qtm=struct_qtm, qtm_min=0.5, figsize=15, require_triad_complete=True,
     title='phaC paralogs across "Unknown HK1": the 21 genomes with >=3 structurally-confirmed copies',
     subtitle='Each sector = one genome (of 167 phaC-positive HK1 genomes, scoped to those with >=3 confirmed copies); each dot = one\n'
-             'structurally-confirmed (qtmscore>=0.5) phaC copy. Chords connect copies sharing the same 70%-identity paralog cluster;\n'
+             'triad-complete phaC copy (qtmscore>=0.5). Chords connect copies sharing the same 70%-identity paralog cluster;\n'
              'opacity/width = exact pairwise %identity. Sector color = host tissue vs. free-living sediment habitat.',
 )

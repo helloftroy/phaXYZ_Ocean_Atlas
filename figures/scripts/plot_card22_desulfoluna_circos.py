@@ -67,13 +67,13 @@ def short_species(g):
 GENOME_LABEL = {g: f'{g.split("_")[0]} {short_species(g)} ({g.split("_")[-1][-3:]})' for g in GENOME_ORDER}
 
 STUDY_COLOR = {
-    'CARD22-1': '#DCEDEA', 'PELI21-1': '#F3E3D3', 'RSGB23-1': '#E3E9F7',
+    'CARD22-1': '#4FA8A0', 'PELI21-1': '#E2954F', 'RSGB23-1': '#5D8FD1',
 }
 BAND_COLOR = {g: STUDY_COLOR[genomes_meta[g]['study_id']] for g in GENOME_ORDER}
 BAND_LEGEND = [
-    ('#DCEDEA', 'CARD22-1 (Red Sea coral tissue, 5 genomes, 2 species)'),
-    ('#F3E3D3', 'PELI21-1 (marine sediment, 4 genomes, 1 species)'),
-    ('#E3E9F7', 'RSGB23-1 (NCBI isolate references, 2 genomes, 2 species)'),
+    ('#4FA8A0', 'CARD22-1 (Red Sea coral tissue, 5 genomes, 2 species)'),
+    ('#E2954F', 'PELI21-1 (marine sediment, 4 genomes, 1 species)'),
+    ('#5D8FD1', 'RSGB23-1 (NCBI isolate references, 2 genomes, 2 species)'),
 ]
 
 CLUSTER_SHORT = {}  # filled in after loading, just use last-6-digits labeling
@@ -93,8 +93,8 @@ with open('structural_evidence_best_hit.tsv', newline='') as f:
 build_circos_chart(
     genome_order=GENOME_ORDER, genome_label=GENOME_LABEL, genome_band_color=BAND_COLOR, band_legend=BAND_LEGEND,
     cluster_label_fn=cluster_label, out_stem='card22_desulfoluna_circos', bad_targets=bad_targets,
-    struct_qtm=struct_qtm, qtm_min=0.5,
+    struct_qtm=struct_qtm, qtm_min=0.5, require_triad_complete=True, focal_genomes=set(FOCAL_GENOMES),
     title='phaC paralogs across Desulfoluna: CARD22-1 and every other genome sharing its clusters',
-    subtitle='Each sector = one genome; each dot = one structurally-confirmed (qtmscore≥0.5) phaC copy. Chords connect copies from\n'
+    subtitle='Each sector = one genome; each dot = one triad-complete phaC copy (qtmscore>=0.5). Chords connect copies from\n'
              'different genomes sharing the same 70%-identity paralog cluster; opacity/width = exact pairwise %identity.',
 )
