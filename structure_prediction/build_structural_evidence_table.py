@@ -26,6 +26,17 @@ candidate; it usually is not exactly the same hit.
 
 Usage (after run_foldseek_search.sh has produced its output):
     python structure_prediction/build_structural_evidence_table.py
+
+QUERY_SETS is discovered from fold_manifest.tsv itself (every distinct
+'set' value except 'reference', which is the Foldseek DB side, not a
+query set) rather than hardcoded -- confirmed live (2026-09-26) that a
+hardcoded list is a real, recurring failure mode: this script silently
+produced nothing for all_phac_dedup even after the corresponding
+ESMFold+Foldseek run had completed, because that literal name was never
+added to the list here (fold_manifest.tsv itself had the same gap --
+see add_all_phac_dedup_to_manifest.py). Auto-discovery means adding a
+new fold set in the future only requires registering it in
+fold_manifest.tsv, not also remembering to edit this file.
 """
 import csv
 from pathlib import Path
@@ -35,7 +46,21 @@ FOLDSEEK_OUT = ROOT / 'foldseek_out'
 MANIFEST = ROOT / 'fold_manifest.tsv'
 OUT_PATH = FOLDSEEK_OUT / 'structural_evidence_best_hit.tsv'
 
-QUERY_SETS = ['uncertain', 'positive_control']
+
+def discover_query_sets():
+    sets = []
+    seen = set()
+    with open(MANIFEST) as f:
+        r = csv.DictReader(f, delimiter='\t')
+        for row in r:
+            s = row['set']
+            if s != 'reference' and s not in seen:
+                seen.add(s)
+                sets.append(s)
+    return sets
+
+
+QUERY_SETS = discover_query_sets()
 
 OUT_COLUMNS = [
     'candidate_id', 'group', 'status', 'best_reference',

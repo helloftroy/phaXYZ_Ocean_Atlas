@@ -24,7 +24,16 @@ cd "$(dirname "$0")/.."   # repo root (PHA_Ocean_Atlas/)
 FOLDSEEK_BIN="${FOLDSEEK_BIN:-cluster/bin/foldseek}"
 ESMFOLD_OUT="${ESMFOLD_OUT:-structure_prediction/esmfold_out}"
 OUT_DIR="${OUT_DIR:-structure_prediction/foldseek_out}"
-QUERY_SETS="${QUERY_SETS:-uncertain positive_control}"
+# Default QUERY_SETS is every distinct 'set' value in fold_manifest.tsv
+# except 'reference' (the Foldseek DB side, not a query set) -- NOT a
+# hardcoded list. Confirmed live (2026-09-26) that a hardcoded default
+# is a real, recurring gap: this script's old default ("uncertain
+# positive_control") silently never searched the all_phac_dedup set,
+# and build_structural_evidence_table.py had the identical problem on
+# its own hardcoded list -- see that script and
+# add_all_phac_dedup_to_manifest.py for the same fix applied there.
+# Still fully overridable, e.g. QUERY_SETS=positive_control (above).
+QUERY_SETS="${QUERY_SETS:-$(awk -F'\t' 'NR>1 && $2!="reference" && !seen[$2]++ {print $2}' structure_prediction/fold_manifest.tsv | tr '\n' ' ')}"
 # TM-align-based alignment (-a) is slower than the default 3Di+AA search but
 # gives TM-score directly, the metric this comparison actually needs --
 # worth the extra time at this dataset's scale (~7,300 structures total).
