@@ -27,8 +27,10 @@ phaC that pure sequence search would have missed or discounted.
 Usage:
     python figures/scripts/plot_seq_vs_structure_hero.py
 
-Outputs:
-    figures/seq_vs_structure_hero.png / .pdf
+Outputs (rendered twice, size-by-genome-count and uniform point size, to
+compare which reads better -- per direct request):
+    figures/seq_vs_structure_hero_sized.png / .pdf
+    figures/seq_vs_structure_hero_uniform.png / .pdf
     figures/seq_vs_structure_hero.tsv
 """
 import csv
@@ -143,26 +145,36 @@ pct_confirmed = 100 * sum(1 for r in rows if r['qtmscore'] >= 0.5) / len(rows)
 print(f'overall qtmscore>=0.5: {pct_confirmed:.1f}%')
 
 # ---------------------------------------------------------------------
-# 3. the figure itself
+# 3. sequence-identity-bin summary (the panel above the scatter): for
+#    each bin, what fraction clears qTM>=50% and qTM>=85% -- answers
+#    "as sequence identity falls, how often does structural support
+#    remain?" directly, without having to read it off the scatter by eye
+# ---------------------------------------------------------------------
+BINS = [(0, 30, '<30%'), (30, 40, '30-40%'), (40, 50, '40-50%'), (50, 70, '50-70%'), (70, 100.0001, '≥70%')]
+bin_stats = []
+for lo, hi, label in BINS:
+    sub = [r for r in rows if lo <= r['pident'] < hi]
+    n = len(sub)
+    p50 = 100 * sum(1 for r in sub if r['qtmscore'] >= 0.5) / n
+    p85 = 100 * sum(1 for r in sub if r['qtmscore'] >= 0.85) / n
+    bin_stats.append({'lo': lo, 'hi': min(hi, 100), 'label': label, 'n': n, 'p50': p50, 'p85': p85})
+    print(f'  {label:8s} n={n:6,d}  qTM>=50%: {p50:5.1f}%   qTM>=85%: {p85:5.1f}%')
+
+# ---------------------------------------------------------------------
+# 4. the figure itself -- rendered twice (sized / uniform point size)
+#    per direct request, to compare which reads better
 # ---------------------------------------------------------------------
 TRIAD_TRUE_COLOR = '#1E6E7A'
 TRIAD_FALSE_COLOR = '#C2622D'
 BG = '#FBFAF6'
-
-plt.rcParams.update({'font.family': 'DejaVu Sans'})
-fig, ax = plt.subplots(figsize=(15, 11.5), dpi=300)
-fig.patch.set_facecolor('white')
-ax.set_facecolor(BG)
-
-# twilight-zone shaded band, drawn first (behind everything)
-ax.axvspan(0, 30, color='#EDE6D6', alpha=0.55, zorder=0)
-ax.axhline(85, color='#B7BDB8', linewidth=1.0, linestyle=(0, (5, 3)), zorder=1)
-ax.axhline(50, color='#B7BDB8', linewidth=1.0, linestyle=(0, (5, 3)), zorder=1)
-
+n_triad_true = sum(1 for r in rows if r['triad_complete'])
+n_triad_false = len(rows) - n_triad_true
 max_n = max(r['n_genomes_in_cluster'] for r in rows)
 
 
-def size_of(n):
+def size_of(n, use_size):
+    if not use_size:
+        return 8
     # capped much smaller than a naive sqrt scale would give: the biggest
     # cluster (556 genomes) at a literal sqrt-proportional size drowned the
     # whole upper part of the plot in one solid blob (confirmed live on the
@@ -172,78 +184,133 @@ def size_of(n):
     return 4 + 90 * (np.sqrt(n) / np.sqrt(max_n))
 
 
-# single combined scatter, ordered LARGEST-first (drawn on the bottom) so
-# small points aren't buried under big ones -- two separate per-color calls
-# (the first version of this figure) put every "triad complete" point above
-# every "incomplete" one regardless of size, which had the same
-# big-bubbles-hide-small-ones problem one layer up
-order = sorted(rows, key=lambda r: -r['n_genomes_in_cluster'])
-xs = [r['pident'] for r in order]
-ys = [100 * r['qtmscore'] for r in order]
-sizes = [size_of(r['n_genomes_in_cluster']) for r in order]
-colors = [TRIAD_TRUE_COLOR if r['triad_complete'] else TRIAD_FALSE_COLOR for r in order]
-ax.scatter(xs, ys, s=sizes, color=colors, alpha=0.4, linewidth=0, zorder=2)
+def render(use_size, out_stem):
+    plt.rcParams.update({'font.family': 'DejaVu Sans'})
+    fig = plt.figure(figsize=(15, 13), dpi=300)
+    fig.patch.set_facecolor('white')
+    gs = fig.add_gridspec(2, 1, height_ratios=[1, 5.3], hspace=0.16, left=0.075, right=0.97, top=0.88, bottom=0.07)
+    ax_bin = fig.add_subplot(gs[0])
+    ax = fig.add_subplot(gs[1])
 
-ax.set_xlim(0, 100)
-ax.set_ylim(0, 103)
-ax.set_xlabel('Sequence identity to best-matching reference (%)', fontsize=13, labelpad=10)
-ax.set_ylabel('Structural similarity to that reference (qTM-score, %)', fontsize=13, labelpad=10)
-ax.spines['top'].set_visible(False)
-ax.spines['right'].set_visible(False)
-ax.grid(True, color='white', linewidth=1.3, zorder=0)
-ax.set_axisbelow(True)
-ax.tick_params(labelsize=11)
+    # ---- bin panel ----
+    ax_bin.set_facecolor(BG)
+    for b in bin_stats:
+        mid = (b['lo'] + b['hi']) / 2
+        width_outer = (b['hi'] - b['lo']) * 0.78
+        width_inner = (b['hi'] - b['lo']) * 0.40
+        ax_bin.bar(mid, b['p50'], width=width_outer, color='#9BB8B4', zorder=2, edgecolor='none')
+        ax_bin.bar(mid, b['p85'], width=width_inner, color=TRIAD_TRUE_COLOR, zorder=3, edgecolor='none')
+        ax_bin.text(mid, b['p50'] + 3, f"{b['p50']:.0f}%", ha='center', va='bottom', fontsize=9, color='#5B6E70')
+        ax_bin.text(mid, max(b['p85'] - 6, 4), f"{b['p85']:.0f}%", ha='center', va='bottom', fontsize=9,
+                     color='white', fontweight='bold')
+        ax_bin.text(mid, -9, f"n={b['n']:,}", ha='center', va='top', fontsize=8, color='#8B958F')
+    for b in bin_stats[:-1]:
+        ax_bin.axvline(b['hi'], color='white', linewidth=2.2, zorder=4)
+    ax_bin.set_xlim(0, 100)
+    ax_bin.set_ylim(0, 112)
+    ax_bin.set_xticks([b['lo'] for b in bin_stats] + [100])
+    ax_bin.set_xticklabels([])
+    ax_bin.set_yticks([0, 50, 100])
+    ax_bin.set_yticklabels(['0%', '50%', '100%'], fontsize=9)
+    for spine in ('top', 'right', 'bottom'):
+        ax_bin.spines[spine].set_visible(False)
+    ax_bin.tick_params(axis='x', length=0)
+    ax_bin.set_title('Structural support by sequence-identity bin', fontsize=12, fontweight='bold', loc='left',
+                      color='#20302C', pad=8)
+    legend_bin = [
+        mpatches.Patch(color='#9BB8B4', label='% with qTM ≥ 50% (structurally real)'),
+        mpatches.Patch(color=TRIAD_TRUE_COLOR, label='% with qTM ≥ 85% (confident)'),
+    ]
+    ax_bin.legend(handles=legend_bin, loc='upper right', bbox_to_anchor=(1.0, 1.24), fontsize=9, frameon=False, ncol=2)
 
-# reference-line labels sit on the LEFT (the twilight-zone band is the
-# emptiest part of the plot at high qTM) so they don't compete with the
-# legends, which live bottom-right where the point cloud thins out
-ax.text(1, 86.3, 'qTM ≥ 85% (confident)', fontsize=9, color='#7A8580', ha='left', va='bottom')
-ax.text(1, 51.3, 'qTM ≥ 50% (structurally real)', fontsize=9, color='#7A8580', ha='left', va='bottom')
-ax.text(15, 101.5, 'sequence "twilight zone" (<30% identity)', fontsize=10.5, color='#9A8A60', ha='center', va='top',
-        style='italic')
+    # ---- main scatter ----
+    ax.set_facecolor(BG)
+    ax.axvspan(0, 30, color='#EDE6D6', alpha=0.55, zorder=0)
+    ax.axhline(85, color='#B7BDB8', linewidth=1.0, linestyle=(0, (5, 3)), zorder=1)
+    ax.axhline(50, color='#B7BDB8', linewidth=1.0, linestyle=(0, (5, 3)), zorder=1)
 
-# twilight-zone callout: placed in the one clearly empty patch of the plot
-# (low sequence identity, low-to-mid structural similarity -- few real
-# candidates land there since low qTM there would mean neither sequence
-# nor structure supports the call) rather than on top of the dense cloud
-ax.annotate(f'{len(low_seq_confident)} of {len(low_seq):,} twilight-zone candidates ({100*len(low_seq_confident)/len(low_seq):.0f}%)\nare still structurally confident (qTM ≥ 85%) --\nreal phaC that sequence search alone would miss.',
-            xy=(27, 88), xytext=(20, 14), fontsize=11.5, color='#3A3226', ha='left', va='bottom',
-            arrowprops=dict(arrowstyle='-|>', color='#5B6E70', lw=1.4, connectionstyle='arc3,rad=0.25'),
+    # single combined scatter, ordered LARGEST-first (drawn on the bottom) so
+    # small points aren't buried under big ones -- two separate per-color
+    # calls (an earlier version of this figure) put every "triad complete"
+    # point above every "incomplete" one regardless of size, which had the
+    # same big-bubbles-hide-small-ones problem one layer up
+    order = sorted(rows, key=lambda r: -r['n_genomes_in_cluster'])
+    xs = [r['pident'] for r in order]
+    ys = [100 * r['qtmscore'] for r in order]
+    sizes = [size_of(r['n_genomes_in_cluster'], use_size) for r in order]
+    colors = [TRIAD_TRUE_COLOR if r['triad_complete'] else TRIAD_FALSE_COLOR for r in order]
+    ax.scatter(xs, ys, s=sizes, color=colors, alpha=0.4 if use_size else 0.35, linewidth=0, zorder=2)
+
+    ax.set_xlim(0, 100)
+    ax.set_ylim(0, 103)
+    ax.set_xlabel('Sequence identity to best-matching reference (%)', fontsize=13, labelpad=10)
+    ax.set_ylabel('Structural similarity to that reference (qTM-score, %)', fontsize=13, labelpad=10)
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.grid(True, color='white', linewidth=1.3, zorder=0)
+    ax.set_axisbelow(True)
+    ax.tick_params(labelsize=11)
+
+    # reference-line labels on the right, where the cloud thins out at low qTM
+    # both reference lines cross genuinely dense parts of the cloud at the
+    # right edge (confirmed live: the plain-text label was legible but
+    # visually buried under overlapping points there) -- an opaque
+    # background box, same idea as the callout, keeps them readable
+    # regardless of local point density
+    ref_label_kw = dict(fontsize=9, color='#5B6E70', ha='right', va='center', zorder=11,
+                          bbox=dict(boxstyle='round,pad=0.3', facecolor='white', edgecolor='none', alpha=0.82))
+    ax.text(97.5, 85, 'qTM ≥ 85% (confident)', **ref_label_kw)
+    ax.text(97.5, 50, 'qTM ≥ 50% (structurally real)', **ref_label_kw)
+    ax.text(15, 101.5, 'sequence "twilight zone" (<30% identity)', fontsize=10.5, color='#9A8A60', ha='center',
+            va='top', style='italic')
+
+    # headline callout, top-left -- right next to the twilight-zone band it describes
+    ax.text(1.2, 96.5,
+            f'{pct_confirmed:.1f}% structurally supported (qTM ≥ 0.50); {len(low_seq_confident)} / {len(low_seq):,} twilight-zone\n'
+            f'candidates ({100*len(low_seq_confident)/len(low_seq):.0f}%) are structurally confident (qTM ≥ 85%) – real phaC that\n'
+            'sequence search alone would miss.',
+            fontsize=11.5, color='#3A3226', ha='left', va='top',
             bbox=dict(boxstyle='round,pad=0.55', facecolor='white', edgecolor='#D8D2C0', alpha=0.96), zorder=10)
 
-# title / subtitle
-fig.text(0.085, 0.965, 'Sequence identity undersells it', fontsize=27, fontweight='bold', color='#20302C')
-fig.text(0.085, 0.935,
-         f'{len(rows):,} representative phaC candidates, spanning nearly the whole verified dataset — {pct_confirmed:.1f}% fold as real phaC (qTM ≥ 50%)',
-         fontsize=13.5, color='#5B6E70')
-fig.text(0.085, 0.915, 'even where sequence identity to any known reference is weak or absent.',
-         fontsize=13.5, color='#5B6E70')
+    # title / subtitle
+    fig.text(0.075, 0.975, 'Sequence identity undersells it', fontsize=27, fontweight='bold', color='#20302C')
+    fig.text(0.075, 0.952,
+             f'{len(rows):,} representative phaC candidates, spanning nearly the whole verified dataset — {pct_confirmed:.1f}% fold as real phaC (qTM ≥ 50%)',
+             fontsize=13.5, color='#5B6E70')
+    fig.text(0.075, 0.936, 'even where sequence identity to any known reference is weak or absent.',
+             fontsize=13.5, color='#5B6E70')
 
-# legends
-size_vals = [1, 10, 100, max_n]
-size_handles = [mlines.Line2D([], [], marker='o', color='none', markerfacecolor='#5B6E70', markeredgecolor='#3A4A46',
-                               markeredgewidth=0.6, alpha=0.85, markersize=np.sqrt(size_of(v)), label=f'{v:,}')
-                 for v in size_vals]
-leg_size = ax.legend(handles=size_handles, loc='lower right', bbox_to_anchor=(0.998, 0.14), fontsize=9.5,
-                      title='Genomes carrying this\nparalog cluster', title_fontsize=9.5, frameon=True,
-                      facecolor='white', edgecolor='#D8D2C0', labelspacing=1.3, borderpad=1.0, handletextpad=1.6)
-ax.add_artist(leg_size)
+    # legends -- bottom-LEFT, under the twilight-zone band, the emptiest
+    # part of the plot (confirmed live: bottom-right overlapped the point
+    # cloud that spreads across the full x-range at low qTM)
+    color_handles = [
+        mpatches.Patch(color=TRIAD_TRUE_COLOR, label=f'Catalytic triad complete ({n_triad_true:,} / {len(rows):,})', alpha=0.75),
+        mpatches.Patch(color=TRIAD_FALSE_COLOR, label=f'Triad not resolved by sequence alignment ({n_triad_false:,} / {len(rows):,})', alpha=0.75),
+    ]
+    leg_color = ax.legend(handles=color_handles, loc='lower left', bbox_to_anchor=(0.002, 0.002), fontsize=10,
+                            frameon=True, facecolor='white', edgecolor='#D8D2C0', title='Color', title_fontsize=10)
+    ax.add_artist(leg_color)
 
-color_handles = [
-    mpatches.Patch(color=TRIAD_TRUE_COLOR, label='Catalytic triad complete', alpha=0.75),
-    mpatches.Patch(color=TRIAD_FALSE_COLOR, label='Triad incomplete (alignment-column check)', alpha=0.75),
-]
-ax.legend(handles=color_handles, loc='lower right', bbox_to_anchor=(0.998, 0.005), fontsize=10, frameon=True,
-          facecolor='white', edgecolor='#D8D2C0', title='Color', title_fontsize=10)
+    if use_size:
+        size_vals = [1, 10, 100, max_n]
+        size_handles = [mlines.Line2D([], [], marker='o', color='none', markerfacecolor='#5B6E70', markeredgecolor='#3A4A46',
+                                       markeredgewidth=0.6, alpha=0.85, markersize=np.sqrt(size_of(v, True)), label=f'{v:,}')
+                         for v in size_vals]
+        ax.legend(handles=size_handles, loc='lower left', bbox_to_anchor=(0.002, 0.155), fontsize=9.5,
+                  title='Genomes carrying this\nparalog cluster', title_fontsize=9.5, frameon=True,
+                  facecolor='white', edgecolor='#D8D2C0', labelspacing=1.3, borderpad=1.0, handletextpad=1.6)
 
-fig.text(0.085, 0.018,
-         'One point per all_phac_dedup representative (near-duplicate-collapsed; large diverse paralog clusters contribute more than one representative). Triad status is the\n'
-         "alignment-column check (full coverage) -- section 9.12's own structural geometric check is more accurate but only applies where a folded PDB is locally available.",
-         fontsize=8.3, color='#8B958F')
+    fig.text(0.075, 0.012,
+             'One point per all_phac_dedup representative (near-duplicate-collapsed; large diverse paralog clusters contribute more than one representative). Triad status is the\n'
+             "alignment-column check (full coverage) -- section 9.12's own structural geometric check is more accurate but only applies where a folded PDB is locally available.",
+             fontsize=8.3, color='#8B958F')
 
-fig.subplots_adjust(left=0.075, right=0.97, top=0.885, bottom=0.095)
+    out_path = OUT / f'{out_stem}.png'
+    fig.savefig(out_path, dpi=300, facecolor='white')
+    fig.savefig(OUT / f'{out_stem}.pdf', facecolor='white')
+    print('saved', out_path)
+    plt.close(fig)
 
-out_path = OUT / 'seq_vs_structure_hero.png'
-fig.savefig(out_path, dpi=300, facecolor='white')
-fig.savefig(OUT / 'seq_vs_structure_hero.pdf', facecolor='white')
-print('saved', out_path)
+
+render(use_size=True, out_stem='seq_vs_structure_hero_sized')
+render(use_size=False, out_stem='seq_vs_structure_hero_uniform')
