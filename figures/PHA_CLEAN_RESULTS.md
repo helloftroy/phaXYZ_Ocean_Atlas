@@ -578,6 +578,26 @@ Piece 4 of the request following §9.7: now that real structural evidence exists
 
 **Files:** `catalytic_domain/find_structural_triad.py`, `catalytic_domain/audit_divergent35_structural_triad.py`; `figures/divergent35_structural_triad_audit.tsv` (59 candidates); `figures/scripts/plot_divergent35_triad_geometry.py`; `figures/divergent35_triad_geometry.png`/`.pdf`.
 
+### 9.13 The comprehensive structural atlas, run: sequence identity vs. structural confirmation (`figures/seq_vs_structure_hero.png`)
+
+§9.8 built the infrastructure and flagged the run itself as not yet done; it has now completed on the cluster (a real, separate `QUERY_SETS=all_phac_dedup` Foldseek job, per §9.8's own fix note) and been pulled back — `structural_evidence_best_hit.tsv` now carries all three sets, 16,913 rows total (15,880 all_phac_dedup + 605 uncertain + 428 positive_control), not just the original 1,033.
+
+**Headline: 94.7% of the whole comprehensive atlas (15,867 of 15,880 representatives, 13 dropped by current QC) folds as real phaC (qTM-score ≥ 50%) — 72.7% at the confident ≥85% level — even though this set was deliberately built to be exhaustive, not hand-picked for quality.** This is the same structural-confirmation story §9.7 first found on the smaller 1,033-candidate uncertain/positive_control set, now holding at 15x the scale.
+
+**The hero figure** (`figures/seq_vs_structure_hero.png`, `figures/scripts/plot_seq_vs_structure_hero.py`): one point per representative, x = sequence identity to its best-matching reference, y = structural similarity to that same reference (qTM-score), size = genomes carrying that representative's paralog cluster (§5.6's metric), color = catalytic-triad completeness (alignment-column check — full coverage across all 15,867, unlike §9.12's more accurate structural geometric check, which needs a locally-available folded PDB most of this comprehensive set doesn't have). The shape makes the point directly: the point cloud is densest at high qTM-score across almost the *entire* sequence-identity range, not just the high-identity right edge — structural confirmation does not require high sequence identity.
+
+**The "twilight zone" callout is the sharpest version of this**: of the 1,043 representatives with <30% sequence identity to any reference — the zone where sequence-alone search essentially can't distinguish real homology from noise — **108 (10.4%) are still structurally confident (qTM ≥ 85%)**. Real phaC that a sequence-only pipeline would have missed or badly under-ranked.
+
+**Cross-tabulating triad status against structural confidence gives a cleaner 4-way picture than either signal alone:**
+| | qTM ≥ 85% | 50% ≤ qTM < 85% | qTM < 50% |
+|---|---|---|---|
+| **Triad complete** | 61.7% (9,788) | 14.6% (2,310) | 0.8% (134) |
+| **Triad incomplete** | 11.0% (1,741) | 7.5% (1,186) | 4.5% (708) |
+
+Three-quarters of the dataset (76.3%) sits in the "everything agrees" cells (triad-complete + high/mid structural confidence). The **11.0% that are triad-incomplete but structurally confident** is the same "alignment-column method misses real triads in divergent sequences" pattern §9.11/9.12 already found in specific cases (CARD22-1's 708aa copy, HK1's 711722) — now visible as a genuine population-scale effect, not just a couple of one-off exceptions. The **4.5% that are neither triad-complete nor structurally confident** is the population most likely to include real non-phaC contamination, the same signature §9.12 found characterizes the `no_hmm_triad_support` set. The small **0.8% triad-complete-but-qTM<0.5** group (134 candidates) is a real, minor contradiction worth a closer look if anyone picks this figure back up, not investigated further here.
+
+**Files:** `figures/scripts/plot_seq_vs_structure_hero.py`; `figures/seq_vs_structure_hero.png`/`.pdf`, `figures/seq_vs_structure_hero.tsv` (15,867 rows).
+
 ## 10. Does phaC cluster identity pair with precursor route?
 
 If a phaC synthase's substrate arrives via a different upstream pathway (FAS-linked vs. beta-oxidation-linked), that is a plausible source of real selective pressure on the synthase itself — a testable version of "the phaC structure should pair up with these proteins." `figures/scripts/plot_phac_cluster_vs_precursor_route.py` asks this directly: within a phaC_cluster0.7 cluster (70%-identity group), is %phaG elevated or depleted relative to baseline, after controlling for phylum?
