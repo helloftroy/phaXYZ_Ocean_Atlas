@@ -1233,5 +1233,38 @@ def phac_recovery_hmmsearch_cmd(
                   f"{n_distinct_genomes} distinct genomes with a candidate phaC")
 
 
+@app.command("phac-recovery-download-proteomes")
+def phac_recovery_download_proteomes_cmd(
+    genome_download_manifest: Path = typer.Option(..., help="genome, genes_aa_url TSV -- see phac_recovery/build_local_manifests.py"),
+    out_fasta: Path = typer.Option(..., help="combined whole-proteome FASTA, ready as the mmseqs target set"),
+    out_report: Path = typer.Option(..., help="per-genome status (ok / download_failed)"),
+):
+    """The heavy cluster-side step for the mmseqs-based novel-phaC search
+    (needs internet -- see cluster/run_phac_recovery_download_proteomes.sbatch
+    for which partition): downloads each qualifying genome's own gene
+    calls in full (not restricted to anchor-relative neighborhoods, unlike
+    phac-recovery-extract-neighborhoods) and writes them all to one
+    combined FASTA."""
+    genome_urls: dict[str, str] = {}
+    with open(genome_download_manifest, newline="") as f:
+        for row in csv.DictReader(f, delimiter="\t"):
+            genome_urls[row["genome"]] = row["genes_aa_url"]
+    console.print(f"{len(genome_urls)} genomes to download")
+
+    results = phac_recovery_pipeline.run_whole_proteome_download_batch(
+        genome_urls=genome_urls,
+        out_path=out_fasta,
+        log=console.print,
+    )
+    phac_recovery_pipeline.write_batch_report(results, out_report)
+
+    n_ok = sum(1 for r in results if r.status == "ok")
+    n_failed = sum(1 for r in results if r.status == "download_failed")
+    total_genes = sum(r.n_neighborhood_genes for r in results)
+    console.print(f"[green]{out_fasta}[/green]: {total_genes} genes from {n_ok} genomes")
+    console.print(f"ok={n_ok}  download_failed={n_failed}")
+    console.print(f"[green]{out_report}[/green]")
+
+
 if __name__ == "__main__":
     app()

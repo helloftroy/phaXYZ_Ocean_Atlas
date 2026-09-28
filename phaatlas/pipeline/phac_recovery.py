@@ -310,6 +310,66 @@ def read_fasta_text(text: str) -> list[tuple[str, str]]:
     return records
 
 
+def run_whole_proteome_download_batch(
+    genome_urls: dict[str, str],
+    out_path: Path,
+    fetch: Callable[[str], bytes] = default_fetch_gzipped_fasta,
+    retries: int = 3,
+    retry_delay_s: float = 2.0,
+    log: Callable[[str], None] = print,
+) -> list[BatchResult]:
+    """Same per-genome download machinery as run_neighborhood_extraction_batch,
+    but keeps every gene a qualifying genome carries instead of restricting
+    to anchor-relative windows. Built for the mmseqs-based novel-phaC
+    search (see phac_recovery/build_novel_phac_query_set.py for the query
+    side): unlike the HMM neighborhood recovery this module was originally
+    written for (module docstring above), an mmseqs search of validated
+    phaC representatives against a genome's whole proteome doesn't need
+    the operon-adjacency assumption to stay tractable or confident -- and
+    since the full gene-call file has to be fetched either way, keeping
+    every gene costs nothing extra over keeping just a window of them.
+    Same per-genome failure handling as the neighborhood version (skip and
+    record, don't abort the batch) since with 7,826 individual downloads
+    some failures are expected. n_neighborhood_genes on the returned
+    BatchResult is repurposed here to mean "genes written for this genome"
+    (reusing the same report dataclass/writer rather than a near-duplicate
+    one)."""
+    results: list[BatchResult] = []
+    seen_gene_ids: set[str] = set()
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+
+    with open(out_path, "w") as out_f:
+        for i, (genome, url) in enumerate(genome_urls.items()):
+            raw = None
+            for attempt in range(retries):
+                try:
+                    raw = fetch(url)
+                    break
+                except Exception as e:  # noqa: BLE001 -- deliberately broad: any network hiccup should retry, not abort the batch
+                    log(f"[{i+1}/{len(genome_urls)}] {genome}: fetch attempt {attempt+1} failed ({e})")
+                    time.sleep(retry_delay_s)
+            if raw is None:
+                results.append(BatchResult(genome=genome, status="download_failed"))
+                continue
+
+            records = read_fasta_text(raw.decode("utf-8", errors="replace"))
+            n_written = 0
+            for gene_id, seq in records:
+                if gene_id in seen_gene_ids:
+                    continue
+                seen_gene_ids.add(gene_id)
+                out_f.write(f">{gene_id}\n")
+                for j in range(0, len(seq), 60):
+                    out_f.write(seq[j : j + 60] + "\n")
+                n_written += 1
+            results.append(BatchResult(genome=genome, status="ok", n_neighborhood_genes=n_written))
+
+            if (i + 1) % 500 == 0:
+                log(f"[{i+1}/{len(genome_urls)}] genomes processed")
+
+    return results
+
+
 def write_batch_report(results: list[BatchResult], out_path: Path) -> None:
     out_path.parent.mkdir(parents=True, exist_ok=True)
     with open(out_path, "w", newline="") as f:
