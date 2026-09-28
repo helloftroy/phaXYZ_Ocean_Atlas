@@ -27,10 +27,13 @@ phaC that pure sequence search would have missed or discounted.
 Usage:
     python figures/scripts/plot_seq_vs_structure_hero.py
 
-Outputs (rendered twice, size-by-genome-count and uniform point size, to
-compare which reads better -- per direct request):
+A uniform-point-size variant was rendered once for comparison and dropped
+per direct request -- bubble size (by genome count per paralog cluster) is
+the version kept; render() still takes a use_size flag if that comparison
+is ever wanted again.
+
+Outputs:
     figures/seq_vs_structure_hero_sized.png / .pdf
-    figures/seq_vs_structure_hero_uniform.png / .pdf
     figures/seq_vs_structure_hero.tsv
 """
 import csv
@@ -161,8 +164,7 @@ for lo, hi, label in BINS:
     print(f'  {label:8s} n={n:6,d}  qTM>=50%: {p50:5.1f}%   qTM>=85%: {p85:5.1f}%')
 
 # ---------------------------------------------------------------------
-# 4. the figure itself -- rendered twice (sized / uniform point size)
-#    per direct request, to compare which reads better
+# 4. the figure itself
 # ---------------------------------------------------------------------
 TRIAD_TRUE_COLOR = '#1E6E7A'
 TRIAD_FALSE_COLOR = '#C2622D'
@@ -188,40 +190,46 @@ def render(use_size, out_stem):
     plt.rcParams.update({'font.family': 'DejaVu Sans'})
     fig = plt.figure(figsize=(15, 13), dpi=300)
     fig.patch.set_facecolor('white')
-    gs = fig.add_gridspec(2, 1, height_ratios=[1, 5.3], hspace=0.16, left=0.075, right=0.97, top=0.88, bottom=0.07)
+    gs = fig.add_gridspec(2, 1, height_ratios=[1, 5.3], hspace=0.16, left=0.075, right=0.97, top=0.88, bottom=0.045)
     ax_bin = fig.add_subplot(gs[0])
     ax = fig.add_subplot(gs[1])
 
-    # ---- bin panel ----
+    # ---- bin panel -- evenly-spaced categorical groups, not spans matched
+    # to actual bin width: the first version's variable-width blocks,
+    # touching edge-to-edge with stark white divider lines, was confirmed
+    # live to read as "big and ugly" -- real gaps between groups and a
+    # narrower, more restrained bar width reads as a normal, polished
+    # grouped bar chart instead
     ax_bin.set_facecolor(BG)
-    for b in bin_stats:
-        mid = (b['lo'] + b['hi']) / 2
-        width_outer = (b['hi'] - b['lo']) * 0.78
-        width_inner = (b['hi'] - b['lo']) * 0.40
-        ax_bin.bar(mid, b['p50'], width=width_outer, color='#9BB8B4', zorder=2, edgecolor='none')
-        ax_bin.bar(mid, b['p85'], width=width_inner, color=TRIAD_TRUE_COLOR, zorder=3, edgecolor='none')
-        ax_bin.text(mid, b['p50'] + 3, f"{b['p50']:.0f}%", ha='center', va='bottom', fontsize=9, color='#5B6E70')
-        ax_bin.text(mid, max(b['p85'] - 6, 4), f"{b['p85']:.0f}%", ha='center', va='bottom', fontsize=9,
+    n_bins = len(bin_stats)
+    xpos = np.arange(n_bins)
+    bar_w_outer, bar_w_inner = 0.52, 0.26
+    ax_bin.grid(True, axis='y', color='white', linewidth=1.2, zorder=0)
+    ax_bin.set_axisbelow(True)
+    for x, b in zip(xpos, bin_stats):
+        ax_bin.bar(x, b['p50'], width=bar_w_outer, color='#AFC7C2', zorder=2, edgecolor='none')
+        ax_bin.bar(x, b['p85'], width=bar_w_inner, color=TRIAD_TRUE_COLOR, zorder=3, edgecolor='none')
+        ax_bin.text(x, b['p50'] + 4, f"{b['p50']:.0f}%", ha='center', va='bottom', fontsize=9.5, color='#5B6E70')
+        ax_bin.text(x, max(b['p85'] - 7, 4), f"{b['p85']:.0f}%", ha='center', va='bottom', fontsize=9.5,
                      color='white', fontweight='bold')
-        ax_bin.text(mid, -9, f"n={b['n']:,}", ha='center', va='top', fontsize=8, color='#8B958F')
-    for b in bin_stats[:-1]:
-        ax_bin.axvline(b['hi'], color='white', linewidth=2.2, zorder=4)
-    ax_bin.set_xlim(0, 100)
+        ax_bin.text(x, -7, b['label'], ha='center', va='top', fontsize=10, color='#3A4A46', fontweight='bold')
+        ax_bin.text(x, -17, f"n={b['n']:,}", ha='center', va='top', fontsize=8, color='#8B958F')
+    ax_bin.set_xlim(-0.62, n_bins - 0.38)
     ax_bin.set_ylim(0, 112)
-    ax_bin.set_xticks([b['lo'] for b in bin_stats] + [100])
-    ax_bin.set_xticklabels([])
+    ax_bin.set_xticks([])
     ax_bin.set_yticks([0, 50, 100])
     ax_bin.set_yticklabels(['0%', '50%', '100%'], fontsize=9)
     for spine in ('top', 'right', 'bottom'):
         ax_bin.spines[spine].set_visible(False)
-    ax_bin.tick_params(axis='x', length=0)
-    ax_bin.set_title('Structural support by sequence-identity bin', fontsize=12, fontweight='bold', loc='left',
-                      color='#20302C', pad=8)
+    ax_bin.spines['left'].set_color('#D8D2C0')
+    ax_bin.tick_params(axis='y', length=0, colors='#8B958F')
+    ax_bin.set_title('Structural support by sequence identity to best-matching reference', fontsize=12,
+                      fontweight='bold', loc='left', color='#20302C', pad=10)
     legend_bin = [
-        mpatches.Patch(color='#9BB8B4', label='% with qTM ≥ 50% (structurally real)'),
+        mpatches.Patch(color='#AFC7C2', label='% with qTM ≥ 50% (structurally real)'),
         mpatches.Patch(color=TRIAD_TRUE_COLOR, label='% with qTM ≥ 85% (confident)'),
     ]
-    ax_bin.legend(handles=legend_bin, loc='upper right', bbox_to_anchor=(1.0, 1.24), fontsize=9, frameon=False, ncol=2)
+    ax_bin.legend(handles=legend_bin, loc='upper right', bbox_to_anchor=(1.0, 1.26), fontsize=9, frameon=False, ncol=2)
 
     # ---- main scatter ----
     ax.set_facecolor(BG)
@@ -251,26 +259,15 @@ def render(use_size, out_stem):
     ax.set_axisbelow(True)
     ax.tick_params(labelsize=11)
 
-    # reference-line labels on the right, where the cloud thins out at low qTM
-    # both reference lines cross genuinely dense parts of the cloud at the
-    # right edge (confirmed live: the plain-text label was legible but
-    # visually buried under overlapping points there) -- an opaque
-    # background box, same idea as the callout, keeps them readable
-    # regardless of local point density
-    ref_label_kw = dict(fontsize=9, color='#5B6E70', ha='right', va='center', zorder=11,
+    # reference-line labels back on the left -- the emptiest part of the
+    # plot at these two heights (per direct request; an earlier version
+    # moved them right to dodge a callout box that has since been removed)
+    ref_label_kw = dict(fontsize=9, color='#5B6E70', ha='left', va='center', zorder=11,
                           bbox=dict(boxstyle='round,pad=0.3', facecolor='white', edgecolor='none', alpha=0.82))
-    ax.text(97.5, 85, 'qTM ≥ 85% (confident)', **ref_label_kw)
-    ax.text(97.5, 50, 'qTM ≥ 50% (structurally real)', **ref_label_kw)
+    ax.text(1.5, 85, 'qTM ≥ 85% (confident)', **ref_label_kw)
+    ax.text(1.5, 50, 'qTM ≥ 50% (structurally real)', **ref_label_kw)
     ax.text(15, 101.5, 'sequence "twilight zone" (<30% identity)', fontsize=10.5, color='#9A8A60', ha='center',
             va='top', style='italic')
-
-    # headline callout, top-left -- right next to the twilight-zone band it describes
-    ax.text(1.2, 96.5,
-            f'{pct_confirmed:.1f}% structurally supported (qTM ≥ 0.50); {len(low_seq_confident)} / {len(low_seq):,} twilight-zone\n'
-            f'candidates ({100*len(low_seq_confident)/len(low_seq):.0f}%) are structurally confident (qTM ≥ 85%) – real phaC that\n'
-            'sequence search alone would miss.',
-            fontsize=11.5, color='#3A3226', ha='left', va='top',
-            bbox=dict(boxstyle='round,pad=0.55', facecolor='white', edgecolor='#D8D2C0', alpha=0.96), zorder=10)
 
     # title / subtitle
     fig.text(0.075, 0.975, 'Sequence identity undersells it', fontsize=27, fontweight='bold', color='#20302C')
@@ -300,11 +297,6 @@ def render(use_size, out_stem):
                   title='Genomes carrying this\nparalog cluster', title_fontsize=9.5, frameon=True,
                   facecolor='white', edgecolor='#D8D2C0', labelspacing=1.3, borderpad=1.0, handletextpad=1.6)
 
-    fig.text(0.075, 0.012,
-             'One point per all_phac_dedup representative (near-duplicate-collapsed; large diverse paralog clusters contribute more than one representative). Triad status is the\n'
-             "alignment-column check (full coverage) -- section 9.12's own structural geometric check is more accurate but only applies where a folded PDB is locally available.",
-             fontsize=8.3, color='#8B958F')
-
     out_path = OUT / f'{out_stem}.png'
     fig.savefig(out_path, dpi=300, facecolor='white')
     fig.savefig(OUT / f'{out_stem}.pdf', facecolor='white')
@@ -313,4 +305,3 @@ def render(use_size, out_stem):
 
 
 render(use_size=True, out_stem='seq_vs_structure_hero_sized')
-render(use_size=False, out_stem='seq_vs_structure_hero_uniform')
