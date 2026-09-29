@@ -1,13 +1,20 @@
 """Second version of the PhaC diversity accumulation landscape hero figure
 (plot_phac_diversity_habitat_landscape.py): same global rarefaction curve
 as sampling-effort baseline, but the overlay is every STUDY (not
-habitat) with >=50 phaC-positive genomes -- 100 studies, the same
-population and threshold as plot_phac_cluster_bucket_study_heatmap.py --
-colored by each study's DOMINANT habitat (categorical), not the
-rare-cluster-enrichment diverging score, per direct request that the
-diverging color scheme read as too confusing. Categorical palette and
-per-study dominant-habitat logic are identical to the study heatmap
-script, so colors line up across both figures.
+habitat) with a phaC-positive genome -- all 188, no minimum-size floor.
+(plot_phac_cluster_bucket_study_heatmap.py needed a >=50-genome floor to
+keep row labels legible; this is a plain scatter, so no such floor is
+needed here -- shown per direct follow-up request, "100 because we only
+have 100 or as a choice?".) Colored by each study's DOMINANT habitat
+(categorical), not the rare-cluster-enrichment diverging score, per
+direct request that the diverging color scheme read as too confusing.
+Categorical palette and per-study dominant-habitat logic are the same
+method as the study heatmap script, so the color a given habitat gets is
+determined the same way in both (most-common-dominant-habitat-first) --
+but since this figure's population is all 188 studies rather than the
+heatmap's 100, the resulting top-8-habitat ranking (and therefore which
+habitats get a named color vs. fold into "Other") is not guaranteed
+identical between the two figures.
 
 No permutation-based expected-richness/rare-enrichment stats are
 computed here -- this figure is purely observed (n_genomes, n_clusters)
@@ -39,7 +46,7 @@ FA = ROOT / 'PHA_bioprospecting/omdb_search/results'
 RANDOM_SEED = 42
 N_GLOBAL_PERM = 300
 N_CURVE_POINTS = 200
-MIN_STUDY_N = 50
+MIN_STUDY_N = 1   # show every study, not just the ones large enough to label/cluster legibly in the heatmap
 
 EXCLUDE_HABITATS = {
     'NA', '', 'Control', 'Synthetic', 'Freshwater river water', 'Freshwater lake water',
@@ -198,7 +205,7 @@ ax.legend(handles=[line_handle, band_patch], loc='upper left', fontsize=9, frame
 
 stats_text = (
     f'{n_clusters_total:,} clusters from {n_genomes_total:,} phaC-positive genomes\n'
-    f'{len(study_records)} studies shown, each with ≥{MIN_STUDY_N} phaC-positive genomes\n'
+    f'all {len(study_records)} studies with a phaC-positive genome\n'
     f'colored by that study’s own dominant habitat'
 )
 ax.text(0.015, 0.72, stats_text, transform=ax.transAxes, ha='left', va='top', fontsize=9.3,
@@ -208,7 +215,7 @@ ax.text(0.015, 0.72, stats_text, transform=ax.transAxes, ha='left', va='top', fo
 fig.suptitle('The PhaC diversity accumulation landscape, by study', fontsize=19, fontweight='bold',
               y=0.985, x=0.065, ha='left')
 fig.text(0.065, 0.945,
-         'Every study with ≥50 phaC-positive genomes, plotted against the same global sampling-effort curve.\n'
+         'Every study with a phaC-positive genome, plotted against the same global sampling-effort curve.\n'
          'Color identifies each study’s dominant habitat -- position above/below the curve still reads richness vs. expectation.',
          ha='left', va='top', fontsize=10.5, color=TEXT_MUTED, linespacing=1.5)
 
