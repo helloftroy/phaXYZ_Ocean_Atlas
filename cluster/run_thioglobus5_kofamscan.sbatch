@@ -25,10 +25,12 @@ cd "${SLURM_SUBMIT_DIR}"
 mkdir -p logs thioglobus5_reannotation/kofam thioglobus5_reannotation/kofam_tmp
 
 if [ -n "${KOFAM_ENV:-}" ]; then
-  set +u
-  source "$(conda info --base)/etc/profile.d/conda.sh"
-  conda activate "${KOFAM_ENV}"
-  set -u
+  if [ ! -d "${KOFAM_ENV}/bin" ]; then
+    echo "KOFAM_ENV was set, but ${KOFAM_ENV}/bin does not exist." >&2
+    exit 2
+  fi
+  export PATH="${KOFAM_ENV}/bin:${PATH}"
+  export PYTHONNOUSERSITE=1
 fi
 
 : "${KOFAM_DB:?Set KOFAM_DB to the directory containing ko_list and profiles/.}"
