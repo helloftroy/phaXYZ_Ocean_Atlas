@@ -13,7 +13,7 @@
 #     cluster/run_thioglobus5_kofamscan.sbatch
 #SBATCH --job-name=thioglobus5_kofam
 #SBATCH --partition=service
-#SBATCH --cpus-per-task=16
+#SBATCH --cpus-per-task=2
 #SBATCH --mem=32G
 #SBATCH --time=12:00:00
 #SBATCH --output=logs/thioglobus5_kofam_%j.out
@@ -30,7 +30,10 @@ if [ -n "${KOFAM_ENV:-}" ]; then
     exit 2
   fi
   export PATH="${KOFAM_ENV}/bin:${PATH}"
-  export PYTHONNOUSERSITE=1
+export PYTHONNOUSERSITE=1
+export OMP_NUM_THREADS=1
+export OPENBLAS_NUM_THREADS=1
+KOFAM_CPUS="${KOFAM_CPUS:-1}"
 fi
 
 : "${KOFAM_DB:?Set KOFAM_DB to the directory containing ko_list and profiles/.}"
@@ -50,17 +53,23 @@ echo "started $(date)"
 echo "host $(hostname)"
 echo "KOFAM_PROFILES=${KOFAM_PROFILES}"
 echo "KOFAM_KO_LIST=${KOFAM_KO_LIST}"
+echo "KOFAM_CPUS=${KOFAM_CPUS}"
+echo "exec_annotation=$(command -v exec_annotation)"
+echo "hmmsearch=$(command -v hmmsearch || true)"
+echo "parallel=$(command -v parallel || true)"
+exec_annotation --version || true
 
 for faa in thioglobus5_reannotation/proteins/*.faa; do
   genome="$(basename "${faa}" .faa)"
   out="thioglobus5_reannotation/kofam/${genome}.kofam.detail.tsv"
   tmp="thioglobus5_reannotation/kofam_tmp/${genome}"
+  rm -rf "${tmp}"
   mkdir -p "${tmp}"
   echo "KOfamScan ${genome}"
   exec_annotation \
     -p "${KOFAM_PROFILES}" \
     -k "${KOFAM_KO_LIST}" \
-    --cpu "${SLURM_CPUS_PER_TASK:-16}" \
+    --cpu "${KOFAM_CPUS}" \
     --tmp-dir "${tmp}" \
     -f detail-tsv \
     -o "${out}" \
