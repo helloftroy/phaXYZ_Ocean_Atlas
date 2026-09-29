@@ -1,0 +1,6 @@
+bucket	n_clusters	pct_of_clusters	n_genome_cluster_memberships	pct_of_occupancy
+1 genome (singleton)	1752	40.32	1752	2.86
+2–5	1354	31.16	4006	6.54
+6–20	746	17.17	8016	13.09
+21–100	387	8.91	16452	26.87
+>100	106	2.44	30993	50.63
