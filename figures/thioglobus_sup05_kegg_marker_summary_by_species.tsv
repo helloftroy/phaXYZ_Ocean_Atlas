@@ -1,0 +1,9 @@
+gtdb_genus	gtdb_species	ecological_subclade	n_genomes	mean_omdb_completeness_pct	min_omdb_completeness_pct	n_triad_complete_phac_targets	n_has_cbb_rbcLS_prk	n_has_rbcL	n_has_rbcS	n_has_prk	n_has_sqr	n_has_fccA	n_has_fccB	n_has_fccAB	n_has_soxX	n_has_soxA	n_has_soxB	n_has_soxY	n_has_soxZ	n_has_soxC	n_has_soxD	n_has_core_soxXABYZ	n_has_sox_module_with_cd
+Pseudothioglobus	Pseudothioglobus sp002711905	Pseudothioglobus mixotrophic-to-heterotrophic	11	82.96	62.08	11	5	10	7	7	0	0	0	0	0	0	0	0	0	0	0	0	0
+Pseudothioglobus	Pseudothioglobus sp029247465	Pseudothioglobus mixotrophic-to-heterotrophic	13	81.37	66.79	12	0	13	0	8	0	0	0	0	0	0	0	0	0	0	0	0	0
+Pseudothioglobus	Pseudothioglobus sp902513495	Pseudothioglobus mixotrophic-to-heterotrophic	8	81.80	52.08	8	0	7	0	7	0	0	0	0	0	0	0	0	0	0	0	0	0
+Pseudothioglobus	Pseudothioglobus sp913047325	Pseudothioglobus mixotrophic-to-heterotrophic	1	64.79	64.79	1	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0
+Pseudothioglobus	Unknown Pseudothioglobus	Pseudothioglobus mixotrophic-to-heterotrophic	7	60.55	50.70	4	0	1	0	2	0	0	0	0	0	0	0	0	0	0	0	0	0
+Thioglobus_A	Thioglobus_A sp028228555	Thioglobus_A chemoautotrophic	1	91.68	91.68	1	0	1	0	1	1	0	0	0	0	1	1	1	1	0	0	0	0
+Thioglobus_B	Thioglobus_B perditus	Thioglobus_B / Thioglobus sensu stricto mixotrophic	1	92.96	92.96	1	0	0	0	0	1	0	0	0	1	1	0	1	1	0	0	0	0
+Thioglobus_B	Unknown Thioglobus_B	Thioglobus_B / Thioglobus sensu stricto mixotrophic	3	96.71	94.37	3	0	0	0	0	3	0	0	0	3	3	0	2	2	0	0	0	0

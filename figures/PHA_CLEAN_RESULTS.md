@@ -627,3 +627,79 @@ If a phaC synthase's substrate arrives via a different upstream pathway (FAS-lin
 ## 11. Resolved: the rank-abundance/rarefaction genome-count bug flagged here is fixed
 
 This section previously flagged that §7's `target_id → genome` join undercounted the genome universe (a plain dict silently keeping only the last genome per target_id, when the true relationship is one-to-many). **Fixed as part of the 2026-09-22 rebuild — see §7, which was also missing bad-query filtering entirely and has been corrected on both counts.** Kept this section as a pointer rather than deleting it outright, so the historical record of what was found and when stays intact.
+
+## 12. Brief taxon-query notes
+
+### 12.1 Nitrifier / sulfur / methane / cyanobacteria marker genera vs. QC-passing phaC
+
+Quick taxon query against current QC-passing phaC (`phaC_all_genomes_from_nr100_clusters.tsv`, filtered with `_phac_qc.load_bad_targets()`), using strict GTDB genus/species matches and the genome-level triad criterion from `plot_phac_triad_hmm_pathway_groups.py`.
+
+| group | phaC target assignments | genomes | triad-complete target assignments |
+|---|---:|---:|---:|
+| Nitrosococcus | 0 | 0 | 0 |
+| Nitrosomonas | 0 | 0 | 0 |
+| Nitrospira | 0 | 0 | 0 |
+| Scalindua | 1 | 1 | 1 |
+| Mariprofundus/Ghiorsea | 0 | 0 | 0 |
+| Hydrogenovibrio | 0 | 0 | 0 |
+| Sulfurimonas/Sulfurovum | 0 | 0 | 0 |
+| Thioglobus/SUP05 | 47 | 45 | 41 |
+| Thiomicrorhabdus/Thiomicrospira | 0 | 0 | 0 |
+| Methyloprofundus/Methylomarinum | 0 | 0 | 0 |
+| Nitrococcus | 2 | 1 | 2 |
+| Methylocystis/Methylosinus | 34 | 20 | 26 |
+| Nautilia/Aquifex | 0 | 0 | 0 |
+| Prochlorococcus/Synechococcus/Trichodesmium | 4 | 3 | 1 |
+
+Important interpretation note: several apparent phaC annotations in Nitrosomonas/Nitrospira/Hydrogenovibrio/Sulfurimonas/Sulfurovum exist in older metadata tables, but their target IDs are now in the bad-target exclusion set, so they should not be counted as current QC-passing phaC.
+
+### 12.2 Thioglobus/SUP05 phaC-positive genomes
+
+The 45 QC-passing Thioglobus/SUP05 genomes are mostly `Pseudothioglobus`, not one literal `Thioglobus` species: 40 `Pseudothioglobus`, 4 `Thioglobus_B`, 1 `Thioglobus_A`.
+
+| GTDB lineage | genomes | phaC target assignments | triad-complete assignments | dominant phaC cluster/targets |
+|---|---:|---:|---:|---|
+| `Pseudothioglobus sp002711905` | 11 | 11 | 11 | one target, `...137005`; cluster `...537294` |
+| `Pseudothioglobus sp029247465` | 13 | 13 | 12 | mostly `...163037`; cluster `...537294` |
+| `Pseudothioglobus sp902513495` | 8 | 8 | 8 | mostly `...512177`; cluster `...537294` |
+| `Pseudothioglobus sp913047325` | 1 | 2 | 1 | two singleton clusters |
+| unknown `Pseudothioglobus` | 7 | 8 | 4 | mixed; clusters `...537294` and `...647879` |
+| `Thioglobus_A sp028228555` | 1 | 1 | 1 | singleton cluster `...861068` |
+| `Thioglobus_B perditus` | 1 | 1 | 1 | cluster `...647879` |
+| unknown `Thioglobus_B` | 3 | 3 | 3 | cluster `...537294` |
+
+Conclusion: this is not a single species/subclade only. It is concentrated in `Pseudothioglobus`, but spans several Thioglobaceae/SUP05 branches (`Pseudothioglobus`, `Thioglobus_A`, `Thioglobus_B`). At the phaC level, however, most assignments collapse into one dominant 70%-identity cluster (`...537294`; 10 NR100 target IDs, 40/47 assignments), consistent with a broadly shared/ancestral Thioglobaceae-like phaC plus a few smaller lineage-specific clusters.
+
+Ecological subclade framing: `Thioglobus_A` is the chemoautotrophic branch; `Thioglobus_B`/`Thioglobus` sensu stricto is mixotrophic; `Pseudothioglobus` is mixotrophic-to-heterotrophic. The phaC-positive set is dominated by `Pseudothioglobus`, but the small sulfur-oxidizing/CO2-fixing-relevant Thioglobus branches are present and all are triad-complete in this query.
+
+| ecological subclade | genomes | phaC target assignments | triad-complete assignments |
+|---|---:|---:|---:|
+| `Thioglobus_A` chemoautotrophic | 1 | 1 | 1 |
+| `Thioglobus_B` / `Thioglobus` sensu stricto, mixotrophic | 4 | 4 | 4 |
+| `Pseudothioglobus`, mixotrophic-to-heterotrophic | 40 | 42 | 36 |
+
+**Files:** `figures/metabolic_marker_genera_phac_genome_level_triad_summary.tsv`, `figures/thioglobus_sup05_phac_taxonomic_summary.tsv`, `figures/thioglobus_sup05_phac_taxonomic_breakdown.tsv`.
+
+### 12.3 Thioglobus/SUP05 phaC-positive genomes: OMDB KEGG carbon/sulfur markers
+
+Queried the existing OMDB per-genome KEGG files for the 45 QC-passing Thioglobus/SUP05 phaC-positive genomes; no new sequence search. Marker set for documentation/figures: CBB carbon fixation (`cbbM/rbcL`, `prk`) plus `rbcS` when called; sulfide oxidation (`sqr`, `fccA/fccB`); thiosulfate oxidation core (`soxXABYZ`); SoxCD tracked separately but not required for SUP05; reverse-Dsr/APR/SAT not yet queried in this first pass.
+
+Genome completeness is mixed but mostly usable: overall mean 79.7%, median 84.3%, range 50.7-100.0%. `Thioglobus_A/B` genomes are high-completeness (mean 91.7-95.8%); `Pseudothioglobus` is more variable (mean 77.8%, minimum 50.7%), so marker absence in the lower-completeness Pseudothioglobus MAGs should be interpreted carefully.
+
+| ecological subclade | genomes | mean completeness | full `rbcLS+prk` | `rbcL/cbbM` | `rbcS` | `prk` | `sqr` | `fccAB` | core `soxXABYZ` |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| `Pseudothioglobus` mixotrophic-to-heterotrophic | 40 | 77.8% | 5 | 31 | 7 | 24 | 0 | 0 | 0 |
+| `Thioglobus_A` chemoautotrophic | 1 | 91.7% | 0 | 1 | 0 | 1 | 1 | 0 | 0 |
+| `Thioglobus_B` / `Thioglobus` sensu stricto mixotrophic | 4 | 95.8% | 0 | 0 | 0 | 0 | 4 | 0 | 0 |
+
+Species-level readout: the 5 genomes with complete `rbcL+rbcS+prk` are all in `Pseudothioglobus sp002711905` (5/11 genomes; mean completeness 83.0%). `Thioglobus_A sp028228555` has `rbcL+prk+sqr` plus partial SOX (`soxA/B/Y/Z`, no called `soxX`). `Thioglobus_B` genomes have `sqr` and partial SOX (`soxX/A` in 4/4, `soxY/Z` in 3/4), but no called `soxB`, so they do not meet the core `soxXABYZ` criterion. OMDB KEGG calls do **not** recover `fccAB`, `soxC`, or `soxD` in any of the 45. This argues for heterogeneous CO2-fixation and sulfur-oxidation potential among phaC-positive SUP05/Thioglobaceae, with the caveat that absences are from OMDB KEGG calls and should be checked with targeted HMM/search if they become central.
+
+**Files:** `figures/scripts/query_thioglobus_sup05_kegg_markers.py`; `figures/thioglobus_sup05_kegg_marker_presence.tsv`, `figures/thioglobus_sup05_kegg_marker_hits.tsv`, `figures/thioglobus_sup05_kegg_marker_summary_by_subclade.tsv`, `figures/thioglobus_sup05_kegg_marker_summary_by_species.tsv`.
+
+### 12.4 Reannotation inputs for the 5 CBB-positive `Pseudothioglobus sp002711905` genomes
+
+To avoid relying only on OMDB's precomputed KEGG calls, exported the 5 genomes with complete OMDB-called `rbcL+rbcS+prk` for independent KOfamScan/METABOLIC reruns. All 5 are `Pseudothioglobus sp002711905`, 85.5-87.8% complete, with 0.0-1.7% contamination. Protein FASTAs contain 1,385-1,467 proteins each, 7,161 proteins total, and all protein IDs are unique.
+
+Prepared inputs: protein FASTAs for KOfamScan and genome FASTAs for METABOLIC-G. Cluster runners are present but not run locally because KOfamScan/METABOLIC databases/tools are not installed here.
+
+**Files:** `thioglobus5_reannotation/thioglobus5_manifest.tsv`, `thioglobus5_reannotation/proteins/*.faa`, `thioglobus5_reannotation/genomes/*.fasta`, `thioglobus5_reannotation/thioglobus5_combined.faa`; `figures/scripts/export_thioglobus5_reannotation_inputs.py`, `cluster/run_thioglobus5_kofamscan.sbatch`, `cluster/run_thioglobus5_metabolic.sbatch`, `figures/scripts/summarize_thioglobus5_kofam.py`.

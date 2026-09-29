@@ -1,0 +1,4 @@
+ecological_subclade	n_genomes	mean_omdb_completeness_pct	min_omdb_completeness_pct	n_triad_complete_phac_targets	n_has_cbb_rbcLS_prk	n_has_rbcL	n_has_rbcS	n_has_prk	n_has_sqr	n_has_fccA	n_has_fccB	n_has_fccAB	n_has_soxX	n_has_soxA	n_has_soxB	n_has_soxY	n_has_soxZ	n_has_soxC	n_has_soxD	n_has_core_soxXABYZ	n_has_sox_module_with_cd
+Pseudothioglobus mixotrophic-to-heterotrophic	40	77.84	50.70	36	5	31	7	24	0	0	0	0	0	0	0	0	0	0	0	0	0
+Thioglobus_A chemoautotrophic	1	91.68	91.68	1	0	1	0	1	1	0	0	0	0	1	1	1	1	0	0	0	0
+Thioglobus_B / Thioglobus sensu stricto mixotrophic	4	95.77	92.96	4	0	0	0	0	4	0	0	0	4	4	0	3	3	0	0	0	0
