@@ -30,11 +30,11 @@ if [ -n "${KOFAM_ENV:-}" ]; then
     exit 2
   fi
   export PATH="${KOFAM_ENV}/bin:${PATH}"
+fi
 export PYTHONNOUSERSITE=1
 export OMP_NUM_THREADS=1
 export OPENBLAS_NUM_THREADS=1
 KOFAM_CPUS="${KOFAM_CPUS:-1}"
-fi
 
 : "${KOFAM_DB:?Set KOFAM_DB to the directory containing ko_list and profiles/.}"
 KOFAM_PROFILES="${KOFAM_PROFILES:-${KOFAM_DB}/profiles}"
