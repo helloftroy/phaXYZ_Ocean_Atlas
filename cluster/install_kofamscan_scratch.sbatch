@@ -25,6 +25,12 @@ echo "started $(date)"
 echo "host $(hostname)"
 echo "submit dir ${SLURM_SUBMIT_DIR}"
 
+if [ -f cluster/env_activate.sh ]; then
+  echo "sourcing cluster/env_activate.sh"
+  # shellcheck source=/dev/null
+  source cluster/env_activate.sh
+fi
+
 bash cluster/install_kofamscan_scratch.sh
 
 echo "finished $(date)"

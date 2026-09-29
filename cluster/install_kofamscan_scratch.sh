@@ -33,7 +33,30 @@ echo "XDG_CACHE_HOME=${XDG_CACHE_HOME}"
 echo "KOFAM_DB=${KOFAM_DB}"
 
 if ! command -v conda >/dev/null 2>&1; then
-  echo "conda not found on PATH. Load/initialize conda first, then rerun." >&2
+  if [ -f cluster/env_activate.sh ]; then
+    echo "conda not on PATH; sourcing cluster/env_activate.sh"
+    # shellcheck source=/dev/null
+    source cluster/env_activate.sh
+  else
+    for conda_sh in \
+      "${MINIFORGE_HOME:-}/etc/profile.d/conda.sh" \
+      "${HOME}/miniforge3/etc/profile.d/conda.sh" \
+      "${HOME}/miniconda3/etc/profile.d/conda.sh" \
+      "${SCRATCH_ROOT}/miniforge3/etc/profile.d/conda.sh" \
+      "${SCRATCH_ROOT}/miniconda3/etc/profile.d/conda.sh"; do
+      if [ -n "${conda_sh}" ] && [ -f "${conda_sh}" ]; then
+        echo "conda not on PATH; sourcing ${conda_sh}"
+        # shellcheck source=/dev/null
+        source "${conda_sh}"
+        break
+      fi
+    done
+  fi
+fi
+
+if ! command -v conda >/dev/null 2>&1; then
+  echo "conda not found after initialization attempts." >&2
+  echo "Submit with MINIFORGE_HOME=/path/to/miniforge or run after creating cluster/env_activate.sh." >&2
   exit 2
 fi
 
