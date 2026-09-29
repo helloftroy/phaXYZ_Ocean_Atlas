@@ -69,7 +69,7 @@ def test_write_genome_download_manifest(tmp_path):
     n = pr.write_genome_download_manifest({"G_QUALIFIES"}, catalog_path, out_path)
     assert n == 1
     rows = list(csv.DictReader(open(out_path, newline=""), delimiter="\t"))
-    assert rows == [{"genome": "G_QUALIFIES", "genes_aa_url": "url_aa_1"}]
+    assert rows == [{"genome": "G_QUALIFIES", "genes_aa_url": pr.genes_aa_api_url("G_QUALIFIES")}]
 
 
 def test_parse_prodigal_faa_groups_by_scaffold_preserving_order():

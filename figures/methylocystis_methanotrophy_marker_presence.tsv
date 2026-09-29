@@ -1,0 +1,21 @@
+genome	gtdb_genus	gtdb_species	n_qc_targets	any_triad_complete_alignment	omdb_completeness_pct	omdb_contamination_pct	has_pmoA	has_pmoB	has_pmoC	has_pmoABC_core	has_mmoX	has_mmoY	has_mmoZ	has_mmoBCD	has_mmoXYZ_core	has_mxaF	has_xoxF	markers_present	kegg_download_status	genome_metadata_status
+MCIN21-1_SAMEA7319884_MAG_00000014	Methylocystis	Unknown Methylocystis	1	True	89.15	2.80	yes	yes	yes	yes	no	no	no	no	no	no	no	pmoA,pmoB,pmoC	downloaded	downloaded
+MCIN21-1_SAMEA7319885_MAG_00000005	Methylocystis	Unknown Methylocystis	1	True	61.97	0.00	no	no	yes	no	no	no	no	no	no	no	no	pmoC	downloaded	downloaded
+MCIN21-1_SAMEA7319886_MAG_00000002	Methylocystis	Unknown Methylocystis	1	False	59.15	0.00	no	no	no	no	no	no	no	no	no	no	no		downloaded	downloaded
+MCIN21-1_SAMEA7319896_MAG_00000055	Methylocystis	Methylocystis sp002412985	1	True	91.55	0.00	yes	yes	yes	yes	no	no	no	no	no	no	no	pmoA,pmoB,pmoC	downloaded	downloaded
+MCIN21-1_SAMEA7319896_MAG_00000073	Methylocystis	Methylocystis sp023253795	1	True	97.18	0.00	no	no	yes	no	no	no	no	no	no	no	no	pmoC	downloaded	downloaded
+MCIN21-1_SAMEA7319902_MAG_00000019	Methylocystis	Methylocystis sp002412985	1	True	100.00	0.00	yes	yes	yes	yes	no	no	no	no	no	no	no	pmoA,pmoB,pmoC	downloaded	downloaded
+RSGB23-1_GCF-000178815-V2_GENO_10000001	Methylosinus	Methylosinus trichosporium	2	True	100.00	0.00	yes	yes	yes	yes	yes	yes	yes	yes	yes	yes	yes	mmoB,mmoC,mmoX,mmoY,mmoZ,mxaF,pmoA,pmoB,pmoC,xoxF	downloaded	downloaded
+RSGB23-1_GCF-000379125-V1_GENO_10000001	Methylosinus	Methylosinus sp000379125	2	True	99.69	0.00	yes	yes	yes	yes	yes	yes	yes	yes	yes	yes	yes	mmoB,mmoC,mmoX,mmoY,mmoZ,mxaF,pmoA,pmoB,pmoC,xoxF	downloaded	downloaded
+RSGB23-1_GCF-003113265-V1_GENO_10000001	Methylosinus	Methylosinus sporium	3	True	100.00	0.31	yes	yes	yes	yes	yes	yes	yes	yes	yes	yes	yes	mmoB,mmoC,mmoX,mmoY,mmoZ,mxaF,pmoA,pmoB,pmoC,xoxF	downloaded	downloaded
+RSGB23-1_GCF-003722355-V1_GENO_10000001	Methylocystis	Methylocystis hirsuta	5	True	100.00	0.00	yes	yes	yes	yes	yes	yes	yes	yes	yes	yes	yes	mmoB,mmoC,mmoX,mmoY,mmoZ,mxaF,pmoA,pmoB,pmoC,xoxF	downloaded	downloaded
+RSGB23-1_GCF-003855495-V1_GENO_10000001	Methylocystis	Methylocystis rosea_A	5	True	99.37	0.47	yes	yes	yes	yes	no	no	no	no	no	yes	yes	mxaF,pmoA,pmoB,pmoC,xoxF	downloaded	downloaded
+RSGB23-1_GCF-009685175-V1_GENO_10000001	Methylocystis	Methylocystis rosea_A	3	True	99.68	0.32	yes	yes	yes	yes	no	no	no	no	no	yes	yes	mxaF,pmoA,pmoB,pmoC,xoxF	downloaded	downloaded
+SANT17-1_SAMN02905733_MAG_00000047	Methylocystis	Methylocystis sp900299115	1	True	81.69	2.82	yes	yes	no	no	no	no	no	no	no	no	yes	pmoA,pmoB,xoxF	downloaded	downloaded
+SANT17-1_SAMN02924041_MAG_00000007	Methylocystis	Methylocystis sp900299115	1	True	90.14	1.41	yes	yes	no	no	no	no	no	no	no	no	no	pmoA,pmoB	downloaded	downloaded
+SANT17-1_SAMN02924041_MAG_00000019	Methylocystis	Methylocystis sp023253795	1	True	87.88	1.12	no	no	yes	no	no	no	no	no	no	no	no	pmoC	downloaded	downloaded
+SANT17-1_SAMN02924044_MAG_00000040	Methylocystis	Unknown Methylocystis	1	True	65.64	1.53	no	no	no	no	no	no	no	no	no	no	no		downloaded	downloaded
+SANT17-1_SAMN02924044_MAG_00000076	Methylocystis	Methylocystis sp023253795	1	True	79.02	2.00	no	no	yes	no	no	no	no	no	no	no	no	pmoC	downloaded	downloaded
+SANT17-1_SAMN02924044_MAG_00000111	Methylocystis	Methylocystis sp900299115	1	True	100.00	0.00	no	no	yes	no	no	no	no	no	no	no	no	pmoC	downloaded	downloaded
+SANT17-1_SAMN02924045_MAG_00000050	Methylocystis	Methylocystis sp900299115	1	True	77.46	4.23	no	no	no	no	no	no	no	no	no	no	yes	xoxF	downloaded	downloaded
+SANT17-1_SAMN02924047_MAG_00000055	Methylocystis	Methylocystis sp900299115	1	True	75.24	0.69	no	yes	no	no	no	no	no	no	no	no	yes	pmoB,xoxF	downloaded	downloaded

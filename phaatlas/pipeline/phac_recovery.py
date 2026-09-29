@@ -38,6 +38,7 @@ import csv
 import gzip
 import subprocess
 import time
+import urllib.parse
 import urllib.request
 from collections import defaultdict
 from dataclasses import dataclass
@@ -102,10 +103,31 @@ def collect_other_pha_hits(qualifying_genomes: set[str], family_metadata_paths: 
     return hits
 
 
+def genes_aa_api_url(genome: str) -> str:
+    """The live per-genome protein-FASTA download endpoint (gzip-compressed
+    prodigal .faa, same content OMDBv2.0_data.tsv's GENES_AA_FILE column
+    used to point at). Confirmed live 2026-09-29: the old catalog's static
+    GENES_AA_FILE URLs (https://sunagawalab.ethz.ch/share/microbiomics/...)
+    now 404 across the board -- that file-serving host appears to have been
+    retired in favor of this API, which is also what the genome-browser
+    page and its KEGG download already use (see
+    figures/scripts/query_thioglobus_sup05_kegg_markers.py's api_url/
+    genome_page_url). Valid file_type values per the API's own 422 error
+    body: genome, gene_fna, gene_faa, gene_gff, antismash, pfam, eggnog,
+    kegg, trna, rrna -- gene_faa is the protein-FASTA one (not genes_aa,
+    which 422s)."""
+    return (
+        "https://motus-api.microbiomics.io/v1/genomes/"
+        f"{urllib.parse.quote(genome)}/download?file_type=gene_faa"
+    )
+
+
 def write_genome_download_manifest(qualifying_genomes: set[str], omdb_catalog_path: Path, out_path: Path) -> int:
-    """genome -> its GENES_AA_FILE URL, from OMDBv2.0_data.tsv (the small
-    catalog listing every genome's per-genome file URLs -- not the genome
-    sequences themselves). Returns the number of genomes matched."""
+    """genome -> its live gene_faa download URL (genes_aa_api_url above),
+    for every qualifying genome confirmed present in OMDBv2.0_data.tsv (the
+    small catalog listing every genome OMDB knows about -- used here only
+    to confirm existence, not for its own GENES_AA_FILE column, which
+    points at a now-dead host). Returns the number of genomes matched."""
     out_path.parent.mkdir(parents=True, exist_ok=True)
     n = 0
     with open(omdb_catalog_path, newline="") as f_in, open(out_path, "w", newline="") as f_out:
@@ -114,7 +136,7 @@ def write_genome_download_manifest(qualifying_genomes: set[str], omdb_catalog_pa
         writer.writerow(["genome", "genes_aa_url"])
         for row in reader:
             if row["GENOME"] in qualifying_genomes:
-                writer.writerow([row["GENOME"], row["GENES_AA_FILE"]])
+                writer.writerow([row["GENOME"], genes_aa_api_url(row["GENOME"])])
                 n += 1
     return n
 

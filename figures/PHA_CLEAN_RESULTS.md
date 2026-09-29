@@ -703,3 +703,47 @@ To avoid relying only on OMDB's precomputed KEGG calls, exported the 5 genomes w
 Prepared inputs: protein FASTAs for KOfamScan and genome FASTAs for METABOLIC-G. Cluster runners are present but not run locally because KOfamScan/METABOLIC databases/tools are not installed here.
 
 **Files:** `thioglobus5_reannotation/thioglobus5_manifest.tsv`, `thioglobus5_reannotation/proteins/*.faa`, `thioglobus5_reannotation/genomes/*.fasta`, `thioglobus5_reannotation/thioglobus5_combined.faa`; `figures/scripts/export_thioglobus5_reannotation_inputs.py`, `cluster/run_thioglobus5_kofamscan.sbatch`, `cluster/run_thioglobus5_metabolic.sbatch`, `figures/scripts/summarize_thioglobus5_kofam.py`.
+
+### 12.5 Other PHA-context genes in selected triad-complete taxa
+
+Checked exact-genome PHA context fields for the 5 CBB-positive `Pseudothioglobus` genomes and for triad-complete hits in `Scalindua`, `Nitrococcus`, `Methylocystis/Methylosinus`, and `Prochlorococcus/Synechococcus/Trichodesmium`. Important caveat: target IDs are NR100 representatives, so context was only counted when available for the exact genome; otherwise left as not documented rather than borrowing context from another genome sharing the same representative.
+
+| group | triad-complete genomes | exact-genome context documented | genomes with other pha genes | genomes with `phaA+phaB` | other pha genes seen |
+|---|---:|---:|---:|---:|---|
+| Thioglobus5 CBB-positive | 5 | 5 | 5 | 5 | `phaA,phaB,phaD,phaE,phaF,phaP,phaR_regulator,phaZ` |
+| `Methylocystis/Methylosinus` | 19 | 5 | 5 | 5 | `phaA,phaB,phaD,phaF,phaJ,phaP,phaR_regulator,phaY,phaZ` |
+| `Prochlorococcus/Synechococcus/Trichodesmium` | 1 | 1 | 1 | 0 | `phaB,phaZ` |
+| `Scalindua` | 1 | 1 | 1 | 0 | `phaB,phaE,phaF,phaG,phaZ` |
+| `Nitrococcus` | 1 | 0 | not documented | not documented | not documented |
+
+Correction/note: `BEMA21-1_SAMN15000289_MAG_00000040` (`Scalindua sp913055705`) does have a triad-complete phaC target (`...13537294`) plus exact-genome PHA context including `phaE`; that same triad-complete target also appears in the phaZ-family search (`phaC/phaZ` ambiguity/evidence), so the practical shorthand is `phaC+phaE+phaZ` present, with additional lower-confidence/context hits `phaB,phaF,phaG`.
+
+**Files:** `figures/selected_taxa_triad_complete_other_pha_genes.tsv`.
+
+### 12.6 Scalindua/Pseudothioglobus genome quality, and a Methylocystis/Methylosinus methanotrophy-marker check
+
+Follow-up on two threads from §12.1/12.5, done independently from primary tables (`genome_family_matrix.tsv`, `phaC_unique_targets_with_metadata.tsv`, `_phac_qc.load_bad_targets()`, `phac_catalytic_triad.tsv`, `phaC_cluster0.7_cluster.tsv`) rather than reusing §12's own aggregate files, per this project's standing convention of re-deriving rather than trusting another pass's summary numbers wholesale — worth noting since this specific pass independently reproduced §12.1's Methylocystis/Methylosinus tally exactly (34 targets / 20 genomes / 26 triad-complete / 19 genomes-with-triad-complete), which is a genuine cross-check, not a restatement.
+
+**Scalindua/Pseudothioglobus: genome quality, and the cross-study identical-sequence question.** `BEMA21-1_SAMN15000289_MAG_00000040`'s phaC target (`...13537294`, triad-complete, QC-passing) is byte-identical (NR100 100%-identity dereplication) to a copy independently carried by `GLAS15-1_SAMN02905564_MAG_00000008` (`Pseudothioglobus`) — the same target is the phaC_cluster0.7 representative for a 38-genome cluster otherwise almost entirely Pseudomonadota (Pseudothioglobus/Thioglobus_A/Thioglobus_B; §12.2). Both genomes' quality:
+
+| genome | genus | completeness | contamination | CheckM completeness | CheckM contamination | genome size | scaffolds | N50 |
+|---|---|---:|---:|---:|---:|---:|---:|---:|
+| `BEMA21-1_SAMN15000289_MAG_00000040` | Scalindua | 64.8% | 0.0% | 52.6% | 1.1% | 966 kb | 239 | 4.4 kb |
+| `GLAS15-1_SAMN02905564_MAG_00000008` | Pseudothioglobus | 54.9% | 8.45% | 59.2% | **11.3%** | 1.00 Mb | 249 | 4.3 kb |
+
+Both are small, heavily fragmented MAGs (sub-1Mb assemblies, hundreds of short scaffolds) — the Pseudothioglobus genome's CheckM contamination (11.3%) sits above this project's own `likely_artifact` gate (>10%, §9.3), a quality flag independent of the phaC question. But the two genomes come from different, independent studies (BioProjects PRJNA634212 vs. PRJNA254808; different publications, years apart) — this argues *against* the simplest explanation (within-sample MAG binning cross-contamination, which requires the two organisms to be co-assembled in the same metagenome) and leaves two real possibilities open instead: a genuine HGT event now vertically retained in both lineages (both are oxygen-minimum-zone specialists, so ecological co-occurrence is plausible), or some other cross-study artifact (e.g. reference/database contamination). 100% sequence identity across two different phyla is unusually high for HGT that has had time to diverge under independent vertical inheritance, which leans slightly toward the latter, but this is not resolved by the data on hand — held loosely, not concluded.
+
+**Methylocystis/Methylosinus: independently rebuilt breakdown, plus a methane-oxidation marker check §12.1/12.3 never ran for this group.** Per-genome detail (`figures/scripts/build_methylocystis_phac_breakdown.py`): 20 phaC-positive genomes, 34 QC-passing target-assignment rows, 26 triad-complete (alignment-column), 19 genomes with >=1 triad-complete target — reproduces §12.1 exactly. Structural (PDB-based) confirmation is only available for 1/33 distinct targets (this genus pair was never part of any structure-prediction input set), but that one target is triad-complete both structurally and by alignment, consistent with the rest.
+
+Queried OMDB's own precomputed KEGG calls for methane-oxidation markers (`figures/scripts/query_methylocystis_methanotrophy_markers.py`; `pmoABC` particulate methane monooxygenase, `mmoXYZBCD` soluble methane monooxygenase, `mxaF`/`xoxF` methanol dehydrogenase) across all 20 genomes:
+
+| | count |
+|---|---:|
+| genomes with >=1 methanotrophy marker | 18/20 |
+| genomes with the full `pmoABC` core | 9/20 |
+| genomes with the full `mmoXYZ` core | 4/20 |
+| genomes confirmed NCBI RefSeq isolates (`is_mag=False`), not MAGs | 6/20 |
+
+**6 of the 20 genomes are genuine cultured isolate references, not MAGs** — 100% complete, 4.2-5.0 Mb genome size, including `Methylosinus trichosporium` (the classic OB3b reference strain). **4 of those 6 carry the complete dual `pmoABC` + `mmoXYZBCD` system** plus `mxaF`/`xoxF`, textbook Type II methanotroph machinery with zero MAG-quality ambiguity, all 4 also triad-complete for phaC. The one genome that failed *both* the marker check and the triad check (`MCIN21-1_SAMEA7319886_MAG_00000002`) is also the lowest-completeness genome in the set (59.15%) — consistent with a real methanotroph whose genome is simply too fragmented to have recovered the relevant regions, not a genuine negative. No phaG or phaE detected anywhere in either genus, consistent with a Class I (not Class III) synthase, matching known Type II methanotroph biology (a well-documented classic PHB-producing lineage).
+
+**Files:** `figures/scripts/query_scalindua_pseudothioglobus_genome_quality.py`, `figures/scalindua_pseudothioglobus_genome_quality.tsv`; `figures/scripts/build_methylocystis_phac_breakdown.py`, `figures/methylocystis_phac_taxonomic_breakdown.tsv`; `figures/scripts/query_methylocystis_methanotrophy_markers.py`, `figures/methylocystis_methanotrophy_marker_presence.tsv`, `figures/methylocystis_methanotrophy_marker_hits.tsv`.

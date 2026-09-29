@@ -1,0 +1,110 @@
+genome	gtdb_genus	gtdb_species	query	marker	ko	description
+MCIN21-1_SAMEA7319884_MAG_00000014	Methylocystis	Unknown Methylocystis	MCIN21-1_SAMEA7319884_MAG_00000014-scaffold_22_13	pmoB	K10945	pmoB-amoB; methane/ammonia monooxygenase subunit B
+MCIN21-1_SAMEA7319884_MAG_00000014	Methylocystis	Unknown Methylocystis	MCIN21-1_SAMEA7319884_MAG_00000014-scaffold_22_14	pmoA	K10944	pmoA-amoA; methane/ammonia monooxygenase subunit A
+MCIN21-1_SAMEA7319884_MAG_00000014	Methylocystis	Unknown Methylocystis	MCIN21-1_SAMEA7319884_MAG_00000014-scaffold_184_4	pmoC	K10946	pmoC-amoC; methane/ammonia monooxygenase subunit C
+MCIN21-1_SAMEA7319885_MAG_00000005	Methylocystis	Unknown Methylocystis	MCIN21-1_SAMEA7319885_MAG_00000005-scaffold_249_3	pmoC	K10946	pmoC-amoC; methane/ammonia monooxygenase subunit C
+MCIN21-1_SAMEA7319896_MAG_00000055	Methylocystis	Methylocystis sp002412985	MCIN21-1_SAMEA7319896_MAG_00000055-scaffold_94_1	pmoC	K10946	pmoC-amoC; methane/ammonia monooxygenase subunit C
+MCIN21-1_SAMEA7319896_MAG_00000055	Methylocystis	Methylocystis sp002412985	MCIN21-1_SAMEA7319896_MAG_00000055-scaffold_94_2	pmoA	K10944	pmoA-amoA; methane/ammonia monooxygenase subunit A
+MCIN21-1_SAMEA7319896_MAG_00000055	Methylocystis	Methylocystis sp002412985	MCIN21-1_SAMEA7319896_MAG_00000055-scaffold_94_3	pmoB	K10945	pmoB-amoB; methane/ammonia monooxygenase subunit B
+MCIN21-1_SAMEA7319896_MAG_00000073	Methylocystis	Methylocystis sp023253795	MCIN21-1_SAMEA7319896_MAG_00000073-scaffold_49_8	pmoC	K10946	pmoC-amoC; methane/ammonia monooxygenase subunit C
+MCIN21-1_SAMEA7319902_MAG_00000019	Methylocystis	Methylocystis sp002412985	MCIN21-1_SAMEA7319902_MAG_00000019-scaffold_87_2	pmoC	K10946	pmoC-amoC; methane/ammonia monooxygenase subunit C
+MCIN21-1_SAMEA7319902_MAG_00000019	Methylocystis	Methylocystis sp002412985	MCIN21-1_SAMEA7319902_MAG_00000019-scaffold_87_3	pmoA	K10944	pmoA-amoA; methane/ammonia monooxygenase subunit A
+MCIN21-1_SAMEA7319902_MAG_00000019	Methylocystis	Methylocystis sp002412985	MCIN21-1_SAMEA7319902_MAG_00000019-scaffold_87_4	pmoB	K10945	pmoB-amoB; methane/ammonia monooxygenase subunit B
+RSGB23-1_GCF-000178815-V2_GENO_10000001	Methylosinus	Methylosinus trichosporium	RSGB23-1_GCF-000178815-V2_GENO_10000001-scaffold_1_372	pmoB	K10945	pmoB-amoB; methane/ammonia monooxygenase subunit B
+RSGB23-1_GCF-000178815-V2_GENO_10000001	Methylosinus	Methylosinus trichosporium	RSGB23-1_GCF-000178815-V2_GENO_10000001-scaffold_1_373	pmoA	K10944	pmoA-amoA; methane/ammonia monooxygenase subunit A
+RSGB23-1_GCF-000178815-V2_GENO_10000001	Methylosinus	Methylosinus trichosporium	RSGB23-1_GCF-000178815-V2_GENO_10000001-scaffold_1_374	pmoC	K10946	pmoC-amoC; methane/ammonia monooxygenase subunit C
+RSGB23-1_GCF-000178815-V2_GENO_10000001	Methylosinus	Methylosinus trichosporium	RSGB23-1_GCF-000178815-V2_GENO_10000001-scaffold_1_1018	pmoC	K10946	pmoC-amoC; methane/ammonia monooxygenase subunit C
+RSGB23-1_GCF-000178815-V2_GENO_10000001	Methylosinus	Methylosinus trichosporium	RSGB23-1_GCF-000178815-V2_GENO_10000001-scaffold_1_1679	xoxF	K23995	xoxF; lanthanide-dependent methanol dehydrogenase
+RSGB23-1_GCF-000178815-V2_GENO_10000001	Methylosinus	Methylosinus trichosporium	RSGB23-1_GCF-000178815-V2_GENO_10000001-scaffold_1_1950	mxaF	K14028	mdh1, mxaF; methanol dehydrogenase (cytochrome c) subunit 1
+RSGB23-1_GCF-000178815-V2_GENO_10000001	Methylosinus	Methylosinus trichosporium	RSGB23-1_GCF-000178815-V2_GENO_10000001-scaffold_1_1956	xoxF	K23995	xoxF; lanthanide-dependent methanol dehydrogenase
+RSGB23-1_GCF-000178815-V2_GENO_10000001	Methylosinus	Methylosinus trichosporium	RSGB23-1_GCF-000178815-V2_GENO_10000001-scaffold_1_2328	mmoX	K16157	mmoX; methane monooxygenase component A alpha chain
+RSGB23-1_GCF-000178815-V2_GENO_10000001	Methylosinus	Methylosinus trichosporium	RSGB23-1_GCF-000178815-V2_GENO_10000001-scaffold_1_2329	mmoY	K16158	mmoY; methane monooxygenase component A beta chain
+RSGB23-1_GCF-000178815-V2_GENO_10000001	Methylosinus	Methylosinus trichosporium	RSGB23-1_GCF-000178815-V2_GENO_10000001-scaffold_1_2331	mmoZ	K16159	mmoZ; methane monooxygenase component A gamma chain
+RSGB23-1_GCF-000178815-V2_GENO_10000001	Methylosinus	Methylosinus trichosporium	RSGB23-1_GCF-000178815-V2_GENO_10000001-scaffold_1_2332	mmoC	K16162	mmoD; methane monooxygenase component D
+RSGB23-1_GCF-000178815-V2_GENO_10000001	Methylosinus	Methylosinus trichosporium	RSGB23-1_GCF-000178815-V2_GENO_10000001-scaffold_1_2333	mmoB	K16161	mmoC; methane monooxygenase component C
+RSGB23-1_GCF-000178815-V2_GENO_10000001	Methylosinus	Methylosinus trichosporium	RSGB23-1_GCF-000178815-V2_GENO_10000001-scaffold_1_2765	pmoC	K10946	pmoC-amoC; methane/ammonia monooxygenase subunit C
+RSGB23-1_GCF-000178815-V2_GENO_10000001	Methylosinus	Methylosinus trichosporium	RSGB23-1_GCF-000178815-V2_GENO_10000001-scaffold_1_2766	pmoA	K10944	pmoA-amoA; methane/ammonia monooxygenase subunit A
+RSGB23-1_GCF-000178815-V2_GENO_10000001	Methylosinus	Methylosinus trichosporium	RSGB23-1_GCF-000178815-V2_GENO_10000001-scaffold_1_2767	pmoB	K10945	pmoB-amoB; methane/ammonia monooxygenase subunit B
+RSGB23-1_GCF-000379125-V1_GENO_10000001	Methylosinus	Methylosinus sp000379125	RSGB23-1_GCF-000379125-V1_GENO_10000001-scaffold_1_80	mmoB	K16161	mmoC; methane monooxygenase component C
+RSGB23-1_GCF-000379125-V1_GENO_10000001	Methylosinus	Methylosinus sp000379125	RSGB23-1_GCF-000379125-V1_GENO_10000001-scaffold_1_81	mmoC	K16162	mmoD; methane monooxygenase component D
+RSGB23-1_GCF-000379125-V1_GENO_10000001	Methylosinus	Methylosinus sp000379125	RSGB23-1_GCF-000379125-V1_GENO_10000001-scaffold_1_82	mmoZ	K16159	mmoZ; methane monooxygenase component A gamma chain
+RSGB23-1_GCF-000379125-V1_GENO_10000001	Methylosinus	Methylosinus sp000379125	RSGB23-1_GCF-000379125-V1_GENO_10000001-scaffold_1_84	mmoY	K16158	mmoY; methane monooxygenase component A beta chain
+RSGB23-1_GCF-000379125-V1_GENO_10000001	Methylosinus	Methylosinus sp000379125	RSGB23-1_GCF-000379125-V1_GENO_10000001-scaffold_1_85	mmoX	K16157	mmoX; methane monooxygenase component A alpha chain
+RSGB23-1_GCF-000379125-V1_GENO_10000001	Methylosinus	Methylosinus sp000379125	RSGB23-1_GCF-000379125-V1_GENO_10000001-scaffold_1_976	pmoC	K10946	pmoC-amoC; methane/ammonia monooxygenase subunit C
+RSGB23-1_GCF-000379125-V1_GENO_10000001	Methylosinus	Methylosinus sp000379125	RSGB23-1_GCF-000379125-V1_GENO_10000001-scaffold_1_977	pmoA	K10944	pmoA-amoA; methane/ammonia monooxygenase subunit A
+RSGB23-1_GCF-000379125-V1_GENO_10000001	Methylosinus	Methylosinus sp000379125	RSGB23-1_GCF-000379125-V1_GENO_10000001-scaffold_1_978	pmoB	K10945	pmoB-amoB; methane/ammonia monooxygenase subunit B
+RSGB23-1_GCF-000379125-V1_GENO_10000001	Methylosinus	Methylosinus sp000379125	RSGB23-1_GCF-000379125-V1_GENO_10000001-scaffold_1_1442	pmoC	K10946	pmoC-amoC; methane/ammonia monooxygenase subunit C
+RSGB23-1_GCF-000379125-V1_GENO_10000001	Methylosinus	Methylosinus sp000379125	RSGB23-1_GCF-000379125-V1_GENO_10000001-scaffold_1_1787	pmoB	K10945	pmoB-amoB; methane/ammonia monooxygenase subunit B
+RSGB23-1_GCF-000379125-V1_GENO_10000001	Methylosinus	Methylosinus sp000379125	RSGB23-1_GCF-000379125-V1_GENO_10000001-scaffold_1_1788	pmoA	K10944	pmoA-amoA; methane/ammonia monooxygenase subunit A
+RSGB23-1_GCF-000379125-V1_GENO_10000001	Methylosinus	Methylosinus sp000379125	RSGB23-1_GCF-000379125-V1_GENO_10000001-scaffold_1_1789	pmoC	K10946	pmoC-amoC; methane/ammonia monooxygenase subunit C
+RSGB23-1_GCF-000379125-V1_GENO_10000001	Methylosinus	Methylosinus sp000379125	RSGB23-1_GCF-000379125-V1_GENO_10000001-scaffold_1_2395	pmoB	K10945	pmoB-amoB; methane/ammonia monooxygenase subunit B
+RSGB23-1_GCF-000379125-V1_GENO_10000001	Methylosinus	Methylosinus sp000379125	RSGB23-1_GCF-000379125-V1_GENO_10000001-scaffold_1_2396	pmoA	K10944	pmoA-amoA; methane/ammonia monooxygenase subunit A
+RSGB23-1_GCF-000379125-V1_GENO_10000001	Methylosinus	Methylosinus sp000379125	RSGB23-1_GCF-000379125-V1_GENO_10000001-scaffold_1_2397	pmoC	K10946	pmoC-amoC; methane/ammonia monooxygenase subunit C
+RSGB23-1_GCF-000379125-V1_GENO_10000001	Methylosinus	Methylosinus sp000379125	RSGB23-1_GCF-000379125-V1_GENO_10000001-scaffold_1_3472	mxaF	K14028	mdh1, mxaF; methanol dehydrogenase (cytochrome c) subunit 1
+RSGB23-1_GCF-000379125-V1_GENO_10000001	Methylosinus	Methylosinus sp000379125	RSGB23-1_GCF-000379125-V1_GENO_10000001-scaffold_1_3533	xoxF	K23995	xoxF; lanthanide-dependent methanol dehydrogenase
+RSGB23-1_GCF-000379125-V1_GENO_10000001	Methylosinus	Methylosinus sp000379125	RSGB23-1_GCF-000379125-V1_GENO_10000001-scaffold_2_314	xoxF	K23995	xoxF; lanthanide-dependent methanol dehydrogenase
+RSGB23-1_GCF-003113265-V1_GENO_10000001	Methylosinus	Methylosinus sporium	RSGB23-1_GCF-003113265-V1_GENO_10000001-scaffold_1_13	mxaF	K14028	mdh1, mxaF; methanol dehydrogenase (cytochrome c) subunit 1
+RSGB23-1_GCF-003113265-V1_GENO_10000001	Methylosinus	Methylosinus sporium	RSGB23-1_GCF-003113265-V1_GENO_10000001-scaffold_2_62	pmoC	K10946	pmoC-amoC; methane/ammonia monooxygenase subunit C
+RSGB23-1_GCF-003113265-V1_GENO_10000001	Methylosinus	Methylosinus sporium	RSGB23-1_GCF-003113265-V1_GENO_10000001-scaffold_5_69	mmoB	K16161	mmoC; methane monooxygenase component C
+RSGB23-1_GCF-003113265-V1_GENO_10000001	Methylosinus	Methylosinus sporium	RSGB23-1_GCF-003113265-V1_GENO_10000001-scaffold_5_70	mmoC	K16162	mmoD; methane monooxygenase component D
+RSGB23-1_GCF-003113265-V1_GENO_10000001	Methylosinus	Methylosinus sporium	RSGB23-1_GCF-003113265-V1_GENO_10000001-scaffold_5_71	mmoZ	K16159	mmoZ; methane monooxygenase component A gamma chain
+RSGB23-1_GCF-003113265-V1_GENO_10000001	Methylosinus	Methylosinus sporium	RSGB23-1_GCF-003113265-V1_GENO_10000001-scaffold_5_73	mmoY	K16158	mmoY; methane monooxygenase component A beta chain
+RSGB23-1_GCF-003113265-V1_GENO_10000001	Methylosinus	Methylosinus sporium	RSGB23-1_GCF-003113265-V1_GENO_10000001-scaffold_5_74	mmoX	K16157	mmoX; methane monooxygenase component A alpha chain
+RSGB23-1_GCF-003113265-V1_GENO_10000001	Methylosinus	Methylosinus sporium	RSGB23-1_GCF-003113265-V1_GENO_10000001-scaffold_18_55	pmoC	K10946	pmoC-amoC; methane/ammonia monooxygenase subunit C
+RSGB23-1_GCF-003113265-V1_GENO_10000001	Methylosinus	Methylosinus sporium	RSGB23-1_GCF-003113265-V1_GENO_10000001-scaffold_18_56	pmoA	K10944	pmoA-amoA; methane/ammonia monooxygenase subunit A
+RSGB23-1_GCF-003113265-V1_GENO_10000001	Methylosinus	Methylosinus sporium	RSGB23-1_GCF-003113265-V1_GENO_10000001-scaffold_18_57	pmoB	K10945	pmoB-amoB; methane/ammonia monooxygenase subunit B
+RSGB23-1_GCF-003113265-V1_GENO_10000001	Methylosinus	Methylosinus sporium	RSGB23-1_GCF-003113265-V1_GENO_10000001-scaffold_24_40	xoxF	K23995	xoxF; lanthanide-dependent methanol dehydrogenase
+RSGB23-1_GCF-003113265-V1_GENO_10000001	Methylosinus	Methylosinus sporium	RSGB23-1_GCF-003113265-V1_GENO_10000001-scaffold_25_1	xoxF	K23995	xoxF; lanthanide-dependent methanol dehydrogenase
+RSGB23-1_GCF-003113265-V1_GENO_10000001	Methylosinus	Methylosinus sporium	RSGB23-1_GCF-003113265-V1_GENO_10000001-scaffold_31_37	mmoX	K16157	mmoX; methane monooxygenase component A alpha chain
+RSGB23-1_GCF-003722355-V1_GENO_10000001	Methylocystis	Methylocystis hirsuta	RSGB23-1_GCF-003722355-V1_GENO_10000001-scaffold_1_730	mxaF	K14028	mdh1, mxaF; methanol dehydrogenase (cytochrome c) subunit 1
+RSGB23-1_GCF-003722355-V1_GENO_10000001	Methylocystis	Methylocystis hirsuta	RSGB23-1_GCF-003722355-V1_GENO_10000001-scaffold_1_943	mmoX	K16157	mmoX; methane monooxygenase component A alpha chain
+RSGB23-1_GCF-003722355-V1_GENO_10000001	Methylocystis	Methylocystis hirsuta	RSGB23-1_GCF-003722355-V1_GENO_10000001-scaffold_1_944	mmoY	K16158	mmoY; methane monooxygenase component A beta chain
+RSGB23-1_GCF-003722355-V1_GENO_10000001	Methylocystis	Methylocystis hirsuta	RSGB23-1_GCF-003722355-V1_GENO_10000001-scaffold_1_946	mmoZ	K16159	mmoZ; methane monooxygenase component A gamma chain
+RSGB23-1_GCF-003722355-V1_GENO_10000001	Methylocystis	Methylocystis hirsuta	RSGB23-1_GCF-003722355-V1_GENO_10000001-scaffold_1_947	mmoC	K16162	mmoD; methane monooxygenase component D
+RSGB23-1_GCF-003722355-V1_GENO_10000001	Methylocystis	Methylocystis hirsuta	RSGB23-1_GCF-003722355-V1_GENO_10000001-scaffold_1_948	mmoB	K16161	mmoC; methane monooxygenase component C
+RSGB23-1_GCF-003722355-V1_GENO_10000001	Methylocystis	Methylocystis hirsuta	RSGB23-1_GCF-003722355-V1_GENO_10000001-scaffold_1_999	pmoC	K10946	pmoC-amoC; methane/ammonia monooxygenase subunit C
+RSGB23-1_GCF-003722355-V1_GENO_10000001	Methylocystis	Methylocystis hirsuta	RSGB23-1_GCF-003722355-V1_GENO_10000001-scaffold_1_1000	pmoA	K10944	pmoA-amoA; methane/ammonia monooxygenase subunit A
+RSGB23-1_GCF-003722355-V1_GENO_10000001	Methylocystis	Methylocystis hirsuta	RSGB23-1_GCF-003722355-V1_GENO_10000001-scaffold_1_1001	pmoB	K10945	pmoB-amoB; methane/ammonia monooxygenase subunit B
+RSGB23-1_GCF-003722355-V1_GENO_10000001	Methylocystis	Methylocystis hirsuta	RSGB23-1_GCF-003722355-V1_GENO_10000001-scaffold_1_1439	pmoC	K10946	pmoC-amoC; methane/ammonia monooxygenase subunit C
+RSGB23-1_GCF-003722355-V1_GENO_10000001	Methylocystis	Methylocystis hirsuta	RSGB23-1_GCF-003722355-V1_GENO_10000001-scaffold_1_1440	pmoB	K10945	pmoB-amoB; methane/ammonia monooxygenase subunit B
+RSGB23-1_GCF-003722355-V1_GENO_10000001	Methylocystis	Methylocystis hirsuta	RSGB23-1_GCF-003722355-V1_GENO_10000001-scaffold_1_1441	pmoA	K10944	pmoA-amoA; methane/ammonia monooxygenase subunit A
+RSGB23-1_GCF-003722355-V1_GENO_10000001	Methylocystis	Methylocystis hirsuta	RSGB23-1_GCF-003722355-V1_GENO_10000001-scaffold_1_1841	pmoC	K10946	pmoC-amoC; methane/ammonia monooxygenase subunit C
+RSGB23-1_GCF-003722355-V1_GENO_10000001	Methylocystis	Methylocystis hirsuta	RSGB23-1_GCF-003722355-V1_GENO_10000001-scaffold_1_2722	pmoB	K10945	pmoB-amoB; methane/ammonia monooxygenase subunit B
+RSGB23-1_GCF-003722355-V1_GENO_10000001	Methylocystis	Methylocystis hirsuta	RSGB23-1_GCF-003722355-V1_GENO_10000001-scaffold_1_2723	pmoA	K10944	pmoA-amoA; methane/ammonia monooxygenase subunit A
+RSGB23-1_GCF-003722355-V1_GENO_10000001	Methylocystis	Methylocystis hirsuta	RSGB23-1_GCF-003722355-V1_GENO_10000001-scaffold_1_2724	pmoC	K10946	pmoC-amoC; methane/ammonia monooxygenase subunit C
+RSGB23-1_GCF-003722355-V1_GENO_10000001	Methylocystis	Methylocystis hirsuta	RSGB23-1_GCF-003722355-V1_GENO_10000001-scaffold_1_2845	pmoC	K10946	pmoC-amoC; methane/ammonia monooxygenase subunit C
+RSGB23-1_GCF-003722355-V1_GENO_10000001	Methylocystis	Methylocystis hirsuta	RSGB23-1_GCF-003722355-V1_GENO_10000001-scaffold_1_3358	xoxF	K23995	xoxF; lanthanide-dependent methanol dehydrogenase
+RSGB23-1_GCF-003855495-V1_GENO_10000001	Methylocystis	Methylocystis rosea_A	RSGB23-1_GCF-003855495-V1_GENO_10000001-scaffold_1_393	pmoC	K10946	pmoC-amoC; methane/ammonia monooxygenase subunit C
+RSGB23-1_GCF-003855495-V1_GENO_10000001	Methylocystis	Methylocystis rosea_A	RSGB23-1_GCF-003855495-V1_GENO_10000001-scaffold_1_394	pmoA	K10944	pmoA-amoA; methane/ammonia monooxygenase subunit A
+RSGB23-1_GCF-003855495-V1_GENO_10000001	Methylocystis	Methylocystis rosea_A	RSGB23-1_GCF-003855495-V1_GENO_10000001-scaffold_1_395	pmoB	K10945	pmoB-amoB; methane/ammonia monooxygenase subunit B
+RSGB23-1_GCF-003855495-V1_GENO_10000001	Methylocystis	Methylocystis rosea_A	RSGB23-1_GCF-003855495-V1_GENO_10000001-scaffold_1_987	pmoC	K10946	pmoC-amoC; methane/ammonia monooxygenase subunit C
+RSGB23-1_GCF-003855495-V1_GENO_10000001	Methylocystis	Methylocystis rosea_A	RSGB23-1_GCF-003855495-V1_GENO_10000001-scaffold_1_1712	pmoB	K10945	pmoB-amoB; methane/ammonia monooxygenase subunit B
+RSGB23-1_GCF-003855495-V1_GENO_10000001	Methylocystis	Methylocystis rosea_A	RSGB23-1_GCF-003855495-V1_GENO_10000001-scaffold_1_1713	pmoA	K10944	pmoA-amoA; methane/ammonia monooxygenase subunit A
+RSGB23-1_GCF-003855495-V1_GENO_10000001	Methylocystis	Methylocystis rosea_A	RSGB23-1_GCF-003855495-V1_GENO_10000001-scaffold_1_1714	pmoC	K10946	pmoC-amoC; methane/ammonia monooxygenase subunit C
+RSGB23-1_GCF-003855495-V1_GENO_10000001	Methylocystis	Methylocystis rosea_A	RSGB23-1_GCF-003855495-V1_GENO_10000001-scaffold_1_1922	pmoC	K10946	pmoC-amoC; methane/ammonia monooxygenase subunit C
+RSGB23-1_GCF-003855495-V1_GENO_10000001	Methylocystis	Methylocystis rosea_A	RSGB23-1_GCF-003855495-V1_GENO_10000001-scaffold_1_2611	xoxF	K23995	xoxF; lanthanide-dependent methanol dehydrogenase
+RSGB23-1_GCF-003855495-V1_GENO_10000001	Methylocystis	Methylocystis rosea_A	RSGB23-1_GCF-003855495-V1_GENO_10000001-scaffold_1_3284	mxaF	K14028	mdh1, mxaF; methanol dehydrogenase (cytochrome c) subunit 1
+RSGB23-1_GCF-003855495-V1_GENO_10000001	Methylocystis	Methylocystis rosea_A	RSGB23-1_GCF-003855495-V1_GENO_10000001-scaffold_3_167	pmoC	K10946	pmoC-amoC; methane/ammonia monooxygenase subunit C
+RSGB23-1_GCF-009685175-V1_GENO_10000001	Methylocystis	Methylocystis rosea_A	RSGB23-1_GCF-009685175-V1_GENO_10000001-scaffold_1_462	pmoC	K10946	pmoC-amoC; methane/ammonia monooxygenase subunit C
+RSGB23-1_GCF-009685175-V1_GENO_10000001	Methylocystis	Methylocystis rosea_A	RSGB23-1_GCF-009685175-V1_GENO_10000001-scaffold_1_1002	pmoB	K10945	pmoB-amoB; methane/ammonia monooxygenase subunit B
+RSGB23-1_GCF-009685175-V1_GENO_10000001	Methylocystis	Methylocystis rosea_A	RSGB23-1_GCF-009685175-V1_GENO_10000001-scaffold_1_1003	pmoA	K10944	pmoA-amoA; methane/ammonia monooxygenase subunit A
+RSGB23-1_GCF-009685175-V1_GENO_10000001	Methylocystis	Methylocystis rosea_A	RSGB23-1_GCF-009685175-V1_GENO_10000001-scaffold_1_1004	pmoC	K10946	pmoC-amoC; methane/ammonia monooxygenase subunit C
+RSGB23-1_GCF-009685175-V1_GENO_10000001	Methylocystis	Methylocystis rosea_A	RSGB23-1_GCF-009685175-V1_GENO_10000001-scaffold_1_1628	mxaF	K14028	mdh1, mxaF; methanol dehydrogenase (cytochrome c) subunit 1
+RSGB23-1_GCF-009685175-V1_GENO_10000001	Methylocystis	Methylocystis rosea_A	RSGB23-1_GCF-009685175-V1_GENO_10000001-scaffold_1_2187	xoxF	K23995	xoxF; lanthanide-dependent methanol dehydrogenase
+RSGB23-1_GCF-009685175-V1_GENO_10000001	Methylocystis	Methylocystis rosea_A	RSGB23-1_GCF-009685175-V1_GENO_10000001-scaffold_1_2200	pmoC	K10946	pmoC-amoC; methane/ammonia monooxygenase subunit C
+RSGB23-1_GCF-009685175-V1_GENO_10000001	Methylocystis	Methylocystis rosea_A	RSGB23-1_GCF-009685175-V1_GENO_10000001-scaffold_1_2856	pmoC	K10946	pmoC-amoC; methane/ammonia monooxygenase subunit C
+RSGB23-1_GCF-009685175-V1_GENO_10000001	Methylocystis	Methylocystis rosea_A	RSGB23-1_GCF-009685175-V1_GENO_10000001-scaffold_1_3073	pmoC	K10946	pmoC-amoC; methane/ammonia monooxygenase subunit C
+RSGB23-1_GCF-009685175-V1_GENO_10000001	Methylocystis	Methylocystis rosea_A	RSGB23-1_GCF-009685175-V1_GENO_10000001-scaffold_1_3074	pmoA	K10944	pmoA-amoA; methane/ammonia monooxygenase subunit A
+RSGB23-1_GCF-009685175-V1_GENO_10000001	Methylocystis	Methylocystis rosea_A	RSGB23-1_GCF-009685175-V1_GENO_10000001-scaffold_1_3075	pmoB	K10945	pmoB-amoB; methane/ammonia monooxygenase subunit B
+RSGB23-1_GCF-009685175-V1_GENO_10000001	Methylocystis	Methylocystis rosea_A	RSGB23-1_GCF-009685175-V1_GENO_10000001-scaffold_2_12	pmoC	K10946	pmoC-amoC; methane/ammonia monooxygenase subunit C
+SANT17-1_SAMN02905733_MAG_00000047	Methylocystis	Methylocystis sp900299115	SANT17-1_SAMN02905733_MAG_00000047-scaffold_18_7	pmoB	K10945	pmoB-amoB; methane/ammonia monooxygenase subunit B
+SANT17-1_SAMN02905733_MAG_00000047	Methylocystis	Methylocystis sp900299115	SANT17-1_SAMN02905733_MAG_00000047-scaffold_18_8	pmoA	K10944	pmoA-amoA; methane/ammonia monooxygenase subunit A
+SANT17-1_SAMN02905733_MAG_00000047	Methylocystis	Methylocystis sp900299115	SANT17-1_SAMN02905733_MAG_00000047-scaffold_146_3	xoxF	K23995	xoxF; lanthanide-dependent methanol dehydrogenase
+SANT17-1_SAMN02924041_MAG_00000007	Methylocystis	Methylocystis sp900299115	SANT17-1_SAMN02924041_MAG_00000007-scaffold_177_3	pmoB	K10945	pmoB-amoB; methane/ammonia monooxygenase subunit B
+SANT17-1_SAMN02924041_MAG_00000007	Methylocystis	Methylocystis sp900299115	SANT17-1_SAMN02924041_MAG_00000007-scaffold_177_4	pmoA	K10944	pmoA-amoA; methane/ammonia monooxygenase subunit A
+SANT17-1_SAMN02924041_MAG_00000019	Methylocystis	Methylocystis sp023253795	SANT17-1_SAMN02924041_MAG_00000019-scaffold_303_1	pmoC	K10946	pmoC-amoC; methane/ammonia monooxygenase subunit C
+SANT17-1_SAMN02924044_MAG_00000076	Methylocystis	Methylocystis sp023253795	SANT17-1_SAMN02924044_MAG_00000076-scaffold_151_3	pmoC	K10946	pmoC-amoC; methane/ammonia monooxygenase subunit C
+SANT17-1_SAMN02924044_MAG_00000111	Methylocystis	Methylocystis sp900299115	SANT17-1_SAMN02924044_MAG_00000111-scaffold_49_7	pmoC	K10946	pmoC-amoC; methane/ammonia monooxygenase subunit C
+SANT17-1_SAMN02924045_MAG_00000050	Methylocystis	Methylocystis sp900299115	SANT17-1_SAMN02924045_MAG_00000050-scaffold_185_1	xoxF	K23995	xoxF; lanthanide-dependent methanol dehydrogenase
+SANT17-1_SAMN02924047_MAG_00000055	Methylocystis	Methylocystis sp900299115	SANT17-1_SAMN02924047_MAG_00000055-scaffold_103_2	pmoB	K10945	pmoB-amoB; methane/ammonia monooxygenase subunit B
+SANT17-1_SAMN02924047_MAG_00000055	Methylocystis	Methylocystis sp900299115	SANT17-1_SAMN02924047_MAG_00000055-scaffold_122_4	xoxF	K23995	xoxF; lanthanide-dependent methanol dehydrogenase
