@@ -46,7 +46,9 @@ FA = ROOT / 'PHA_bioprospecting/omdb_search/results'
 RANDOM_SEED = 42
 N_GLOBAL_PERM = 300
 N_CURVE_POINTS = 200
-MIN_STUDY_N = 1   # show every study, not just the ones large enough to label/cluster legibly in the heatmap
+MIN_STUDY_N = 2   # excludes 5 single-genome "studies" (3 land exactly on (1,1), overlapping into
+                  # what read as one confusing point; 2 more at (1,2)) -- a single genome cannot
+                  # really represent a study's diversity, so these are dropped rather than shown
 
 EXCLUDE_HABITATS = {
     'NA', '', 'Control', 'Synthetic', 'Freshwater river water', 'Freshwater lake water',
@@ -183,6 +185,16 @@ ax.set_xscale('log')
 ax.set_yscale('log')
 ax.set_xlabel('PhaC-positive genomes sampled (log scale)', fontsize=12)
 ax.set_ylabel('Distinct phaC_cluster0.7 clusters recovered (log scale)', fontsize=12)
+
+# tight axis limits: the plot's origin sits flush at the data's own floor
+# (no default matplotlib log-margin padding below/left of it), with a
+# little headroom only above/right of the data for labels/legend to sit in
+x_floor = min(xs_global[0], min(r['n_genomes'] for r in study_records))
+y_floor = min(mean_curve[0], min(r['n_clusters'] for r in study_records))
+x_ceil = max(xs_global[-1], max(r['n_genomes'] for r in study_records))
+y_ceil = max(hi_curve[-1], max(r['n_clusters'] for r in study_records))
+ax.set_xlim(x_floor, x_ceil * 1.15)
+ax.set_ylim(y_floor, y_ceil * 1.25)
 ax.grid(True, which='major', color='#EBEEEC', linewidth=0.6, zorder=0)
 ax.grid(True, which='minor', color='#F4F6F4', linewidth=0.4, zorder=0)
 ax.set_axisbelow(True)
