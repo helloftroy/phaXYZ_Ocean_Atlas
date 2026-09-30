@@ -19,6 +19,7 @@ DEFAULT_FASTA_DIR = ROOT / "thioglobus5_reannotation" / "proteins"
 DEFAULT_WORK = ROOT / "thioglobus5_reannotation" / "kofam_marker_direct"
 DEFAULT_SUMMARY = ROOT / "figures" / "thioglobus5_kofam_marker_summary.tsv"
 DEFAULT_HITS = ROOT / "figures" / "thioglobus5_kofam_marker_hits.tsv"
+DEFAULT_MISSING = ROOT / "figures" / "thioglobus5_kofam_marker_missing_profiles.tsv"
 
 MARKERS = {
     "cbbM_rbcL": "K01601",
@@ -152,6 +153,7 @@ def main() -> int:
     parser.add_argument("--work-dir", default=DEFAULT_WORK, type=Path)
     parser.add_argument("--summary-out", default=DEFAULT_SUMMARY, type=Path)
     parser.add_argument("--hits-out", default=DEFAULT_HITS, type=Path)
+    parser.add_argument("--missing-profiles-out", default=DEFAULT_MISSING, type=Path)
     parser.add_argument("--manifest", default=ROOT / "thioglobus5_reannotation" / "thioglobus5_manifest.tsv", type=Path)
     args = parser.parse_args()
 
@@ -167,6 +169,34 @@ def main() -> int:
     if missing_meta:
         raise SystemExit(f"Missing marker KOs in ko_list: {','.join(missing_meta)}")
 
+    profile_by_ko: dict[str, Path] = {}
+    missing_profiles = []
+    for marker, ko in MARKERS.items():
+        hmm = find_profile(profiles, ko)
+        if hmm is None:
+            missing_profiles.append(
+                {
+                    "marker": marker,
+                    "ko": ko,
+                    "profiles_dir": str(profiles),
+                    "note": "KO is present in ko_list, but no KOfam HMM profile was found in this database release.",
+                }
+            )
+        else:
+            profile_by_ko[ko] = hmm
+
+    args.missing_profiles_out.parent.mkdir(parents=True, exist_ok=True)
+    with args.missing_profiles_out.open("w", newline="") as handle:
+        writer = csv.DictWriter(handle, delimiter="\t", fieldnames=["marker", "ko", "profiles_dir", "note"])
+        writer.writeheader()
+        writer.writerows(missing_profiles)
+
+    if missing_profiles:
+        print(
+            "Skipping marker KOs without KOfam profiles: "
+            + ", ".join(f"{row['marker']}({row['ko']})" for row in missing_profiles)
+        )
+
     manifest = read_manifest(args.manifest)
     args.work_dir.mkdir(parents=True, exist_ok=True)
     all_hits: list[dict[str, str]] = []
@@ -178,13 +208,9 @@ def main() -> int:
         genome_dir = args.work_dir / genome
         genome_dir.mkdir(parents=True, exist_ok=True)
         for marker, ko in MARKERS.items():
-            hmm = find_profile(profiles, ko)
+            hmm = profile_by_ko.get(ko)
             if hmm is None:
-                examples = ", ".join(str(p.relative_to(profiles)) for p in list(profiles.rglob("K*.hmm"))[:5])
-                raise SystemExit(
-                    f"Missing KOfam profile for {ko} under {profiles}. "
-                    f"Example .hmm files found: {examples or 'none'}"
-                )
+                continue
             domtbl = genome_dir / f"{ko}.domtbl"
             stdout = genome_dir / f"{ko}.hmmsearch.txt"
             cmd = [
@@ -256,6 +282,7 @@ def main() -> int:
 
     print(f"Wrote {args.summary_out.relative_to(ROOT)}")
     print(f"Wrote {args.hits_out.relative_to(ROOT)}")
+    print(f"Wrote {args.missing_profiles_out.relative_to(ROOT)}")
     return 0
 
 
