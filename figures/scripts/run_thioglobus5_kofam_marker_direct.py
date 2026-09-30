@@ -123,6 +123,23 @@ def read_manifest(path: Path) -> dict[str, dict[str, str]]:
         return {row["genome"]: row for row in csv.DictReader(handle, delimiter="\t")}
 
 
+def find_profile(profiles_dir: Path, ko: str) -> Path | None:
+    candidates = [
+        profiles_dir / f"{ko}.hmm",
+        profiles_dir / ko,
+        profiles_dir / ko[1:3] / f"{ko}.hmm",
+        profiles_dir / ko[1:3] / ko,
+    ]
+    for candidate in candidates:
+        if candidate.is_file():
+            return candidate
+    for pattern in (f"{ko}.hmm", ko):
+        matches = list(profiles_dir.rglob(pattern))
+        if matches:
+            return matches[0]
+    return None
+
+
 def yesno(value: bool) -> str:
     return "yes" if value else "no"
 
@@ -161,9 +178,13 @@ def main() -> int:
         genome_dir = args.work_dir / genome
         genome_dir.mkdir(parents=True, exist_ok=True)
         for marker, ko in MARKERS.items():
-            hmm = profiles / f"{ko}.hmm"
-            if not hmm.is_file():
-                raise SystemExit(f"Missing KOfam profile: {hmm}")
+            hmm = find_profile(profiles, ko)
+            if hmm is None:
+                examples = ", ".join(str(p.relative_to(profiles)) for p in list(profiles.rglob("K*.hmm"))[:5])
+                raise SystemExit(
+                    f"Missing KOfam profile for {ko} under {profiles}. "
+                    f"Example .hmm files found: {examples or 'none'}"
+                )
             domtbl = genome_dir / f"{ko}.domtbl"
             stdout = genome_dir / f"{ko}.hmmsearch.txt"
             cmd = [
