@@ -80,7 +80,7 @@ def format_p(p):
 # are placed side by side. --standalone adds the labels back for use on its own.
 STANDALONE = '--standalone' in sys.argv
 plt.rcParams.update({'font.family': 'DejaVu Sans', 'font.size': 10})
-fig, ax = plt.subplots(figsize=(5.4 if STANDALONE else 3.6, 0.62 * len(rows) + 2), dpi=300)
+fig, ax = plt.subplots(figsize=(7.4 if STANDALONE else 3.6, 0.62 * len(rows) + 2), dpi=300)
 
 y = np.arange(len(rows))
 ax.axvline(1.0, color=TEXT_DARK, linewidth=1.0, linestyle=(0, (4, 3)), zorder=2)
@@ -124,7 +124,10 @@ ax.text(0.5, -0.062, '  →  enriched', transform=ax.transAxes, ha='left', va='t
         fontsize=8.8, color=ACCENT)
 
 stem = 'phac_habitat_forest_standalone' if STANDALONE else 'phac_habitat_forest'
-fig.tight_layout(rect=[0, 0.045, 0.72, 1])
+# Standalone needs a wider figure AND a wider rect: the habitat names take about
+# 2 inches of the left margin, so at the column's geometry the plotting area was
+# squeezed to roughly half an inch and the log tick labels ran into each other.
+fig.tight_layout(rect=[0, 0.045, 0.78 if STANDALONE else 0.72, 1])
 fig.savefig(OUT / f'{stem}.png', dpi=300, facecolor='white')
 fig.savefig(OUT / f'{stem}.pdf', facecolor='white')
 print('saved', OUT / f'{stem}.png')
