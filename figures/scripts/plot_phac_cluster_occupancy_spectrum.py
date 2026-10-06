@@ -58,6 +58,15 @@ with open(ROOT / 'phaC_all_genomes_from_nr100_clusters.tsv', newline='') as f:
             continue
         target_to_genomes[target_id].add(genome)
 
+# canonical phaC-positive genomes only (genome_family_matrix.tsv, n_phaC > 0) --
+# the same 31,464-genome set the rest of the write-up uses, not the larger
+# raw-join pool this figure was first drawn on
+canonical = set()
+with open(FA / 'genome_family_matrix.tsv', newline='') as f:
+    for row in csv.DictReader(f, delimiter='\t'):
+        if int(row['n_phaC']) > 0:
+            canonical.add(row['genome'])
+
 cluster_genomes = defaultdict(set)
 with open(FA / 'phaC_cluster0.7_cluster.tsv', newline='') as f:
     r = csv.reader(f, delimiter='\t')
@@ -65,7 +74,10 @@ with open(FA / 'phaC_cluster0.7_cluster.tsv', newline='') as f:
         if target_id in bad_targets:
             continue
         for g in target_to_genomes.get(target_id, ()):
-            cluster_genomes[cluster_id].add(g)
+            if g in canonical:
+                cluster_genomes[cluster_id].add(g)
+cluster_genomes = {c: g for c, g in cluster_genomes.items() if g}
+n_genomes = len(set().union(*cluster_genomes.values()))
 
 cluster_size = {c: len(gs) for c, gs in cluster_genomes.items()}
 n_clusters_total = len(cluster_size)
@@ -91,7 +103,7 @@ for c, s in cluster_size.items():
 cluster_pct = [100 * cluster_count[b] / n_clusters_total for b in BUCKET_LABELS]
 occupancy_pct = [100 * occupancy[b] / total_occupancy for b in BUCKET_LABELS]
 for label, cp, op in zip(BUCKET_LABELS, cluster_pct, occupancy_pct):
-    print(f"{label.replace(chr(10),' '):18s} clusters={cp:5.1f}%   phaC gene copies={op:5.1f}%")
+    print(f"{label.replace(chr(10),' '):18s} clusters={cp:5.1f}%   genome-cluster pairs={op:5.1f}%")
 
 stats_path = OUT / 'phac_cluster_occupancy_spectrum_stats.tsv'
 with open(stats_path, 'w', newline='') as f:
@@ -113,25 +125,27 @@ TEXT_DARK = '#1E2422'
 fig, axes = plt.subplots(2, 1, figsize=(12, 4.6), dpi=300)
 bar_rows = [
     (axes[0], cluster_pct, 'Share of distinct\nphaC clusters', f'{n_clusters_total:,} clusters'),
-    (axes[1], occupancy_pct, 'Share of phaC gene copies\n(genome × cluster memberships)', f'{total_occupancy:,} gene copies'),
+    (axes[1], occupancy_pct, 'Share of genome\u2013cluster pairs\n(genome counted once per cluster)', f'{total_occupancy:,} pairs\nin {n_genomes:,} genomes'),
 ]
 
 for ax, values, row_label, n_label in bar_rows:
     left = 0
+    n_small = 0
     for val, color, blabel in zip(values, BUCKET_COLORS, BUCKET_LABELS):
         ax.barh([0], [val], left=left, color=color, height=0.62, edgecolor='#FCFCFB', linewidth=1.5)
         # label inside the segment if it's wide enough, else above with a leader
         text_color = '#FFFFFF' if color in ('#2a78d6', '#1c5cab', '#0d366b') else TEXT_DARK
-        if val >= 6:
+        if val >= 9:
             ax.text(left + val / 2, 0, f'{val:.1f}%', ha='center', va='center',
                      fontsize=11.5, color=text_color, fontweight='medium')
         else:
-            ax.annotate(f'{val:.1f}%', xy=(left + val / 2, 0.31), xytext=(left + val / 2, 0.62),
+            ax.annotate(f'{val:.1f}%', xy=(left + val / 2, 0.31), xytext=(left + val / 2, 0.62 + 0.3 * n_small),
                         ha='center', va='bottom', fontsize=9.7, color=TEXT_DARK,
                         arrowprops=dict(arrowstyle='-', color='#9A9890', linewidth=0.8))
+        n_small = n_small + 1 if val < 9 else 0
         left += val
     ax.set_xlim(0, 100)
-    ax.set_ylim(-0.55, 0.85)
+    ax.set_ylim(-0.55, 1.25)
     ax.set_yticks([0])
     ax.set_yticklabels([row_label], fontsize=11, ha='right')
     ax.set_xticks([])
@@ -148,12 +162,12 @@ fig.legend(legend_handles, [b.replace('\n', ' ') for b in BUCKET_LABELS],
 
 fig.suptitle('The phaC cluster long tail', fontsize=18, fontweight='bold', x=0.065, ha='left', y=1.11)
 fig.text(0.065, 1.0,
-          f'{cluster_pct[0]:.0f}% of phaC clusters occur in only one genome, but singletons make up just '
-          f'{occupancy_pct[0]:.1f}% of all phaC gene copies -- the {cluster_pct[-1]:.1f}% of clusters found in\n'
-          f'>100 genomes each account for {occupancy_pct[-1]:.0f}% of all copies. Most cluster diversity is rare; most actual genes sit in a few common lineages.',
+          f'{cluster_pct[0]:.0f}% of phaC clusters occur in only one genome, but singletons are just '
+          f'{occupancy_pct[0]:.1f}% of genome\u2013cluster pairs. The {cluster_pct[-1]:.1f}% of clusters found in\n'
+          f'>100 genomes each account for {occupancy_pct[-1]:.0f}% of pairs. Most cluster diversity is rare; most genomes carry a few common lineages.',
           ha='left', va='top', fontsize=10.7, color=TEXT_MUTED, linespacing=1.5)
 
-fig.tight_layout(rect=[0.19, 0.06, 0.94, 0.86])
+fig.tight_layout(rect=[0.10, 0.06, 0.88, 0.86])
 
 out_path = OUT / 'phac_cluster_occupancy_spectrum.png'
 fig.savefig(out_path, dpi=300, facecolor='white', bbox_inches='tight')
