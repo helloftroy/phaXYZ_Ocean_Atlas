@@ -70,11 +70,21 @@ echo "Pip download/build cache (on scratch): ${PIP_CACHE_DIR}"
 # torch.distributed.fsdp" -- a torch/transformers version-compatibility
 # mismatch, not a real bug in the approach. 4.44.2 is a well-established
 # release from well inside transformers' 4.x line, before that rewrite.
+# `python -m pip`, never bare `pip`. Confirmed live that this matters and is not
+# a style preference: bare `pip` resolves off PATH and can belong to a different
+# interpreter than the active `python`. Compiled extensions are ABI-tagged per
+# Python minor version (torch/_C.cpython-311-x86_64-linux-gnu.so loads under 3.11
+# and is invisible to every other version), so a mismatch installs a complete,
+# several-GB, entirely unimportable torch. The failure surfaces much later as
+# "Failed to load PyTorch C extensions: It appears that PyTorch has loaded the
+# torch/_C folder of the PyTorch repository" -- which points at a source-checkout
+# problem that does not exist here. python -m pip cannot disagree with python.
+echo "Installing with: $(python -c 'import sys; print(sys.executable, sys.version.split()[0])')"
 echo "Installing PyTorch to ${PKG_DIR} ..."
-pip install --target="${PKG_DIR}" --upgrade torch
+python -m pip install --target="${PKG_DIR}" --upgrade torch
 
 echo "Installing transformers (pinned 4.44.2) + supporting packages to ${PKG_DIR} ..."
-pip install --target="${PKG_DIR}" --upgrade "transformers==4.44.2" accelerate einops
+python -m pip install --target="${PKG_DIR}" --upgrade "transformers==4.44.2" accelerate einops
 
 # Persist PYTHONPATH (and the two cache dirs) so every later shell/sbatch
 # job can just `source cluster/esmfold_pythonpath.sh` instead of

@@ -74,8 +74,29 @@ source cluster/esmfold_pythonpath.sh   # PYTHONPATH, HF_HOME, PIP_CACHE_DIR -- a
 # GPU nodes have no internet; use only the weights install_esmfold.sh cached.
 export HF_HUB_OFFLINE=1
 
+# Preflight: confirm the scratch package install matches THIS interpreter before
+# burning a GPU allocation on it. torch's own failure mode here is actively
+# misleading -- a Python-version mismatch makes its ABI-tagged _C extension
+# invisible, Python falls back to the torch/_C/ stub directory, and torch reports
+# "It appears that PyTorch has loaded the torch/_C folder of the PyTorch
+# repository", which reads as a source-checkout problem rather than the env
+# problem it is. Say what is actually wrong, and how to fix it.
+if ! python -c 'import torch' 2>/dev/null; then
+  echo "ERROR: torch does not import in this environment." >&2
+  echo "  interpreter : $(python -c 'import sys; print(sys.executable)')" >&2
+  echo "  version     : $(python -V 2>&1)" >&2
+  echo "  packages    : ${PYTHONPATH%%:*}" >&2
+  echo "  built for   : $(ls "${PYTHONPATH%%:*}"/torch/_C.cpython-*.so 2>/dev/null | xargs -n1 basename 2>/dev/null || echo 'no _C extension found at all')" >&2
+  echo "If those Python versions disagree, the packages were installed by a different" >&2
+  echo "interpreter than the one cluster/env_activate.sh now provides. Fix from a LOGIN" >&2
+  echo "node: source cluster/env_activate.sh && ./cluster/install_esmfold.sh" >&2
+  exit 3
+fi
+
 echo "Job started: $(date)"
 echo "Host: $(hostname)"
+echo "python: $(python -c 'import sys; print(sys.executable, sys.version.split()[0])')"
+echo "torch:  $(python -c 'import torch; print(torch.__version__, "CUDA", torch.cuda.is_available())')"
 echo "FASTA=${FASTA} OUT_DIR=${OUT_DIR}"
 echo "sequences: $(grep -c '^>' "${FASTA}")"
 echo "CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES:-unset}"
