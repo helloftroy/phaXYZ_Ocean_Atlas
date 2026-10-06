@@ -237,7 +237,7 @@ def main():
     y_jitter = y + rng.uniform(-0.85, 0.85, size=len(y))
 
     plt.rcParams.update({
-        "font.family": "DejaVu Sans",
+        "font.family": ["Arial", "Helvetica", "DejaVu Sans"],
         "font.size": 10,
         "axes.spines.top": False,
         "axes.spines.right": False,
@@ -261,13 +261,12 @@ def main():
             label=f"{group} (n={len(idx):,})",
         )
 
-    med = binned_medians(rows)
-    if med:
-        bx = [m[0] for m in med]
-        by = [m[1] for m in med]
-        sizes = [18 + 2.0 * math.sqrt(m[2]) for m in med]
-        ax.plot(bx, by, color="#202A2A", linewidth=1.3, zorder=5)
-        ax.scatter(bx, by, s=sizes, color="#202A2A", edgecolor="white", linewidth=0.5, zorder=6)
+    # The binned-median overlay that used to sit here is gone. It drew the median
+    # predicted class within each 5 deg C WOA bin, which is 37.5 in every bin
+    # because 3,827 of 4,224 proteins fall in the single <40 class -- a flat black
+    # line across the bottom of the panel carrying no information, and read as an
+    # unexplained annotation. binned_medians() is kept; the stats table still
+    # reports those numbers, where a reader can see the bin sizes alongside them.
 
     ax.set_xlabel("WOA23 annual ocean temperature at genome sample depth (deg C)")
     ax.set_ylabel("TemStaPro predicted stability class (deg C bin midpoint)")
@@ -276,7 +275,6 @@ def main():
     ax.set_yticks(TEMP_ORDER)
     ax.set_yticklabels(["<40", "40-45", "45-50", "50-55", "55-60", "60-65", "65-70", "70-75", "75-80", ">=80"])
     ax.grid(True, color="#D8E0DD", linewidth=0.6, alpha=0.85)
-    ax.set_title("PhaC TemStaPro Stability vs. Ocean Temperature", fontsize=15, fontweight="bold", loc="left", pad=12)
     handles, labels = ax.get_legend_handles_labels()
     fig.legend(
         handles, labels,
@@ -298,10 +296,15 @@ def main():
     # Call out the cold-ocean subset.
     cold = [r for r in rows if r["ocean_temp"] < 0]
     if cold:
-        cold_med = median([r["pred_temp"] for r in cold])
+        # Report how many of the sub-zero proteins are predicted thermostable
+        # rather than their median predicted bin. That median is 37.5 for every
+        # subset of this data, for the same reason the binned-median line was
+        # removed above, so it looked like a measurement while saying nothing.
+        cold_hot_n = sum(1 for r in cold if r["pred_temp"] >= 55)
         fig.text(
-            0.72, 0.13,
-            f"WOA < 0 deg C: n={len(cold):,}\nmedian predicted bin: {cold_med:g} deg C",
+            0.72, 0.125,
+            f"WOA < 0 deg C: n={len(cold):,}\n"
+            f"{cold_hot_n} predicted >=55 deg C ({100 * cold_hot_n / len(cold):.1f}%)",
             fontsize=8.8, color="#324346",
             ha="left", va="top",
             bbox=dict(boxstyle="round,pad=0.32", facecolor="white", edgecolor="#B9C7C4", linewidth=0.6, alpha=0.88),
@@ -310,7 +313,7 @@ def main():
     if cold_hot:
         top_genera = Counter(r["genus"] for r in cold_hot).most_common(5)
         fig.text(
-            0.72, 0.235,
+            0.72, 0.155,
             "WOA <= 5 deg C and predicted >=80 deg C\n"
             + "\n".join(
                 [
@@ -326,8 +329,7 @@ def main():
         0.07, 0.072,
         "TemStaPro class is shown as the midpoint of right_hand_label bins (<40 plotted at 37.5 deg C; >=80 at 82.5 deg C).\n"
         "Points are QC-filtered with figures/scripts/_phac_qc.py to remove known mislabeled phaC reference hits, and length-filtered "
-        f"to >={MIN_LENGTH}aa (short fragments produce unreliable, non-monotonic stability calls); "
-        "black points/line mark the median predicted class in 5 deg C WOA bins.",
+        f"to >={MIN_LENGTH}aa (short fragments produce unreliable, non-monotonic stability calls).",
         fontsize=8.2, color="#5B6B69",
     )
     fig.text(
