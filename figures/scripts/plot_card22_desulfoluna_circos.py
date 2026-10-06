@@ -15,16 +15,20 @@ sediment, "Desulfoluna sp013619155", a third site entirely), and 2 NCBI
 RefSeq isolate references (D. butyratoxydans, D. spongiiphila) -- 11
 Desulfoluna genomes total, 3 studies, 3 named/unnamed species.
 
-Structural filter applied first, per this request's own instruction:
-targets with qtmscore<0.5 in structural_evidence_best_hit.tsv are
-dropped before building the diagram (this dropped section 9.4's two
-originally-flagged phaC/phaZ-ambiguous copies' WEAKER sibling target in
-each of the two focal genomes -- 185910 and 220052, both qtm~0.16 -- but
-NOT the ambiguous copies themselves, 184878/189118, which scored 0.76/0.91
-and are kept; the phaC/phaZ ambiguity from section 9.4 is a separate,
-still-open question from structural confidence, and these two do fold
-confidently as *some* real structure even though which family they
-belong to is unresolved).
+Copies shown are the triad-complete ones, the same rule the identity
+heatmap and the contig map use, so all three panels of the figure report
+the same number of phaC per genome (see _deep_dive_copies). An earlier
+version also required qtmscore>=0.5, which removed 185910 and 220052
+(both qtm~0.16) from the two CARD22-1 genomes. That filter is not applied
+any more: 185910 is triad-complete, class III, and 91.1% identical over
+99% coverage to a characterised phaC, so a qTM that low indicts the
+structural comparison rather than the protein -- and it was being dropped
+while 184878 and 189118 were kept, which are the copies whose phaC-versus-
+phaZ assignment is actually unresolved.
+
+Only the deep-dive genome itself is outlined. GENOME_ORDER still leads
+with both CARD22-1 genomes from section 9.4, but outlining both made the
+panel look like it had two subjects.
 
 Usage:
     python figures/scripts/plot_card22_desulfoluna_circos.py
@@ -41,7 +45,11 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import _phac_qc
 from _circos_chart import build_circos_chart, FA
 
-FOCAL_GENOMES = ['CARD22-1_SAMN24292811_MAG_00000010', 'CARD22-1_SAMN24292812_MAG_00000014']
+# The one genome this figure is about -- the only sector drawn with an outline.
+DEEP_DIVE_GENOME = 'CARD22-1_SAMN24292811_MAG_00000010'
+# Both section 9.4 genomes still lead the ring; the second is context, not a
+# second subject.
+FOCAL_GENOMES = [DEEP_DIVE_GENOME, 'CARD22-1_SAMN24292812_MAG_00000014']
 OTHER_GENOMES = [
     'CARD22-1_SAMN24292799_MAG_00000026', 'CARD22-1_SAMN24292833_MAG_00000013', 'CARD22-1_SAMN24292837_MAG_00000005',
     'PELI21-1_SAMN14421543_MAG_00000002', 'PELI21-1_SAMN14421545_MAG_00000005',
@@ -102,7 +110,7 @@ with open('structural_evidence_best_hit.tsv', newline='') as f:
 build_circos_chart(
     genome_order=GENOME_ORDER, genome_label=GENOME_LABEL, genome_band_color=BAND_COLOR, band_legend=BAND_LEGEND,
     cluster_label_fn=cluster_label, out_stem='card22_desulfoluna_circos', bad_targets=bad_targets,
-    struct_qtm=struct_qtm, qtm_min=0.0, require_triad_complete=True, focal_genomes=set(FOCAL_GENOMES),
+    struct_qtm=struct_qtm, qtm_min=0.0, require_triad_complete=True, focal_genomes={DEEP_DIVE_GENOME},
     title='phaC paralogs across Desulfoluna: CARD22-1 and every other genome sharing its clusters',
     subtitle='Each sector = one genome; each dot = one triad-complete phaC copy. Chords connect copies from\n'
              'different genomes sharing the same 70%-identity paralog cluster; opacity/width = exact pairwise %identity.',
