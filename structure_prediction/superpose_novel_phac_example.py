@@ -24,8 +24,14 @@ should not be able to rely on.
 Usage:
     python structure_prediction/superpose_novel_phac_example.py
 
+This script is the independent measurement, not the published figure. The
+figure is ray-traced by render_novel_phac_superposition.pml and laid out by
+compose_superposition_figure.py; the Ca-trace rendering here exists so the
+TM-score, the residue correspondence and the RMSD come from an implementation
+that does not share any code with Foldseek or with PyMOL's cealign.
+
 Outputs:
-    figures/novel_phac_superposition.png / .pdf
+    figures/novel_phac_superposition_trace.png / .pdf   (diagnostic)
     structure_prediction/novel_phac_superposition_alignment.tsv
 """
 import csv
@@ -49,9 +55,14 @@ CANDIDATE_COLOR, REFERENCE_COLOR = '#1c5cab', '#C2622D'
 TRIAD_COLOR = '#0D9488'
 TEXT_DARK, TEXT_MUTED = '#1E2630', '#5B6670'
 
-# Triads from catalytic_domain/find_structural_triad.py, 0-based sequence index.
-CANDIDATE_TRIAD = {'Cys': 219, 'Asp': 403, 'His': 432}
-REFERENCE_TRIAD = {'Cys': 134, 'Asp': 290, 'His': 319}
+# Triads from catalytic_domain/find_structural_triad.py. These are PDB residue
+# numbers, not 0-based array indices -- find_triad keys off parse_pdb_residues'
+# resseq. Verified against the residue names: 219/403/432 are CYS/ASP/HIS in the
+# candidate and 134/290/319 are CYS/ASP/HIS in the reference. An earlier version
+# indexed the coordinate array with these directly and so marked the residue
+# after each one.
+CANDIDATE_TRIAD = {'Cys': 219 - 1, 'Asp': 403 - 1, 'His': 432 - 1}
+REFERENCE_TRIAD = {'Cys': 134 - 1, 'Asp': 290 - 1, 'His': 319 - 1}
 
 THREE_TO_ONE = {
     'ALA': 'A', 'ARG': 'R', 'ASN': 'N', 'ASP': 'D', 'CYS': 'C', 'GLN': 'Q', 'GLU': 'E', 'GLY': 'G',
@@ -220,6 +231,6 @@ fig.text(0.5, 0.098,
          ha='center', fontsize=9.6, color=TEXT_MUTED)
 
 fig.subplots_adjust(left=0.0, right=1.0, top=1.06, bottom=0.20, wspace=-0.06)
-fig.savefig(ROOT / 'figures/novel_phac_superposition.png', dpi=300, facecolor='white')
-fig.savefig(ROOT / 'figures/novel_phac_superposition.pdf', facecolor='white')
-print('saved', ROOT / 'figures/novel_phac_superposition.png')
+fig.savefig(ROOT / 'figures/novel_phac_superposition_trace.png', dpi=300, facecolor='white')
+fig.savefig(ROOT / 'figures/novel_phac_superposition_trace.pdf', facecolor='white')
+print('saved', ROOT / 'figures/novel_phac_superposition_trace.png')

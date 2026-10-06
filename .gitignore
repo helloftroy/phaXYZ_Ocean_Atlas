@@ -85,3 +85,4 @@ phac_recovery/*.txt
 phac_recovery/*.faa
 phac_recovery/*.domtbl
 phac_recovery/target_db_subset/
+figures/_superposition_raw/
