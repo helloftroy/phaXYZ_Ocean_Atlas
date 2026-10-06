@@ -58,13 +58,22 @@ with open(FA / 'genome_family_matrix.tsv', newline='') as f:
 
 
 def short_species(g):
+    """Species alone, no genus: every genome here is Desulfoluna, so repeating it
+    11 times around the ring only costs label width. Unnamed GTDB placeholders
+    (Desulfoluna sp022360815) keep their 6-digit stem, which is what tells the
+    two unnamed species apart."""
     sp = genomes_meta[g]['gtdb_species']
     if sp.startswith('Unknown'):
-        return 'sp.?'
-    return sp.replace('Desulfoluna ', '').replace(' ', '')[:14]
+        return 'sp.'
+    sp = sp.replace('Desulfoluna ', '')
+    if sp.startswith('sp'):
+        return 'sp' + sp[2:8]
+    return sp[:9] + '.' if len(sp) > 10 else sp
 
 
-GENOME_LABEL = {g: f'{g.split("_")[0]} {short_species(g)} ({g.split("_")[-1][-3:]})' for g in GENOME_ORDER}
+# Study prefix, species, and the MAG's own 3-digit suffix. The full labels ran
+# off both sides of the figure at the larger font the panel needs.
+GENOME_LABEL = {g: f'{g.split("_")[0][:6]} {short_species(g)} {g.split("_")[-1][-3:]}' for g in GENOME_ORDER}
 
 STUDY_COLOR = {
     'CARD22-1': '#4FA8A0', 'PELI21-1': '#E2954F', 'RSGB23-1': '#5D8FD1',
@@ -93,8 +102,8 @@ with open('structural_evidence_best_hit.tsv', newline='') as f:
 build_circos_chart(
     genome_order=GENOME_ORDER, genome_label=GENOME_LABEL, genome_band_color=BAND_COLOR, band_legend=BAND_LEGEND,
     cluster_label_fn=cluster_label, out_stem='card22_desulfoluna_circos', bad_targets=bad_targets,
-    struct_qtm=struct_qtm, qtm_min=0.5, require_triad_complete=True, focal_genomes=set(FOCAL_GENOMES),
+    struct_qtm=struct_qtm, qtm_min=0.0, require_triad_complete=True, focal_genomes=set(FOCAL_GENOMES),
     title='phaC paralogs across Desulfoluna: CARD22-1 and every other genome sharing its clusters',
-    subtitle='Each sector = one genome; each dot = one triad-complete phaC copy (qtmscore>=0.5). Chords connect copies from\n'
+    subtitle='Each sector = one genome; each dot = one triad-complete phaC copy. Chords connect copies from\n'
              'different genomes sharing the same 70%-identity paralog cluster; opacity/width = exact pairwise %identity.',
 )

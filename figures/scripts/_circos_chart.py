@@ -181,7 +181,8 @@ def build_circos_chart(genome_order, genome_label, genome_band_color, band_legen
             frac = (i + 0.5) / n
             node_angle[(g, t)] = sector_start[g] - frac * span
 
-    label_fontsize = 8.3 if n_genomes <= 20 else max(4.5, 8.3 - 0.05 * (n_genomes - 20))
+    label_artists = []
+    label_fontsize = 12.5 if n_genomes <= 20 else max(7.0, 12.5 - 0.07 * (n_genomes - 20))
     node_size = 70 if n_genomes <= 20 else max(18, 70 - 2 * (n_genomes - 20))
 
     for g in genome_order:
@@ -196,8 +197,9 @@ def build_circos_chart(genome_order, genome_label, genome_band_color, band_legen
         mid_norm = (mid + 180) % 360 - 180
         rot = mid_norm if -90 < mid_norm <= 90 else mid_norm + 180
         ha = 'left' if -90 < mid_norm <= 90 else 'right'
-        ax.text(x, y, genome_label[g], rotation=rot, ha=ha, va='center', fontsize=label_fontsize,
-                 rotation_mode='anchor', color='#20302C')
+        label_artists.append(
+            ax.text(x, y, genome_label[g], rotation=rot, ha=ha, va='center', fontsize=label_fontsize,
+                    rotation_mode='anchor', color='#20302C'))
 
     drawn = set()
     n_chords = 0
@@ -228,24 +230,30 @@ def build_circos_chart(genome_order, genome_label, genome_band_color, band_legen
     ax.set_ylim(-1.35, 1.35)
     ax.axis('off')
 
+    # The paralog-group legend is not drawn. It listed one entry per shared
+    # cluster at 8 pt, which at this figure's size in a manuscript panel was
+    # unreadable, and the chords already show which copies share a cluster --
+    # naming the clusters added a key nobody could use. cluster_label_fn is still
+    # accepted and still names the clusters in the companion nodes TSV.
     legend_handles = [mpatches.Patch(color=cluster_color[c], label=cluster_label_fn(c)) for c in cluster_ids
                        if sum(1 for n in nodes if n['cluster'] == c) > 1]
     legend_handles.append(mpatches.Patch(color='#B0B6B2', label='singleton (no shared cluster in this set)'))
-    legend1 = ax.legend(handles=legend_handles, loc='upper center', bbox_to_anchor=(0.28, -0.04), fontsize=8,
-                          frameon=False, ncol=1, title='Paralog group (node color)', title_fontsize=8.5)
-    ax.add_artist(legend1)
+    legend1 = None
 
     band_handles = [mpatches.Patch(color=c, label=l) for c, l in band_legend]
-    legend2 = ax.legend(handles=band_handles, loc='upper center', bbox_to_anchor=(0.72, -0.04), fontsize=8, frameon=False,
-               title='Genome group', title_fontsize=8.5)
+    legend2 = ax.legend(handles=band_handles, loc='upper center', bbox_to_anchor=(0.5, -0.17), fontsize=12,
+               frameon=False, title='Genome group', title_fontsize=13, handlelength=1.4,
+               labelspacing=0.7, borderpad=0.6)
 
     # subtitle/title y positions must leave room for however many lines the
     # subtitle has -- fixed y=0.945/0.98 (validated on the 2-line Modicisalibacter/
     # CARD22-1 subtitles) collided with the title for HK1's 3-line subtitle, so
     # both are pushed apart proportionally to the extra line count.
     n_subtitle_lines = subtitle.count('\n') + 1
-    suptitle_text = fig.suptitle(title, fontsize=15, fontweight='bold', y=0.98 + 0.006 * (n_subtitle_lines - 2))
-    subtitle_text = fig.text(0.5, 0.945 - 0.02 * (n_subtitle_lines - 2), subtitle, ha='center', fontsize=9, color='#5B6E70')
+    # No title or subtitle drawn: these are manuscript panels and the caption is
+    # set alongside the figure. Both arguments are still accepted and still
+    # describe the chart for whoever reads the script.
+    suptitle_text = subtitle_text = None
 
     # bbox_inches='tight' does not reliably auto-discover legends placed via
     # bbox_to_anchor outside the axes' own data limits (confirmed live: both
@@ -254,7 +262,10 @@ def build_circos_chart(genome_order, genome_label, genome_band_color, band_legen
     # to include them (and the subtitle text, same issue) in the tight-bbox
     # calculation, which pad_inches alone cannot fix since the crop itself
     # was wrong, not just under-padded.
-    extra_artists = (legend1, legend2, subtitle_text, suptitle_text)
+    # Rotated sector labels have to be listed explicitly. bbox_inches='tight'
+    # did not pick them up and silently cropped the longest ones mid-word at the
+    # right edge of the figure.
+    extra_artists = tuple(a for a in (legend1, legend2, subtitle_text, suptitle_text) if a is not None) + tuple(label_artists)
     out_path = OUT / f'{out_stem}.png'
     fig.savefig(out_path, dpi=300, facecolor='white', bbox_inches='tight', pad_inches=0.3, bbox_extra_artists=extra_artists)
     print('\nsaved', out_path)

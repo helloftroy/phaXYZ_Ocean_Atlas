@@ -34,6 +34,7 @@ from Bio.Align import PairwiseAligner, substitution_matrices
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import _phac_qc
 import _triad_filter
+import _deep_dive_copies
 
 ROOT = Path(__file__).resolve().parent.parent.parent
 OUT = ROOT / 'figures'
@@ -63,7 +64,7 @@ def pident(a, b):
     return 100 * m / al if al else 0.0
 
 
-plt.rcParams.update({'font.family': 'DejaVu Sans', 'font.size': 10.5})
+plt.rcParams.update({'font.family': ['Arial', 'Helvetica', 'DejaVu Sans'], 'font.size': 10.5})
 
 for genome, out_stem, title in GENOMES:
     raw_targets = []
@@ -98,20 +99,41 @@ for genome, out_stem, title in GENOMES:
             mat[i, j] = 100.0 if i == j else pident(seqs[targets[i]], seqs[targets[j]])
     print(f'  {n*(n-1)//2} pairwise identities computed')
 
-    short_labels = [f'{t[-6:]}\n({len(seqs[t])}aa)' for t in targets]
+    # Order and style the copies the same way every other panel of this figure
+    # does, so a copy is the same colour and the same short name throughout.
+    styles = {c.target_id: c for c in _deep_dive_copies.copies_for(genome)}
+    if styles and set(styles) == set(targets):
+        targets = [c.target_id for c in _deep_dive_copies.copies_for(genome)]
+        mat = np.zeros((n, n))
+        for i in range(n):
+            for j in range(n):
+                mat[i, j] = 100.0 if i == j else pident(seqs[targets[i]], seqs[targets[j]])
+    short_labels = [f'{styles[t].short}\n{len(seqs[t])} aa' if t in styles
+                    else f'{t[-6:]}\n{len(seqs[t])} aa' for t in targets]
 
-    fig, ax = plt.subplots(figsize=(8.5, 7.5), dpi=300)
+    fig, ax = plt.subplots(figsize=(8.0, 7.0), dpi=300)
     im = ax.imshow(mat, cmap='YlGnBu', vmin=0, vmax=100)
     ax.set_xticks(range(n))
     ax.set_yticks(range(n))
-    ax.set_xticklabels(short_labels, fontsize=8.5, rotation=45, ha='right')
-    ax.set_yticklabels(short_labels, fontsize=8.5)
+    ax.set_xticklabels(short_labels, fontsize=11, ha='center')
+    ax.set_yticklabels(short_labels, fontsize=11)
+    ax.tick_params(axis='x', pad=16)
+    ax.tick_params(axis='y', pad=16)
+    # A colour chip per copy on both axes, matching the contig map, so the long
+    # target ids do not have to be read or carried between panels.
+    for i, t in enumerate(targets):
+        if t not in styles:
+            continue
+        # imshow's extent runs -0.5 to n-0.5, so the chips sit just outside it.
+        for x, y in ((i, n - 0.5 + 0.30), (-0.5 - 0.30, i)):
+            ax.scatter([x], [y], marker='o', s=150, color=styles[t].color,
+                       edgecolors='white', linewidths=1.0, clip_on=False, zorder=6)
     for i in range(n):
         for j in range(n):
             val = mat[i, j]
             color = 'white' if val > 60 else '#20302C'
-            ax.text(j, i, f'{val:.0f}', ha='center', va='center', fontsize=8.5, color=color)
-    ax.set_title(f'phaC pairwise %identity: {title}\n({n} triad-complete copies)', fontsize=11.5, fontweight='bold')
+            ax.text(j, i, f'{val:.0f}', ha='center', va='center', fontsize=15,
+                    fontweight='bold' if i == j else 'normal', color=color)
     cbar = fig.colorbar(im, ax=ax, shrink=0.8)
     cbar.set_label('%identity (BLOSUM62 global alignment)')
     fig.text(0.5, 0.01, f'Triad-complete only (structural geometry, section 9.12) -- {len(raw_targets) - n} of {len(raw_targets)} raw QC-passing copies dropped.',
