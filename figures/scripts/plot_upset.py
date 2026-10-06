@@ -128,9 +128,19 @@ for r in phac_rows:
     for fam in r['families_present'].split(','):
         family_totals[fam] += int(r['n_genomes'])
 
+# Rows are the families appearing in at least one PLOTTED column, not every family
+# with a non-zero total. phaD and phaR_synthase are carried by real genomes, but by
+# none of the 40 architectures shown here, so they drew a row of empty dots and a
+# left-hand bar that nothing in the matrix referred to -- noise, and misleading at a
+# glance about which genes the figure is about.
+shown_families = set().union(*combo_families)
 family_order = default_family_order()
-present_families = [f for f in family_order if family_totals.get(f, 0) > 0]
+present_families = [f for f in family_order if family_totals.get(f, 0) > 0 and f in shown_families]
 present_families.sort(key=lambda f: -family_totals[f])
+_dropped = [f for f in family_order if family_totals.get(f, 0) > 0 and f not in shown_families]
+if _dropped:
+    print('families with genomes but no plotted column, so no row: '
+          + ', '.join(f'{f} ({family_totals[f]:,} genomes)' for f in _dropped))
 
 def label_for(fam):
     code = short_code(fam)
@@ -277,7 +287,8 @@ footnote = (
     "Architecture = the set of PHA pathway genes co-occurring in one genome (pipeline/pathway_architecture.py). Row order and left-panel "
     "totals are scoped to phaC-positive genomes only. Dot color = gene identity (matches row label and left bar); hollow/faint dot = absent.\n"
     f"Right-hand columns (red) carry a substantial accessory-gene suite and no synthase that any method has found: {n_right_searched:,} of these {n_right:,} genomes had their whole proteome searched with validated synthase queries.\n"
-    "phaC presence combines the full protein-to-genome membership list with the triad-complete hits from that search; the other 14 genes use a table capped at 5 genomes per identical protein, so are lower bounds."
+    "phaC presence combines the full protein-to-genome membership list with the triad-complete hits from that search; every other gene uses a table capped at 5 genomes per identical protein, so is a lower bound.\n"
+    "Rows are the genes appearing in at least one column shown here; phaD and phaR-syn occur in the atlas but in none of these 40 architectures."
 )
 fig.text(0.5, 0.058, footnote, ha='center', va='top', fontsize=8.1, color='#5B6E70')
 
