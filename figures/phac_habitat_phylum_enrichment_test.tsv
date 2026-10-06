@@ -1,16 +1,16 @@
-habitat	n_total	n_phac	pct_raw	overall_pct	raw_fisher_or	raw_fisher_p	n_with_phylum	pct_phylum_coverage	cmh_or	cmh_chi2	cmh_p	n_strata_used	observed_pct_phylum_subset	expected_pct_if_composition_only
-Animal bone biofilm	298	204	68.46	10.79	18.065	1.69e-123	290	97.3	8.607	380.92	7.84e-85	7	70.34	22.50
-Marine Hydrozoa tissue	1171	440	37.57	10.79	5.040	3.57e-128	1098	93.8	4.683	528.59	5.73e-117	26	40.07	15.78
-Marine algae thallus	747	254	34.00	10.79	4.289	1.83e-64	726	97.2	5.206	351.15	2.38e-78	12	34.99	12.76
-Estuarine sediment	572	190	33.22	10.79	4.133	6.1e-47	563	98.4	3.148	140.86	1.73e-32	18	33.75	16.03
-Coral tissue	901	238	26.42	10.79	2.984	2.86e-39	826	91.7	3.666	229.17	9.02e-52	34	28.81	12.43
-Sea ice	760	191	25.13	10.79	2.787	7.8e-29	737	97.0	2.257	79.43	5e-19	12	25.92	14.82
-Marine biofilm	4000	986	24.65	10.79	2.767	8.61e-138	3767	94.2	2.891	642.38	1.02e-141	28	26.17	12.89
-Marine Porifera tissue	11849	2614	22.06	10.79	2.479	3.93e-289	11694	98.7	3.598	2023.33	0	32	22.35	8.49
-Marine sediment	11424	1835	16.06	10.79	1.623	8.74e-69	10734	94.0	1.915	470.23	2.86e-104	106	17.10	10.97
-Brackish sea water	4949	587	11.86	10.79	1.115	0.0151	4407	89.0	1.598	86.06	1.75e-20	28	13.32	9.51
-Estuarine water	1082	110	10.17	10.79	0.935	0.556	950	87.8	0.768	6.22	0.0127	13	11.58	14.27
-Seawater	211369	19694	9.32	10.79	0.482	0	183355	86.7	0.352	3865.15	0	83	10.74	22.24
-Hydrothermal vent sediment	2066	110	5.32	10.79	0.463	1.68e-18	1745	84.5	0.619	22.22	2.44e-06	70	6.30	9.39
-Cold seep sediment	2451	112	4.57	10.79	0.393	1.45e-28	2063	84.2	0.754	7.59	0.00588	78	5.43	7.09
-Hydrothermal vent fluid/plume	3075	127	4.13	10.79	0.353	3.21e-41	2528	82.2	0.394	92.40	7.07e-22	70	5.02	9.81
+habitat	habitat_label	n_total	n_phac	pct_raw	overall_pct	raw_fisher_or	raw_fisher_p	n_with_phylum	pct_phylum_coverage	cmh_or	cmh_chi2	cmh_p	cmh_or_ci_lo	cmh_or_ci_hi	n_strata_used	observed_pct_phylum_subset	expected_pct_if_composition_only
+Animal bone biofilm	Animal bone biofilm	298	204	68.46	10.79	18.065	1.69e-123	290	97.3	8.607	380.92	7.84e-85	6.639	11.159	7	70.34	22.50
+Marine Hydrozoa tissue	Marine hydrozoan tissue	1171	440	37.57	10.79	5.040	3.57e-128	1098	93.8	4.683	528.59	5.73e-117	4.053	5.412	26	40.07	15.78
+Marine algae thallus	Marine algal thallus	747	254	34.00	10.79	4.289	1.83e-64	726	97.2	5.206	351.15	2.38e-78	4.294	6.313	12	34.99	12.76
+Estuarine sediment	Estuarine sediment	572	190	33.22	10.79	4.133	6.1e-47	563	98.4	3.148	140.86	1.73e-32	2.583	3.836	18	33.75	16.03
+Coral tissue	Coral tissue	901	238	26.42	10.79	2.984	2.86e-39	826	91.7	3.666	229.17	9.02e-52	3.062	4.389	34	28.81	12.43
+Sea ice	Sea ice	760	191	25.13	10.79	2.787	7.8e-29	737	97.0	2.257	79.43	5e-19	1.877	2.713	12	25.92	14.82
+Marine biofilm	Marine biofilm	4000	986	24.65	10.79	2.767	8.61e-138	3767	94.2	2.891	642.38	1.02e-141	2.654	3.150	28	26.17	12.89
+Marine Porifera tissue	Marine sponge (Porifera) tissue	11849	2614	22.06	10.79	2.479	3.93e-289	11694	98.7	3.598	2023.33	0	3.392	3.817	32	22.35	8.49
+Marine sediment	Marine sediment	11424	1835	16.06	10.79	1.623	8.74e-69	10734	94.0	1.915	470.23	2.86e-104	1.802	2.035	106	17.10	10.97
+Brackish sea water	Brackish sea water	4949	587	11.86	10.79	1.115	0.0151	4407	89.0	1.598	86.06	1.75e-20	1.447	1.764	28	13.32	9.51
+Estuarine water	Estuarine water	1082	110	10.17	10.79	0.935	0.556	950	87.8	0.768	6.22	0.0127	0.624	0.946	13	11.58	14.27
+Seawater	Seawater	211369	19694	9.32	10.79	0.482	0	183355	86.7	0.352	3865.15	0	0.340	0.364	83	10.74	22.24
+Hydrothermal vent sediment	Hydrothermal vent sediment	2066	110	5.32	10.79	0.463	1.68e-18	1745	84.5	0.619	22.22	2.44e-06	0.505	0.759	70	6.30	9.39
+Cold seep sediment	Cold seep sediment	2451	112	4.57	10.79	0.393	1.45e-28	2063	84.2	0.754	7.59	0.00588	0.615	0.924	78	5.43	7.09
+Hydrothermal vent fluid/plume	Hydrothermal vent fluid/plume	3075	127	4.13	10.79	0.353	3.21e-41	2528	82.2	0.394	92.40	7.07e-22	0.324	0.480	70	5.02	9.81

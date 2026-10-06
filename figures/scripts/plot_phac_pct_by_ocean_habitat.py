@@ -48,37 +48,13 @@ FA = Path('/Users/hellpark/multimodal_seusmbol/PHA_Ocean_Atlas/PHA_bioprospectin
 ACCENT = '#1B7A6E'
 LOW_COLOR = '#C9622D'
 
-# non-marine / non-habitat categories present in OMDB's ecosystem_compartment
-# (freshwater, lab controls/synthetic spike-ins, terrestrial, microcosm
-# experiments) -- excluded so "parts of the ocean" means actual ocean habitats
-EXCLUDE = {
-    'NA', '', 'Control', 'Synthetic', 'Freshwater river water', 'Freshwater lake water',
-    'Freshwater lake sediment', 'Freshwater aquaculture water', 'Freshwater pond water',
-    'Glacier-fed stream water', 'Aquifer water', 'Polar desert soil', 'Seawater microcosm',
-    'Sediment microcosm', 'Negative control',
-}
-
-# shorter display labels for compartments whose raw names are long/technical
-DISPLAY = {
-    'Seawater': 'Open water (seawater)',
-    'Marine sediment': 'Seafloor sediment',
-    'Marine Porifera tissue': 'Sponge tissue',
-    'Brackish sea water': 'Brackish water',
-    'Marine biofilm': 'Biofilm',
-    'Hydrothermal vent fluid/plume': 'Hydrothermal vent (fluid/plume)',
-    'Cold seep sediment': 'Cold seep sediment',
-    'Hydrothermal vent sediment': 'Hydrothermal vent sediment',
-    'Marine Hydrozoa tissue': 'Hydrozoa tissue',
-    'Estuarine water': 'Estuarine water',
-    'Coral tissue': 'Coral tissue',
-    'Sea ice': 'Sea ice',
-    'Marine algae thallus': 'Algae tissue',
-    'Estuarine sediment': 'Estuarine sediment',
-    'Cold seep water': 'Cold seep water',
-    'Marine seep water': 'Seep water',
-    'Animal bone biofilm': 'Whale-fall bone biofilm',
-    'Subseafloor aquifer water': 'Subseafloor aquifer',
-}
+# Denylist, size threshold and display labels are shared with the
+# phylum-controlled test via _habitat_labels, so the bar chart, the forest
+# plot and the stats table cannot disagree about which habitats exist or what
+# each one is called. The local DISPLAY dict that used to live here renamed
+# 'Animal bone biofilm' to 'Whale-fall bone biofilm'; OMDB places all 298 of
+# those genomes in a coastal intertidal zone, so that reading was wrong.
+from _habitat_labels import EXCLUDE, MIN_N, label_for  # noqa: E402
 
 # ---- phaC-positive genome IDs (label-free -- just membership) ----
 phac_genome_ids = set()
@@ -109,13 +85,12 @@ with open(ROOT / 'omdb_all_genomes_with_locations.tsv', newline='') as f:
 
 overall_pct = 100 * n_phac_total / n_genomes_total
 
-MIN_N = 200  # drop habitats too small to give a stable percentage
 rows = []
 for c, total in total_by_compartment.items():
     if total < MIN_N:
         continue
     hits = phac_by_compartment.get(c, 0)
-    rows.append((c, DISPLAY.get(c, c), hits, total, 100 * hits / total))
+    rows.append((c, label_for(c), hits, total, 100 * hits / total))
 
 rows.sort(key=lambda r: r[4])
 print(f'{n_phac_total:,} / {n_genomes_total:,} genomes are phaC-positive overall ({overall_pct:.1f}%)')
@@ -180,7 +155,6 @@ ax.grid(axis='x', color='#E4E8E5', linewidth=0.8, zorder=0)
 ax.set_axisbelow(True)
 ax.legend(loc='lower right', fontsize=9, frameon=False)
 
-ax.set_title('phaC prevalence across ocean habitats', fontsize=15.5, fontweight='bold', loc='left', pad=14)
 fig.text(0.01, 0.005,
           f'{n_phac_total:,} of {n_genomes_total:,} screened OMDB genomes ({overall_pct:.1f}%) carry a phaC hit. '
           f'Habitats with <{MIN_N} genomes and non-marine/control samples excluded. "Expected %" = phylum-composition-standardized rate '

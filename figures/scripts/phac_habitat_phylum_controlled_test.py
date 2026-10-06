@@ -71,20 +71,16 @@ from scipy.stats import fisher_exact
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import _phac_qc
-from _stats_utils import mantel_haenszel
+from _stats_utils import mantel_haenszel, mantel_haenszel_ci
 
 ROOT = Path(__file__).resolve().parent.parent.parent
 OUT = ROOT / 'figures'
 FA = ROOT / 'PHA_bioprospecting/omdb_search/results'
 
-# same denylist as plot_phac_pct_by_ocean_habitat.py -- keep in sync
-EXCLUDE = {
-    'NA', '', 'Control', 'Synthetic', 'Freshwater river water', 'Freshwater lake water',
-    'Freshwater lake sediment', 'Freshwater aquaculture water', 'Freshwater pond water',
-    'Glacier-fed stream water', 'Aquifer water', 'Polar desert soil', 'Seawater microcosm',
-    'Sediment microcosm', 'Negative control',
-}
-MIN_N = 200          # same threshold as the habitat figure: habitats smaller than this aren't tested
+# Denylist, size threshold and display labels all come from _habitat_labels so
+# this script and the habitat figures cannot disagree about which habitats exist
+# or what they are called.
+from _habitat_labels import EXCLUDE, MIN_N, label_for  # noqa: E402
 MIN_STRATUM_N = 1    # strata with n_i<=1 are skipped (undefined CMH variance)
 MIN_PHYLUM_BREAKDOWN_N = 20  # per-phylum robustness rows below this are still written but flagged
 
@@ -181,6 +177,10 @@ for hab in habitats:
         })
 
     or_mh, cmh_stat, cmh_p, n_strata = mantel_haenszel(strata)
+    # Robins-Breslow-Greenland interval for the pooled OR, so the result can be
+    # drawn as a forest plot rather than quoted as a point estimate plus a
+    # p-value. p-values alone cannot be turned back into an interval.
+    _, cmh_lo, cmh_hi = mantel_haenszel_ci(strata)
 
     # ---- test 3: phylum-standardized expected rate ----
     # expected_pct = what this habitat's phaC rate would be if each of its own
@@ -200,13 +200,16 @@ for hab in habitats:
         expected_pct = observed_pct_phylum_subset = float('nan')
 
     habitat_rows.append({
-        'habitat': hab, 'n_total': n_hab, 'n_phac': phac_hab, 'pct_raw': f'{pct_hab:.2f}',
+        'habitat': hab, 'habitat_label': label_for(hab),
+        'n_total': n_hab, 'n_phac': phac_hab, 'pct_raw': f'{pct_hab:.2f}',
         'overall_pct': f'{overall_pct:.2f}',
         'raw_fisher_or': f'{raw_or:.3f}', 'raw_fisher_p': f'{raw_p:.3g}',
         'n_with_phylum': n_hab_with_phylum, 'pct_phylum_coverage': f'{100*n_hab_with_phylum/n_hab:.1f}',
         'cmh_or': f'{or_mh:.3f}' if or_mh is not None else '',
         'cmh_chi2': f'{cmh_stat:.2f}' if cmh_stat is not None else '',
         'cmh_p': f'{cmh_p:.3g}' if cmh_p is not None else '',
+        'cmh_or_ci_lo': f'{cmh_lo:.3f}' if cmh_lo is not None else '',
+        'cmh_or_ci_hi': f'{cmh_hi:.3f}' if cmh_hi is not None else '',
         'n_strata_used': n_strata,
         'observed_pct_phylum_subset': f'{observed_pct_phylum_subset:.2f}' if observed_pct_phylum_subset == observed_pct_phylum_subset else '',
         'expected_pct_if_composition_only': f'{expected_pct:.2f}' if expected_pct == expected_pct else '',
