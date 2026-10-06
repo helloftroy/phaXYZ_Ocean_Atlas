@@ -39,17 +39,59 @@ COLORS = {'I': '#2E4053', 'II': '#5B7793', 'III': '#92ACC4', 'IV': '#C6D4E0',
 LIGHT_CLASSES = {'III', 'IV', 'III/IV, no partner found', 'unassigned'}
 TEXT_DARK, TEXT_MUTED = '#20302C', '#5B6E70'
 
+sys.path.insert(0, str(ROOT))
+from phaatlas.pipeline.pathway_architecture import FAMILY_BAD_QUERIES  # noqa: E402
+
 model_class, confident = {}, {}
 with open(ROOT / 'catalytic_domain/phac_synthase_class.tsv', newline='') as f:
     for row in csv.DictReader(f, delimiter='\t'):
         model_class[row['target_id']] = row['best_model_class']
         confident[row['target_id']] = row['confident'] == 'True'
 
+def uncapped_partner_genomes(family):
+    """Genomes carrying a QC-passing hit for a partner family, from the uncapped
+    protein-to-genome membership list rather than genome_family_matrix.tsv.
+
+    The matrix is built from a metadata table that lists at most 5 genomes per
+    identical protein, so partner evidence is under-recorded exactly the way
+    phaC's own count was (PHA_CLEAN_RESULTS.md section 2). The same reference
+    exclusion the matrix applies is applied here -- it has to be, and it is the
+    dominant filter rather than an afterthought: 94.7% of phaE hits and 97.2% of
+    phaR_synthase hits trace to a wrong-gene bait (a Na+/H+ antiporter subunit E
+    sharing the Pha name, plus phenylacetate-catabolism proteins; see
+    PHA_ALL_FAMILIES_REFERENCE_AUDIT.md). Skipping it would recover 35,733
+    phaE genomes that are not phaE.
+    """
+    path = ROOT / f'{family}_all_genomes_from_nr100_clusters.tsv'
+    if not path.exists():
+        return set()
+    bad_queries = FAMILY_BAD_QUERIES.get(family, frozenset())
+    bad_family_targets = set()
+    with open(FA / f'{family}_unique_targets_with_metadata.tsv', newline='') as f:
+        for row in csv.DictReader(f, delimiter='\t'):
+            if row['best_query'] in bad_queries:
+                bad_family_targets.add(row['target_id'])
+    genomes = set()
+    with open(path, newline='') as f:
+        for row in csv.DictReader(f, delimiter='\t'):
+            if row['target_id'] not in bad_family_targets:
+                genomes.add(row['genome'])
+    return genomes
+
+
+phae_extra = uncapped_partner_genomes('phaE')
+phar_extra = uncapped_partner_genomes('phaR_synthase')
+
 genome = {}
 with open(FA / 'genome_family_matrix.tsv', newline='') as f:
     for row in csv.DictReader(f, delimiter='\t'):
         if int(row['n_phaC']) > 0:
-            genome[row['genome']] = (row['gtdb_phylum'], int(row['n_phaE']) > 0, int(row['n_phaR_synthase']) > 0)
+            name = row['genome']
+            genome[name] = (row['gtdb_phylum'],
+                            int(row['n_phaE']) > 0 or name in phae_extra,
+                            int(row['n_phaR_synthase']) > 0 or name in phar_extra)
+print(f'partner evidence: {len(phae_extra):,} phaE and {len(phar_extra):,} phaR_synthase genomes '
+      f'from the uncapped lists')
 
 bad = _phac_qc.load_bad_targets()
 counts = defaultdict(Counter)
