@@ -58,15 +58,13 @@ with open(ROOT / 'phaC_all_genomes_from_nr100_clusters.tsv', newline='') as f:
             continue
         target_to_genomes[target_id].add(genome)
 
-# canonical phaC-positive genomes only (genome_family_matrix.tsv, n_phaC > 0) --
-# the same 31,464-genome set the rest of the write-up uses, not the larger
-# raw-join pool this figure was first drawn on
-canonical = set()
-with open(FA / 'genome_family_matrix.tsv', newline='') as f:
-    for row in csv.DictReader(f, delimiter='\t'):
-        if int(row['n_phaC']) > 0:
-            canonical.add(row['genome'])
-
+# Genome pool is the full protein-to-genome membership list above, QC-filtered --
+# 38,744 phaC-positive genomes. An earlier version restricted this to the 31,464
+# genomes with n_phaC > 0 in genome_family_matrix.tsv, on the understanding that
+# the larger number was an unexplained join artifact. It was the opposite: the
+# matrix comes from a metadata table capped at 5 genomes per identical protein,
+# which hid 7,298 real phaC carriers (PHA_CLEAN_RESULTS.md section 2). The
+# uncapped list is the correct pool, so no second filter is applied here.
 cluster_genomes = defaultdict(set)
 with open(FA / 'phaC_cluster0.7_cluster.tsv', newline='') as f:
     r = csv.reader(f, delimiter='\t')
@@ -74,8 +72,7 @@ with open(FA / 'phaC_cluster0.7_cluster.tsv', newline='') as f:
         if target_id in bad_targets:
             continue
         for g in target_to_genomes.get(target_id, ()):
-            if g in canonical:
-                cluster_genomes[cluster_id].add(g)
+            cluster_genomes[cluster_id].add(g)
 cluster_genomes = {c: g for c, g in cluster_genomes.items() if g}
 n_genomes = len(set().union(*cluster_genomes.values()))
 
@@ -160,14 +157,9 @@ fig.legend(legend_handles, [b.replace('\n', ' ') for b in BUCKET_LABELS],
            fontsize=10.3, title='Cluster size (genomes carrying it, counted across the whole atlas)',
            title_fontsize=10, handlelength=1.3, columnspacing=1.6)
 
-fig.suptitle('The phaC cluster long tail', fontsize=18, fontweight='bold', x=0.065, ha='left', y=1.11)
-fig.text(0.065, 1.0,
-          f'{cluster_pct[0]:.0f}% of phaC clusters occur in only one genome, but singletons are just '
-          f'{occupancy_pct[0]:.1f}% of genome\u2013cluster pairs. The {cluster_pct[-1]:.1f}% of clusters found in\n'
-          f'>100 genomes each account for {occupancy_pct[-1]:.0f}% of pairs. Most cluster diversity is rare; most genomes carry a few common lineages.',
-          ha='left', va='top', fontsize=10.7, color=TEXT_MUTED, linespacing=1.5)
-
-fig.tight_layout(rect=[0.10, 0.06, 0.88, 0.86])
+# No title or subtitle: this figure goes into a manuscript, where the caption is
+# set by the journal and anything written inside the image gets cropped off.
+fig.tight_layout(rect=[0.10, 0.06, 0.88, 1.0])
 
 out_path = OUT / 'phac_cluster_occupancy_spectrum.png'
 fig.savefig(out_path, dpi=300, facecolor='white', bbox_inches='tight')
