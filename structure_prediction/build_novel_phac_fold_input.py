@@ -73,8 +73,12 @@ with open(MANIFEST, newline='') as f:
             existing.add(row[0])
 
 new = [gene_id for gene_id, _ in records if gene_id not in existing]
+# lineterminator='\n' is not optional here: csv.writer defaults to '\r\n', and the
+# rest of fold_manifest.tsv uses '\n'. Mixed endings leave a trailing '\r' on the
+# set name, which run_foldseek_search.sh's awk discovery turns into a query set
+# called "novel_phac_candidates\r" -- pointing it at a directory that does not exist.
 with open(MANIFEST, 'a', newline='') as f:
-    writer = csv.writer(f, delimiter='\t')
+    writer = csv.writer(f, delimiter='\t', lineterminator='\n')
     for gene_id in new:
         writer.writerow([gene_id, SET_NAME])
 print(f'{len(new)} ids appended to {MANIFEST.name} under set={SET_NAME} '

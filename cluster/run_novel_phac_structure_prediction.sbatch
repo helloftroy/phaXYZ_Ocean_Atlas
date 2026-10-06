@@ -8,13 +8,17 @@
 # runs. Splitting that across array tasks would cost more in scheduling and
 # model-load overhead than it saves.
 #
-# Prerequisites, in order:
-#   1. python phac_recovery/classify_novel_phac_candidates.py   (local, builds the candidate set)
-#   2. python structure_prediction/build_novel_phac_fold_input.py  (writes the FASTA + manifest rows)
-#   3. ./cluster/setup_env.sh and ./cluster/install_esmfold.sh, if this repo
-#      checkout has not folded anything before (install_esmfold.sh must run
-#      from a LOGIN node -- it pre-downloads the model weights, and the GPU
-#      nodes have no internet access).
+# On the cluster there is nothing to prepare: git pull is enough. Both inputs --
+# structure_prediction/novel_phac_candidates.faa and its fold_manifest.tsv rows --
+# are committed. Do NOT run build_novel_phac_fold_input.py here; it reads
+# phac_recovery/novel_phac_new_candidates.faa, which .gitignore keeps out of the
+# repo, so it will only report that file as missing. That script is a local step,
+# re-run only when the candidate set itself changes.
+#
+# Prerequisite, once per checkout:
+#   ./cluster/setup_env.sh and ./cluster/install_esmfold.sh, if this checkout has
+#   not folded anything before. install_esmfold.sh must run from a LOGIN node --
+#   it pre-downloads the model weights, and the GPU nodes have no internet access.
 #
 # Usage:
 #   sbatch --account=191001-364393 cluster/run_novel_phac_structure_prediction.sbatch
