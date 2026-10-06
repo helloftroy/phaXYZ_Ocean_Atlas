@@ -60,10 +60,15 @@ N_CURVE_POINTS = 240
 THRESHOLDS = ['0.5', '0.6', '0.7', '0.9']
 PRIMARY = '0.7'
 
-GENOME_COLOR, GENOME_BAND = '#0D9488', '#CCE8E4'
-STUDY_COLOR, STUDY_BAND = '#C2622D', '#F3DCCB'
-CHAO_COLOR, CHAO_BAND = '#3A4A46', '#E8EAE6'
-TEXT_DARK, TEXT_MUTED, GRID = '#20302C', '#5B6E70', '#EBEEEC'
+# Same sequential-blue family as plot_phac_cluster_occupancy_spectrum.py, which this
+# figure is meant to sit beside. The two curves take the ends of that ramp rather
+# than adjacent steps: within one hue, lightness is the only separating channel, so
+# the darkest and a mid-light step keep them apart in greyscale and under every
+# common form of colour-vision deficiency.
+GENOME_COLOR, GENOME_BAND = '#0d366b', '#b9cde8'
+STUDY_COLOR, STUDY_BAND = '#6da7ec', '#dce9f9'
+CHAO_COLOR, CHAO_BAND = '#334155', '#E7EAEE'
+TEXT_DARK, TEXT_MUTED, GRID = '#1E2630', '#5B6670', '#EAEDF1'
 
 rng = np.random.default_rng(RANDOM_SEED)
 bad_targets = _phac_qc.load_bad_targets()
@@ -225,8 +230,9 @@ ax.plot(xs, genome_mean, color=GENOME_COLOR, linewidth=2.4, zorder=4)
 
 ax.scatter([n_genomes], [n_clusters], s=90, color=GENOME_COLOR, edgecolors='white', linewidths=1.4, zorder=6)
 
-ax.set_xlim(0, n_genomes * 1.19)
-ax.set_ylim(0, ci_hi * 1.06)
+X_MAX = 40_000
+ax.set_xlim(0, X_MAX)
+ax.set_ylim(0, ci_hi * 1.10)
 ax.set_xlabel('phaC-positive genomes sampled', fontsize=12, color=TEXT_DARK)
 ax.set_ylabel(f'Distinct phaC clusters recovered (70% identity)', fontsize=12, color=TEXT_DARK)
 ax.grid(True, color=GRID, linewidth=0.7, zorder=0)
@@ -237,12 +243,15 @@ for side in ('left', 'bottom'):
     ax.spines[side].set_color('#C3C2B7')
 ax.xaxis.set_major_formatter(lambda v, _: f'{v:,.0f}')
 
-ax.annotate(f'Chao2 estimate {estimate:,.0f}\n95% CI {ci_lo:,.0f}–{ci_hi:,.0f}',
-            xy=(n_genomes * 1.01, estimate), xytext=(n_genomes * 1.02, estimate),
-            ha='left', va='center', fontsize=9.8, color=CHAO_COLOR)
+# Both labels sit inside the axes now that the x axis stops at the data instead of
+# leaving a right-hand margin to write in.
+ax.text(X_MAX * 0.995, ci_hi + estimate * 0.012, f'Chao2 estimate {estimate:,.0f}  (95% CI {ci_lo:,.0f}–{ci_hi:,.0f})',
+        ha='right', va='bottom', fontsize=9.8, color=CHAO_COLOR)
 ax.annotate(f'{n_clusters:,} observed\n{100 * n_clusters / estimate:.0f}% of Chao2',
-            xy=(n_genomes, n_clusters), xytext=(n_genomes * 1.02, n_clusters),
-            ha='left', va='center', fontsize=9.8, color=GENOME_COLOR, fontweight='bold')
+            xy=(n_genomes, n_clusters), xytext=(n_genomes * 0.945, n_clusters + estimate * 0.105),
+            ha='right', va='center', fontsize=9.8, color=GENOME_COLOR, fontweight='bold',
+            arrowprops=dict(arrowstyle='-', color=GENOME_COLOR, linewidth=0.9,
+                            connectionstyle='angle3,angleA=0,angleB=75'))
 
 # Mark the gap mid-curve, not at the end: both curves necessarily meet at the full
 # sample (the last study drawn contributes every cluster still missing), so the
@@ -267,7 +276,7 @@ handles = [
                label='Sampling unit: genome\n(genomes in random order)'),
     plt.Line2D([0], [0], color=STUDY_COLOR, linewidth=2.4,
                label=f'Sampling unit: study\n(all {len(studies)} studies in random order,\nevery genome entering at once)'),
-    Patch(facecolor='#D5DED9', edgecolor='none', label=f'95% interval over {N_PERM} permutations'),
+    Patch(facecolor=STUDY_BAND, edgecolor='none', label=f'95% interval over {N_PERM} permutations'),
     plt.Line2D([0], [0], color=CHAO_COLOR, linewidth=1.5, linestyle=(0, (5, 3)),
                label='Chao2 asymptotic richness (95% CI shaded)'),
 ]
@@ -276,13 +285,49 @@ handles = [
 ax.legend(handles=handles, loc='upper left', bbox_to_anchor=(0.012, ci_lo / ax.get_ylim()[1] - 0.02),
           fontsize=9.6, frameon=False, handlelength=2.3, labelspacing=1.0, borderpad=0.9)
 
-table_lines = ['Chao2 at other clustering thresholds', '']
-for row in rows:
-    marker = ' ←' if row['threshold'] == PRIMARY else ''
-    table_lines.append(f"{int(float(row['threshold']) * 100)}%   observed {row['observed']:>5,}   "
-                       f"Chao2 {row['chao2']:>6,.0f}   {row['pct']:>2.0f}% sampled{marker}")
-ax.text(0.985, 0.045, '\n'.join(table_lines), transform=ax.transAxes, ha='right', va='bottom',
-        fontsize=8.6, color=TEXT_MUTED, family='DejaVu Sans Mono', linespacing=1.6)
+# Set as a real table rather than monospaced text: proportional type, numerals
+# right-aligned on their own column anchors, hairline rules above and below the
+# header and under the body. The primary 70% row is set in the curve's own colour
+# and weight instead of being flagged with an arrow.
+# The Chao2 column carries the widest strings ("18,958 (18,303-19,664)"), so it is
+# left-aligned from its own anchor and the three narrow numeric columns are
+# right-aligned; right-aligning all four ran the Chao2 text back over "Observed".
+TABLE_LEFT, TABLE_RIGHT, TABLE_TOP = 0.555, 0.995, 0.262
+ROW_H = 0.046
+COL_X = {'identity': 0.613, 'observed': 0.722, 'chao2': 0.752, 'sampled': 0.995}
+COL_ALIGN = {'identity': 'right', 'observed': 'right', 'chao2': 'left', 'sampled': 'right'}
+
+ax.text(TABLE_LEFT, TABLE_TOP + ROW_H * 1.30, 'Chao2 by clustering threshold', transform=ax.transAxes,
+        ha='left', va='bottom', fontsize=10.2, color=TEXT_DARK, fontweight='bold')
+
+
+def rule(y, left=TABLE_LEFT, right=TABLE_RIGHT, width=0.9, color='#9AA5B1'):
+    ax.plot([left, right], [y, y], transform=ax.transAxes, color=color, linewidth=width,
+            zorder=7, clip_on=False, solid_capstyle='butt')
+
+
+rule(TABLE_TOP + ROW_H * 1.12, width=1.1, color=TEXT_DARK)
+for key, label in (('identity', 'Identity'), ('observed', 'Observed'), ('chao2', 'Chao2 (95% CI)'),
+                   ('sampled', 'Sampled')):
+    ax.text(COL_X[key], TABLE_TOP + ROW_H * 0.34, label, transform=ax.transAxes, ha=COL_ALIGN[key], va='bottom',
+            fontsize=9.3, color=TEXT_MUTED)
+rule(TABLE_TOP + ROW_H * 0.17)
+
+for i, row in enumerate(rows):
+    y = TABLE_TOP - ROW_H * (i + 0.72)
+    primary = row['threshold'] == PRIMARY
+    color = GENOME_COLOR if primary else TEXT_DARK
+    weight = 'bold' if primary else 'normal'
+    cells = {
+        'identity': f"{int(float(row['threshold']) * 100)}%",
+        'observed': f"{row['observed']:,}",
+        'chao2': f"{row['chao2']:,.0f} ({row['ci_lo']:,.0f}–{row['ci_hi']:,.0f})",
+        'sampled': f"{row['pct']:.0f}%",
+    }
+    for key, text in cells.items():
+        ax.text(COL_X[key], y, text, transform=ax.transAxes, ha=COL_ALIGN[key], va='center',
+                fontsize=9.4, color=color, fontweight=weight)
+rule(TABLE_TOP - ROW_H * (len(rows) + 0.12), width=1.1, color=TEXT_DARK)
 
 fig.suptitle('PhaC cluster discovery has not saturated, and the rate depends on the study pool',
              fontsize=17, fontweight='bold', y=0.985, x=0.055, ha='left')
