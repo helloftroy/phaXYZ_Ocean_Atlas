@@ -75,6 +75,19 @@ FA = ROOT / 'PHA_bioprospecting/omdb_search/results'
 PREFIX = 'OMDBv2.0_AA_G_NR100_'
 
 TEXT_DARK, TEXT_MUTED, RULE, GRID = '#1E2630', '#5B6670', '#C3C9CE', '#E8EBEE'
+# Arial throughout, not only in the headings. DejaVu Sans is matplotlib's
+# default and is fine for data labels, but its caps are wide and soft; the
+# headings had also been faked into small caps by joining letters with spaces,
+# which is a typesetting hack rather than a typeface. Setting a face on the
+# headings alone would put two different sans faces in one figure, which is
+# worse than either on its own.
+#
+# Arial rather than Helvetica Neue, which was the first choice and is wrong
+# here: macOS ships Helvetica Neue as a .ttc collection, and matplotlib resolves
+# every weight of it to the same file and then renders the first face, so bold
+# silently comes out regular. Arial ships separate Arial.ttf and Arial Bold.ttf,
+# so weights actually differ. DejaVu Sans is the fallback off this machine.
+FONT_STACK = ['Arial', 'Helvetica', 'DejaVu Sans']
 DEPTH_FLOOR = 1.0   # metres; surface samples are recorded as 0 and a log axis has no zero
 
 # marker + colour per cluster, used identically in both panels
@@ -141,7 +154,7 @@ for suffix, genus, group, marker, color in SELECTION:
           f"depth n={len(values):>3}  {min(values):.0f}-{max(values):.0f} m")
 
 # ---------------------------------------------------------------- figure
-plt.rcParams.update({'font.family': 'DejaVu Sans', 'font.size': 10})
+plt.rcParams.update({'font.family': FONT_STACK, 'font.size': 10})
 fig = plt.figure(figsize=(10.6, 11.4), dpi=300)
 gs = fig.add_gridspec(2, 1, height_ratios=[1.0, 1.12], hspace=0.07,
                       left=0.255, right=0.975, top=0.985, bottom=0.055)
@@ -210,8 +223,11 @@ for y_pos, cluster in rows:
     jitter = np.random.default_rng(7).uniform(-0.17, 0.17, len(values))
     ax_depth.scatter(values, y_pos + jitter, s=11, color=cluster['color'], alpha=0.45,
                      linewidths=0, zorder=3)
-    median = float(np.median(values))
-    ax_depth.scatter([median], [y_pos], marker=cluster['marker'], s=150 if cluster['marker'] == '*' else 92,
+    # The deepest-reaching clusters are marked at their deepest genome, not their
+    # median: the whole reason they are on the figure is the record depth, and a
+    # marker sitting mid-range reads as an annotation of an unremarkable point.
+    anchor = float(values.max()) if cluster['group'] == 'deepest' else float(np.median(values))
+    ax_depth.scatter([anchor], [y_pos], marker=cluster['marker'], s=150 if cluster['marker'] == '*' else 92,
                      color=cluster['color'], edgecolors='white', linewidths=1.0, zorder=5)
 
 ax_depth.set_xscale('log')
@@ -241,9 +257,10 @@ for y_pos, cluster in rows:
                   transform=transform, ha='left', va='top', fontsize=8.4, color=TEXT_MUTED, clip_on=False)
 
 for y_pos, title in group_marks:
-    ax_depth.text(-0.345, y_pos - 0.62, ' '.join(title.upper()).replace('   ', '  '),
-                  transform=transform, ha='left', va='center',
-                  fontsize=7.6, color=TEXT_MUTED, fontweight='bold', clip_on=False)
+    ax_depth.text(-0.345, y_pos - 0.60, title, transform=transform, ha='left', va='center',
+                  fontsize=10.2, color=TEXT_DARK, fontweight='semibold', clip_on=False)
+    ax_depth.plot([-0.345, -0.018], [y_pos - 0.40, y_pos - 0.40], transform=transform,
+                  color=RULE, linewidth=0.8, clip_on=False, zorder=4, solid_capstyle='butt')
 
 ax_depth.text(-0.345, 1.015, 'B', transform=ax_depth.transAxes, fontsize=15, fontweight='bold',
               color=TEXT_DARK, va='bottom')
