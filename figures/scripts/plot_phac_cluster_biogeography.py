@@ -82,21 +82,20 @@ SELECTION = [
     ('000018755333', 'Sulfitobacter', 'global', 'o', '#0d366b'),
     ('000045457530', 'Sulfitobacter', 'global', 's', '#2a78d6'),
     ('000126950826', 'Sulfitobacter', 'global', '^', '#6da7ec'),
-    ('000199571761', 'Sulfitobacter', 'polar', 'D', '#00A0B0'),
     ('000226102035', 'Robiginitomaculum_A', 'local', '*', '#C2622D'),
-    ('000027486053', 'Algiphilus', 'local', 'P', '#0D9488'),
-    ('000159242036', 'Nitrosotenuis', 'local', 'X', '#8B5FBF'),
+    ('000128699032', 'Ferroglobus', 'local', 'p', '#B07D1A'),
+    ('000113256229', 'Qipengyuania_C', 'local', 'X', '#8B5FBF'),
+    ('000236050034', 'Janibacter', 'local', 'P', '#0D9488'),
     ('000022439766', 'Nitrosopelagicus', 'deepest', 'v', '#4A5568'),
     ('000117564048', 'Nitrosopumilus', 'deepest', '<', '#718096'),
     ('000090434779', 'Phenylobacterium', 'deepest', '>', '#A0AEC0'),
 ]
 GROUP_TITLE = {
     'global': 'Cosmopolitan',
-    'polar': 'Polar-restricted',
-    'local': 'Regionally concentrated',
-    'deepest': 'Deepest-reaching  (not on map)',
+    'local': 'Single-locality',
+    'deepest': 'Deepest-reaching  (deepest genome only on map)',
 }
-ON_MAP = {'global', 'polar', 'local'}
+ON_MAP = {'global', 'local'}
 
 # ---------------------------------------------------------------- data
 bad_targets = _phac_qc.load_bad_targets()
@@ -112,7 +111,8 @@ with open(FA / 'phaC_cluster0.7_cluster.tsv', newline='') as f:
     for cluster_id, target_id in csv.reader(f, delimiter='\t'):
         target_to_cluster[target_id] = cluster_id
 
-depths = defaultdict(dict)   # cluster -> genome -> depth, so a genome counts once
+depths = defaultdict(dict)        # cluster -> genome -> depth, so a genome counts once
+genome_position = {}              # for marking the single deepest genome on the map
 with open(FA / 'phaC_unique_targets_with_metadata_depth.tsv', newline='') as f:
     for row in csv.DictReader(f, delimiter='\t'):
         if row['target_id'] in bad_targets or not row.get('depth_m'):
@@ -120,6 +120,8 @@ with open(FA / 'phaC_unique_targets_with_metadata_depth.tsv', newline='') as f:
         cluster_id = target_to_cluster.get(row['target_id'])
         if cluster_id:
             depths[cluster_id][row['genome']] = abs(float(row['depth_m']))
+        if row.get('latitude_degN') and row.get('longitude_degE'):
+            genome_position[row['genome']] = (float(row['latitude_degN']), float(row['longitude_degE']))
 
 sizes = {}
 with open(FA / 'phaC_cluster0.7_cluster_ecology.tsv', newline='') as f:
@@ -130,8 +132,11 @@ clusters = []
 for suffix, genus, group, marker, color in SELECTION:
     cluster_id = PREFIX + suffix
     values = sorted(depths[cluster_id].values())
+    deepest_genome = max(depths[cluster_id], key=depths[cluster_id].get)
     clusters.append(dict(id=cluster_id, genus=genus, group=group, marker=marker, color=color,
-                         n_genomes=sizes[cluster_id], points=points[cluster_id], depths=values))
+                         n_genomes=sizes[cluster_id], points=points[cluster_id], depths=values,
+                         deepest_m=depths[cluster_id][deepest_genome],
+                         deepest_pos=genome_position.get(deepest_genome)))
     print(f"{group:8s} {genus:20s} n={sizes[cluster_id]:>4}  map pts={len(points[cluster_id]):>4}  "
           f"depth n={len(values):>3}  {min(values):.0f}-{max(values):.0f} m")
 
@@ -155,12 +160,33 @@ for cluster in clusters:
     # The single-region clusters are the point of this panel and are 15-20
     # genomes against the global clusters' hundreds, so they are drawn larger,
     # fully opaque and on top; otherwise they vanish into the cosmopolitan cloud.
-    local = cluster['group'] in ('local', 'polar')
+    local = cluster['group'] == 'local'
     wm.scatter(ax_map, lons, lats, clip_path=ocean, marker=cluster['marker'],
                s=(190 if cluster['marker'] == '*' else 125) if local else 46,
                c=cluster['color'], edgecolors='white',
                linewidths=1.1 if local else 0.6, alpha=1.0 if local else 0.72,
                zorder=7 if local else 5)
+# The three deepest-reaching clusters are cosmopolitan and would add three more
+# full point clouds for no gain, so only their single deepest genome is marked --
+# a position reference for the depth records quoted in panel B. Two of the three
+# share one sample (Izu-Bonin, 9,697 m: Nitrosopumilus and Phenylobacterium are
+# both deepest in the same genome's assembly), so markers are grouped by position
+# and nudged apart rather than drawn on top of each other and labelled twice.
+deepest_by_site = defaultdict(list)
+for cluster in clusters:
+    if cluster['group'] == 'deepest' and cluster['deepest_pos']:
+        deepest_by_site[(round(cluster['deepest_pos'][0], 2), round(cluster['deepest_pos'][1], 2))].append(cluster)
+for (lat, lon), site_clusters in deepest_by_site.items():
+    x, y = wm.project([lon], [lat])
+    spread = 0.085 * (len(site_clusters) - 1)
+    for i, cluster in enumerate(site_clusters):
+        dx = -spread + 2 * spread * (i / max(len(site_clusters) - 1, 1))
+        artist = ax_map.scatter([x[0] + dx], [y[0]], marker=cluster['marker'], s=150,
+                                c=cluster['color'], edgecolors='white', linewidths=1.3, zorder=8)
+        artist.set_clip_path(ocean)
+    ax_map.text(x[0], y[0] - 0.14, f"{site_clusters[0]['deepest_m']:,.0f} m", ha='center', va='top',
+                fontsize=8.4, color=TEXT_DARK, fontweight='bold', zorder=9)
+
 ax_map.text(0.0, 1.0, 'A', transform=ax_map.transAxes, fontsize=15, fontweight='bold', color=TEXT_DARK)
 
 # ---- panel B: depth rows, grouped
