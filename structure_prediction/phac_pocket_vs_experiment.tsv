@@ -1,0 +1,12 @@
+entry	kind	organism	substrate	triad	triad_closed	volume_C3-C5_A3	volume_C6-C8_A3	volume_C9-C12_A3	kd_C3-C5	kd_C6-C8	kd_C9-C12	note
+5HZ2	crystal	Cupriavidus necator PhaC1	scl (C4-C5)	C319/D480/H508	True	41.2	31.9	38.4	1.18	0.74	0.12	canonical short-chain synthase
+5T6O	crystal	Cupriavidus necator PhaC1 C319A	inactive mutant	C459/D291/H295	False	0.0	0.0	0.0	0.0	0.0	0.0	catalytic Cys mutated to Ala
+5XAV	crystal	Chromobacterium sp. USM2 PhaC	scl (C4-C5)	C291/D447/H477	True	71.7	58.7	48.7	0.83	0.5	0.04	highest resolution, 1.48 A
+9KNK	crystal	Aeromonas caviae PhaC	scl + C6 (3HHx)	C319/D475/H503	True	50.8	54.9	34.0	1.3	2.39	1.86	broad specificity; makes P(3HB-co-3HHx)
+184878	ESMFold model	Desulfoluna sp. (CARD22-1 MAG 010)	unknown	C175/D335/H374	True	33.3	53.9	210.3	0.09	0.66	0.96	class I by HMM
+185226	ESMFold model	Desulfoluna sp. (CARD22-1 MAG 010)	unknown	C309/D464/H493	True	28.1	169.8	161.9	1.1	0.5	0.55	class I by HMM
+185910	ESMFold model	Desulfoluna sp. (CARD22-1 MAG 010)	unknown	C340/D517/H554	True	44.6	94.7	2.1	0.97	0.37	-0.02	class III by HMM
+187467	ESMFold model	Desulfoluna sp. (CARD22-1 MAG 010)	unknown	C183/D188/H184	False	0.0	0.0	0.0	0.0	0.0	0.0	class I by HMM
+187468	ESMFold model	Desulfoluna sp. (CARD22-1 MAG 010)	unknown	C154/D307/H336	True	60.0	117.0	101.9	1.8	1.57	0.79	class III by HMM
+187880	ESMFold model	Desulfoluna sp. (CARD22-1 MAG 010)	unknown	C152/D305/H334	True	85.4	128.3	167.4	1.81	1.29	0.63	class III by HMM
+189118	ESMFold model	Desulfoluna sp. (CARD22-1 MAG 010)	unknown	C193/D353/H392	True	52.1	92.3	145.4	0.56	0.24	0.09	class I by HMM

@@ -3,5 +3,6 @@ copy	length_aa	model_class	triad	triad_closed	volume_C3-C5_A3	kd_C3-C5	n_lining_
 185226	578	I	C309/D464/H493	True	28.1	1.1	20	169.8	0.5	37	161.9	0.55	38	
 185910	577	III	C340/D517/H554	True	44.6	0.97	19	94.7	0.37	25	2.1	-0.02	17	pLDDT 64 -- low-confidence model
 187467	541	I	C183/D188/H184	False	0.0	0.0	0	0.0	0.0	0	0.0	0.0	0	no closed triad; not a synthase
+187468	380	III	C154/D307/H336	True	60.0	1.8	25	117.0	1.57	32	101.9	0.79	31	confident class III; no partner subunit
 187880	372	III	C152/D305/H334	True	85.4	1.81	24	128.3	1.29	38	167.4	0.63	33	phaE immediately upstream
 189118	736	I	C193/D353/H392	True	52.1	0.56	25	92.3	0.24	41	145.4	0.09	43	weak class call; phaC/phaZ ambiguous

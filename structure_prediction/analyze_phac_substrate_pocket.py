@@ -71,6 +71,7 @@ COPIES = [
     ('185226', 578, 'I', ''),
     ('185910', 577, 'III', 'pLDDT 64 -- low-confidence model'),
     ('187467', 541, 'I', 'no closed triad; not a synthase'),
+    ('187468', 380, 'III', 'confident class III; no partner subunit'),
     ('187880', 372, 'III', 'phaE immediately upstream'),
     ('189118', 736, 'I', 'weak class call; phaC/phaZ ambiguous'),
 ]
