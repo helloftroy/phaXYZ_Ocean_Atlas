@@ -215,6 +215,35 @@ for hab in habitats:
         'expected_pct_if_composition_only': f'{expected_pct:.2f}' if expected_pct == expected_pct else '',
     })
 
+# Multiple testing: 15 habitats are tested against the same dataset, so raw
+# p-values overstate significance. Benjamini-Hochberg false-discovery-rate
+# q-values are added for both tests. BH rather than Bonferroni because this is a
+# screen across habitats rather than a single confirmatory test; the Bonferroni
+# threshold is reported alongside so a reader can apply the stricter rule --
+# under it the two weakest results (cold seep sediment, estuarine water) do not
+# survive, while every other habitat does under either correction.
+def benjamini_hochberg(pvalues):
+    """BH q-values, order preserved, enforcing monotonicity."""
+    indexed = sorted(enumerate(pvalues), key=lambda kv: kv[1])
+    n = len(pvalues)
+    q = [0.0] * n
+    previous = 1.0
+    for rank, (idx, p) in enumerate(reversed(indexed), start=1):
+        k = n - rank + 1
+        previous = min(previous, p * n / k)
+        q[idx] = previous
+    return q
+
+
+for key, qkey in (('cmh_p', 'cmh_q_bh'), ('raw_fisher_p', 'raw_fisher_q_bh')):
+    values = [float(r[key]) if r[key] else 1.0 for r in habitat_rows]
+    for row, q in zip(habitat_rows, benjamini_hochberg(values)):
+        row[qkey] = f'{q:.3g}'
+BONFERRONI = 0.05 / len(habitat_rows)
+print(f'\nMultiple testing: {len(habitat_rows)} habitats; Bonferroni threshold {BONFERRONI:.2g}')
+print(f"  significant at BH q<0.05: {sum(1 for r in habitat_rows if float(r['cmh_q_bh']) < 0.05)}")
+print(f"  significant at Bonferroni: {sum(1 for r in habitat_rows if float(r['cmh_p']) < BONFERRONI)}")
+
 habitat_rows.sort(key=lambda r: -float(r['pct_raw']))
 
 OUT.mkdir(parents=True, exist_ok=True)
