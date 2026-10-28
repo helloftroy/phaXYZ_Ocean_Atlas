@@ -42,6 +42,17 @@ SHELL_LABEL = ['0–6 Å\n(C3–C5)', '6–11 Å\n(C6–C8)', '11–16 Å\n(C9�
 TEXT_DARK, TEXT_MUTED, RULE, GRID = '#1E2630', '#5B6670', '#B8C0C8', '#EAEDF1'
 SCL_COLOR, MCL_COLOR, DEAD = '#8A94A0', '#B3122E', '#C8CDD3'
 SHORT_ORGANISM = {'5HZ2': '$\\it{C.\\ necator}$', '5XAV': '$\\it{Chromobacterium}$ sp.'}
+# Length, HMM class, and the one model whose confidence is low enough to flag on
+# the figure rather than only in the text.
+COPY_LABEL = {
+    '184878': '184878 · 708 aa · class I',
+    '185226': '185226 · 578 aa · class I',
+    '185910': '185910 · 577 aa · class III · pLDDT 64',
+    '187467': '187467 · 541 aa · no closed triad',
+    '187468': '187468 · 380 aa · class III',
+    '187880': '187880 · 372 aa · class III',
+    '189118': '189118 · 736 aa · class I',
+}
 
 style = {c.short: c for c in _deep_dive_copies.copies_for('CARD22-1_SAMN24292811_MAG_00000010')}
 rows = list(csv.DictReader(open(SOURCE, newline=''), delimiter='\t'))
@@ -61,9 +72,9 @@ def spec(row):
         return SCL_COLOR, (0, (6, 2)), 2.2, '^', 4, f"{row['entry']} — {SHORT_ORGANISM[row['entry']]}, scl only"
     closed = row['triad_closed'] == 'True'
     colour = style[row['entry']].color if row['entry'] in style else DEAD
-    label = f"{row['entry']} · {row['note'].replace('class ', 'cl ')}"
+    label = COPY_LABEL.get(row['entry'], row['entry'])
     if not closed:
-        return DEAD, (0, (2, 3)), 1.4, 'x', 1, f"{row['entry']} — no closed triad"
+        return DEAD, (0, (2, 3)), 1.4, 'x', 1, COPY_LABEL.get(row['entry'], row['entry'])
     return colour, '-', 2.4, 'o', 3, label
 
 
