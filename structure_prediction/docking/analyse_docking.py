@@ -89,14 +89,59 @@ for name in receptors:
     print(f"{name:10s} {receptors[name]['substrate'][:12]:12s} " +
           ' '.join(f'{v:>7.2f}' if v != '' else f'{"-":>7s}' for v in vals))
 
-mcl = {o['ligand']: o['vs_scl_reference'] for o in out_rows if o['receptor'] == MCL_REFERENCE}
-if mcl:
-    short = mcl.get('C4_3HB')
-    mid = min(v for k, v in mcl.items() if k in ('C6_3HHx', 'C8_3HO'))
-    verdict = 'PASSES' if mid < short else 'FAILS'
-    print(f"\nPanel check: {MCL_REFERENCE} (accepts C6) scores {short:+.2f} at C4 and {mid:+.2f} at its best "
-          f"of C6/C8 relative to the short-chain references -- {verdict}.")
-    if verdict == 'FAILS':
-        print('The readout does not separate the enzyme with known medium-chain activity from the ones\n'
-              'without it, so the Desulfoluna numbers above should not be read as chain-length preference.')
+# How far apart are two enzymes that belong to the SAME class? That gap is the
+# floor below which a difference between receptors means nothing. The two
+# short-chain references are both strictly scl, so any separation between them
+# is method noise, not biology.
+print()
+floor = []
+for ligand in ligands:
+    a, b = (by_receptor[r][ligand]['affinity'] for r in SCL_REFERENCES)
+    floor.append(abs(a - b))
+print(f'Noise floor: the two strictly short-chain references disagree by '
+      f'{st.mean(floor):.2f} kcal/mol on average (range {min(floor):.2f}-{max(floor):.2f}).')
+print('Differences between receptors smaller than that should not be interpreted.')
+
+print('\nChain length at which each receptor scores best, and the C4 to C8 shift:')
+for name in receptors:
+    vals = {int(o['carbons']): o['vs_scl_reference'] for o in out_rows
+            if o['receptor'] == name and o['vs_scl_reference'] != ''}
+    if not vals:
+        continue
+    best = min(vals, key=vals.get)
+    shift = vals.get(8, float('nan')) - vals.get(4, float('nan'))
+    print(f'  {name:10s} best at C{best:<3d} ({vals[best]:+.2f})   C4 to C8 shift {shift:+.2f} '
+          f"{'(towards longer chains)' if shift < -0.3 else '(towards shorter chains)' if shift > 0.3 else '(flat)'}")
+
+# Panel check, done against the references INDIVIDUALLY rather than their mean.
+# Checking against the mean is too lenient and hides the thing that matters: if
+# two enzymes of the same known class disagree with each other by as much as the
+# different-class enzyme disagrees with them, the readout is not separating
+# substrate preference. The shift is measured on raw affinities because the
+# reference-relative values are mirror images of each other by construction
+# (they are defined against their own mean) and cannot show that spread.
+raw = defaultdict(dict)
+for r in rows:
+    raw[r['receptor']][r['carbons']] = r['affinity']
+shift = {name: v[8] - v[4] for name, v in raw.items() if 4 in v and 8 in v}
+scl_shifts = [shift[n] for n in SCL_REFERENCES if n in shift]
+mcl_shift = shift.get(MCL_REFERENCE)
+
+print('\nPanel check -- can the readout separate enzymes whose preference is known?')
+for name in SCL_REFERENCES:
+    print(f'  {name} (strictly short-chain): C4 to C8 shift {shift[name]:+.2f} kcal/mol')
+print(f'  {MCL_REFERENCE} (accepts C6):        C4 to C8 shift {mcl_shift:+.2f} kcal/mol')
+margin = min(scl_shifts) - mcl_shift
+noise = st.mean(floor)
+if mcl_shift < min(scl_shifts) and margin > noise:
+    print(f'  PASSES: the C6-accepting enzyme is separated from both same-class references '
+          f'by {margin:.2f}, above the {noise:.2f} noise floor.')
+else:
+    print(f'  FAILS: the C6-accepting enzyme leads by only {margin:.2f} kcal/mol over the nearest '
+          f'short-chain reference, inside the {noise:.2f} noise floor.')
+    print(f'  The two strictly short-chain references differ from each other by '
+          f'{abs(scl_shifts[0] - scl_shifts[1]):.2f}, more than that margin, so this docking cannot')
+    print('  reliably rank chain-length preference. Read the per-copy numbers as a hypothesis to')
+    print('  test, not as a prediction, and weight the pocket-geometry result above them.')
+
 print(f'\nwrote {OUT}')

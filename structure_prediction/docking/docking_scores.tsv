@@ -1,0 +1,61 @@
+receptor	kind	label	substrate	ligand	carbons	heavy_atoms	affinity_kcal_mol
+184878	model	184878 (708 aa, class I)	unknown	C4_3HB	4	13	-5.072
+184878	model	184878 (708 aa, class I)	unknown	C5_3HV	5	14	-5.406
+184878	model	184878 (708 aa, class I)	unknown	C6_3HHx	6	15	-5.536
+184878	model	184878 (708 aa, class I)	unknown	C8_3HO	8	17	-5.702
+184878	model	184878 (708 aa, class I)	unknown	C10_3HD	10	19	-6.175
+184878	model	184878 (708 aa, class I)	unknown	C12_3HDD	12	21	-6.538
+185226	model	185226 (578 aa, class I)	unknown	C4_3HB	4	13	-5.058
+185226	model	185226 (578 aa, class I)	unknown	C5_3HV	5	14	-5.198
+185226	model	185226 (578 aa, class I)	unknown	C6_3HHx	6	15	-5.467
+185226	model	185226 (578 aa, class I)	unknown	C8_3HO	8	17	-5.867
+185226	model	185226 (578 aa, class I)	unknown	C10_3HD	10	19	-5.937
+185226	model	185226 (578 aa, class I)	unknown	C12_3HDD	12	21	-6.034
+185910	model	185910 (577 aa, class III)	unknown	C4_3HB	4	13	-5.342
+185910	model	185910 (577 aa, class III)	unknown	C5_3HV	5	14	-5.643
+185910	model	185910 (577 aa, class III)	unknown	C6_3HHx	6	15	-5.81
+185910	model	185910 (577 aa, class III)	unknown	C8_3HO	8	17	-5.773
+185910	model	185910 (577 aa, class III)	unknown	C10_3HD	10	19	-5.742
+185910	model	185910 (577 aa, class III)	unknown	C12_3HDD	12	21	-5.858
+187467	model	187467 (541 aa, class I)	unknown	C4_3HB	4	13	-4.203
+187467	model	187467 (541 aa, class I)	unknown	C5_3HV	5	14	-4.444
+187467	model	187467 (541 aa, class I)	unknown	C6_3HHx	6	15	-4.558
+187467	model	187467 (541 aa, class I)	unknown	C8_3HO	8	17	-5.002
+187467	model	187467 (541 aa, class I)	unknown	C10_3HD	10	19	-4.919
+187467	model	187467 (541 aa, class I)	unknown	C12_3HDD	12	21	-4.904
+187468	model	187468 (380 aa, class III)	unknown	C4_3HB	4	13	-4.789
+187468	model	187468 (380 aa, class III)	unknown	C5_3HV	5	14	-5.356
+187468	model	187468 (380 aa, class III)	unknown	C6_3HHx	6	15	-5.548
+187468	model	187468 (380 aa, class III)	unknown	C8_3HO	8	17	-5.849
+187468	model	187468 (380 aa, class III)	unknown	C10_3HD	10	19	-6.282
+187468	model	187468 (380 aa, class III)	unknown	C12_3HDD	12	21	-6.484
+187880	model	187880 (372 aa, class III)	unknown	C4_3HB	4	13	-5.108
+187880	model	187880 (372 aa, class III)	unknown	C5_3HV	5	14	-5.207
+187880	model	187880 (372 aa, class III)	unknown	C6_3HHx	6	15	-5.425
+187880	model	187880 (372 aa, class III)	unknown	C8_3HO	8	17	-5.922
+187880	model	187880 (372 aa, class III)	unknown	C10_3HD	10	19	-5.923
+187880	model	187880 (372 aa, class III)	unknown	C12_3HDD	12	21	-6.203
+189118	model	189118 (736 aa, class I)	unknown	C4_3HB	4	13	-4.823
+189118	model	189118 (736 aa, class I)	unknown	C5_3HV	5	14	-4.943
+189118	model	189118 (736 aa, class I)	unknown	C6_3HHx	6	15	-5.247
+189118	model	189118 (736 aa, class I)	unknown	C8_3HO	8	17	-5.867
+189118	model	189118 (736 aa, class I)	unknown	C10_3HD	10	19	-5.943
+189118	model	189118 (736 aa, class I)	unknown	C12_3HDD	12	21	-5.748
+5HZ2	crystal	5HZ2 — Cupriavidus necator PhaC1	scl only	C4_3HB	4	13	-5.582
+5HZ2	crystal	5HZ2 — Cupriavidus necator PhaC1	scl only	C5_3HV	5	14	-5.307
+5HZ2	crystal	5HZ2 — Cupriavidus necator PhaC1	scl only	C6_3HHx	6	15	-5.382
+5HZ2	crystal	5HZ2 — Cupriavidus necator PhaC1	scl only	C8_3HO	8	17	-5.533
+5HZ2	crystal	5HZ2 — Cupriavidus necator PhaC1	scl only	C10_3HD	10	19	-5.604
+5HZ2	crystal	5HZ2 — Cupriavidus necator PhaC1	scl only	C12_3HDD	12	21	-6.175
+5XAV	crystal	5XAV — Chromobacterium sp. USM2 PhaC	scl only	C4_3HB	4	13	-5.623
+5XAV	crystal	5XAV — Chromobacterium sp. USM2 PhaC	scl only	C5_3HV	5	14	-5.984
+5XAV	crystal	5XAV — Chromobacterium sp. USM2 PhaC	scl only	C6_3HHx	6	15	-6.133
+5XAV	crystal	5XAV — Chromobacterium sp. USM2 PhaC	scl only	C8_3HO	8	17	-6.657
+5XAV	crystal	5XAV — Chromobacterium sp. USM2 PhaC	scl only	C10_3HD	10	19	-6.695
+5XAV	crystal	5XAV — Chromobacterium sp. USM2 PhaC	scl only	C12_3HDD	12	21	-6.818
+9KNK	crystal	9KNK — Aeromonas caviae PhaC	scl + C6	C4_3HB	4	13	-4.668
+9KNK	crystal	9KNK — Aeromonas caviae PhaC	scl + C6	C5_3HV	5	14	-5.157
+9KNK	crystal	9KNK — Aeromonas caviae PhaC	scl + C6	C6_3HHx	6	15	-5.355
+9KNK	crystal	9KNK — Aeromonas caviae PhaC	scl + C6	C8_3HO	8	17	-6.021
+9KNK	crystal	9KNK — Aeromonas caviae PhaC	scl + C6	C10_3HD	10	19	-6.239
+9KNK	crystal	9KNK — Aeromonas caviae PhaC	scl + C6	C12_3HDD	12	21	-6.545
