@@ -677,6 +677,36 @@ Three-quarters of the dataset (76.3%) sits in the "everything agrees" cells (tri
 
 **Files:** `figures/scripts/plot_seq_vs_structure_hero.py`; `figures/seq_vs_structure_hero_sized.png`/`.pdf`, `figures/seq_vs_structure_hero.tsv` (15,867 rows).
 
+### 9.13 Do the six Desulfoluna phaC copies differ in the monomer they could accept? (`figures/phac_substrate_channel.png`, supplementary)
+
+The six triad-complete copies of CARD22-1_SAMN24292811_MAG_00000010 (§9.4) split 3 class I / 3 class III by HMM, not all class I as a single-lineage expansion would suggest, and only the two compact copies (187468, 187880) clear a model's trusted cutoff. Since classes I, III and IV all take short-chain-length substrate and only class II takes medium-chain-length, class alone predicts the same monomer for all six. Substrate preference is actually set by the hydrophobic channel the acyl chain occupies beside the catalytic cysteine, so that channel was measured directly.
+
+**What was measured.** Buried, solvent-free volume connected to the catalytic nucleophile, binned by distance from it. An extended acyl chain reaches roughly 1.25 Å per carbon, so 0–6 Å is the space a C3–C5 substrate occupies, 6–11 Å what C6–C8 needs, and 11–16 Å C9–C12. Connectivity to the active site is required, which matters: without it the outer shells count voids walled off from the substrate, and that changed one copy's outermost shell from 173 to 2 Å³.
+
+**Calibration against enzymes of known preference.** A volume means nothing on its own, so the same measurement was run on solved synthases: *Cupriavidus necator* PhaC1 (5HZ2) and *Chromobacterium* sp. USM2 PhaC (5XAV), both strictly short-chain, and *Aeromonas caviae* PhaC (9KNK), which natively incorporates a C6 monomer. **The discriminator is hydrophobicity, not volume.** At 6–11 Å the C6-accepting enzyme reaches +2.39 mean Kyte–Doolittle while the two strictly short-chain enzymes fall to +0.74 and +0.50; their volumes are not nearly as separable.
+
+| Protein | Known substrate | KD at 0–6 Å | KD at 6–11 Å |
+|---|---|---:|---:|
+| 9KNK *A. caviae* | scl + C6 | +1.30 | **+2.39** |
+| 5HZ2 *C. necator* | scl only | +1.18 | +0.74 |
+| 5XAV *Chromobacterium* | scl only | +0.83 | +0.50 |
+| 187468 (380 aa, III) | — | +1.80 | **+1.57** |
+| 187880 (372 aa, III) | — | +1.81 | **+1.29** |
+| 184878 (708 aa, I) | — | +0.09 | +0.66 |
+| 185226 (578 aa, I) | — | +1.10 | +0.50 |
+| 185910 (577 aa, III) | — | +0.97 | +0.37 |
+| 189118 (736 aa, I) | — | +0.56 | +0.24 |
+
+**The copies are not equivalent.** The two compact class III copies sit between the strictly short-chain references and the C6-accepting one, while 189118 and 185910 sit at the strict end. 185910's channel also closes beyond 11 Å (2.1 Å³), a short-chain-specific geometry. So "all six prefer different monomers" is not supported, but "two of the six are built differently from the other four" is.
+
+**Two controls behave correctly,** which is the evidence that the method measures the active site rather than any convenient void: copy 187467, which has no closed triad, and 5T6O, the C319A engineered mutant of the *Cupriavidus* enzyme with its catalytic cysteine removed, both return no connected channel at any distance. The method also recovers C319/D480/H508 for 5HZ2 — the canonical PhaC1 triad in P23608 numbering, the reference this document's own triad columns are defined against.
+
+**Limits, stated because this is predicted structure.** All six copies are ESMFold models, apo, with modelled rather than observed side chains, so absolute volumes are soft and only the comparison across copies is meaningful; the references are crystal structures, which pack more tightly, so the comparison if anything flatters the models. 185910's model is pLDDT 64.3, the weakest of the set, so its channel closure is the least reliable number here and wants an AlphaFold re-fold. Each protein is a single conformer.
+
+**Docking was attempted and is not reported.** A chain-length series of (R)-3-hydroxyacyl-N-acetylcysteamine thioesters (C4–C12) was docked into all seven copies and the references with AutoDock Vina. It failed its own control: the two strictly short-chain reference enzymes differ from each other by 1.08 kcal/mol in their C4→C8 shift, more than the 0.32 kcal/mol by which the C6-accepting enzyme leads the nearer of them, so the readout does not separate enzymes whose preference is known. The scripts and scores are retained (`structure_prediction/docking/`) but no conclusion is drawn from them.
+
+**Files:** `structure_prediction/analyze_phac_substrate_pocket.py`, `anchor_phac_pocket_to_experiment.py`, `phac_substrate_pocket.tsv`, `phac_pocket_vs_experiment.tsv`, `reference_pdb/`; `figures/scripts/plot_phac_substrate_channel.py`; `figures/phac_substrate_channel.png`/`.pdf`.
+
 ## 10. Does phaC cluster identity pair with precursor route?
 
 If a phaC synthase's substrate arrives via a different upstream pathway (FAS-linked vs. beta-oxidation-linked), that is a plausible source of real selective pressure on the synthase itself — a testable version of "the phaC structure should pair up with these proteins." `figures/scripts/plot_phac_cluster_vs_precursor_route.py` asks this directly: within a phaC_cluster0.7 cluster (70%-identity group), is %phaG elevated or depleted relative to baseline, after controlling for phylum?
