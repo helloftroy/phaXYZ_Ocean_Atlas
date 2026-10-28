@@ -86,3 +86,6 @@ phac_recovery/*.faa
 phac_recovery/*.domtbl
 phac_recovery/target_db_subset/
 figures/_superposition_raw/
+structure_prediction/reference_pdb/*.chain*.pdb
+structure_prediction/docking/work/
+structure_prediction/docking/bin/

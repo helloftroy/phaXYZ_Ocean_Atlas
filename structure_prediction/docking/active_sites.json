@@ -1,0 +1,132 @@
+{
+  "184878": {
+    "pdb": "OMDBv2.0_AA_G_NR100_000041184878.pdb",
+    "kind": "model",
+    "label": "184878 (708 aa, class I)",
+    "substrate": "unknown",
+    "centre": [
+      1.507,
+      1.604,
+      2.986
+    ],
+    "triad": "C175/D335/H374",
+    "triad_closed": true
+  },
+  "185226": {
+    "pdb": "OMDBv2.0_AA_G_NR100_000041185226.pdb",
+    "kind": "model",
+    "label": "185226 (578 aa, class I)",
+    "substrate": "unknown",
+    "centre": [
+      1.748,
+      0.45,
+      3.801
+    ],
+    "triad": "C309/D464/H493",
+    "triad_closed": true
+  },
+  "185910": {
+    "pdb": "OMDBv2.0_AA_G_NR100_000041185910.pdb",
+    "kind": "model",
+    "label": "185910 (577 aa, class III)",
+    "substrate": "unknown",
+    "centre": [
+      4.227,
+      -0.174,
+      -2.016
+    ],
+    "triad": "C340/D517/H554",
+    "triad_closed": true
+  },
+  "187467": {
+    "pdb": "OMDBv2.0_AA_G_NR100_000041187467.pdb",
+    "kind": "model",
+    "label": "187467 (541 aa, class I)",
+    "substrate": "unknown",
+    "centre": [
+      -26.515,
+      -15.698,
+      -8.064
+    ],
+    "triad": "C183/D188/H184",
+    "triad_closed": false
+  },
+  "187468": {
+    "pdb": "OMDBv2.0_AA_G_NR100_000041187468.pdb",
+    "kind": "model",
+    "label": "187468 (380 aa, class III)",
+    "substrate": "unknown",
+    "centre": [
+      2.295,
+      -1.584,
+      -4.607
+    ],
+    "triad": "C154/D307/H336",
+    "triad_closed": true
+  },
+  "187880": {
+    "pdb": "OMDBv2.0_AA_G_NR100_000041187880.pdb",
+    "kind": "model",
+    "label": "187880 (372 aa, class III)",
+    "substrate": "unknown",
+    "centre": [
+      4.38,
+      -0.033,
+      -2.915
+    ],
+    "triad": "C152/D305/H334",
+    "triad_closed": true
+  },
+  "189118": {
+    "pdb": "OMDBv2.0_AA_G_NR100_000041189118.pdb",
+    "kind": "model",
+    "label": "189118 (736 aa, class I)",
+    "substrate": "unknown",
+    "centre": [
+      -3.775,
+      -2.382,
+      -0.332
+    ],
+    "triad": "C193/D353/H392",
+    "triad_closed": true
+  },
+  "5HZ2": {
+    "pdb": "structure_prediction/reference_pdb/5HZ2.chainA.pdb",
+    "kind": "crystal",
+    "label": "5HZ2 \u2014 Cupriavidus necator PhaC1",
+    "substrate": "scl only",
+    "centre": [
+      46.689,
+      13.272,
+      52.038
+    ],
+    "triad": "C319/D480/H508",
+    "triad_closed": true
+  },
+  "5XAV": {
+    "pdb": "structure_prediction/reference_pdb/5XAV.chainA.pdb",
+    "kind": "crystal",
+    "label": "5XAV \u2014 Chromobacterium sp. USM2 PhaC",
+    "substrate": "scl only",
+    "centre": [
+      25.174,
+      -37.105,
+      -39.484
+    ],
+    "triad": "C291/D447/H477",
+    "triad_closed": true
+  },
+  "9KNK": {
+    "pdb": "structure_prediction/reference_pdb/9KNK.chainA.pdb",
+    "kind": "crystal",
+    "label": "9KNK \u2014 Aeromonas caviae PhaC",
+    "substrate": "scl + C6",
+    "centre": [
+      31.775,
+      23.562,
+      57.832
+    ],
+    "triad": "C319/D475/H503",
+    "triad_closed": true
+  }
+}
