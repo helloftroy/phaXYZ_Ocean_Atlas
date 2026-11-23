@@ -26,6 +26,7 @@
   const views = {};
   const state = { view: 'genomes', search: '', sort: null, scaleByCount: true };
   let rows = [];
+  let detailRows = null;      // rows behind the open map-cell panel, if any
   let map = null;
 
   /* ------------------------------------------------------------- facets */
@@ -432,12 +433,100 @@
   function renderMap() {
     el('map-title').textContent = view.mapTitle;
     const points = view.mapPoints(rows);
-    map.setPoints(points, { scaleByCount: state.scaleByCount, describe: view.describePoint });
+    map.setPoints(points, {
+      scaleByCount: state.scaleByCount,
+      describe: view.describePoint,
+      onSelect: (bin) => (bin ? renderDetail(bin) : hideDetail()),
+    });
+    hideDetail();
+    updateMapNote();
+  }
+
+  function updateMapNote() {
     const plotted = map.plotted || 0;
-    const bins = map.bins.length;
     el('map-note').textContent = plotted
-      ? `${Data.int(plotted)} occurrences in ${Data.int(bins)} grid cells (${map.resolution}°). Hover a cell for details.`
+      ? `${Data.int(plotted)} occurrences in ${Data.int(map.bins.length)} cells of ` +
+        `${map.resolution}°. Scroll to zoom, drag to pan, click a cell for what is in it.`
       : 'No records in this selection carry coordinates.';
+    el('zoom-level').textContent = `${map.zoom.toFixed(1)}×`;
+  }
+
+  /* ------------------------------------------------------------- detail */
+
+  /* A clicked cell holds genome rows. In the genomes view those are the records
+   * themselves; in the other two they are the genomes an occurrence links to,
+   * so the proteins or clusters present there have to be looked up and then
+   * narrowed to the ones the current filter kept. */
+  function rowsInCell(bin) {
+    if (state.view === 'genomes') return bin.rows;
+    const allowed = new Set(rows);
+    const group = state.view === 'proteins' ? atlas.proteinsIn : atlas.clustersIn;
+    return Data.keysIn(group, bin.rows, allowed);
+  }
+
+  const DETAIL_LIMIT = 200;
+
+  function renderDetail(bin) {
+    const found = rowsInCell(bin);
+    detailRows = found;
+
+    const north = bin.lat < 0 ? 'S' : 'N';
+    const east = bin.lon < 0 ? 'W' : 'E';
+    el('detail-title').textContent =
+      `${Data.int(found.length)} ${found.length === 1 ? view.unit.slice(0, -1) : view.unit} ` +
+      `near ${Math.abs(bin.lat).toFixed(1)}°${north}, ${Math.abs(bin.lon).toFixed(1)}°${east}` +
+      (state.view === 'genomes' ? '' : ` (in ${Data.int(bin.count)} genome records)`);
+
+    const body = el('detail-body');
+    body.textContent = '';
+    if (!found.length) {
+      const empty = document.createElement('p');
+      empty.className = 'hint';
+      empty.textContent = 'Nothing here matches the current filters.';
+      body.append(empty);
+    } else {
+      const columns = view.columns.slice(0, 6);
+      const table = document.createElement('table');
+      const head = document.createElement('thead');
+      const headRow = document.createElement('tr');
+      for (const column of columns) {
+        const th = document.createElement('th');
+        th.textContent = column.label;
+        headRow.append(th);
+      }
+      head.append(headRow);
+      table.append(head);
+
+      const tbody = document.createElement('tbody');
+      for (const row of found.slice(0, DETAIL_LIMIT)) {
+        const tr = document.createElement('tr');
+        for (const column of columns) {
+          const td = document.createElement('td');
+          if (column.cls) td.className = column.cls;
+          const value = column.cell ? column.cell(row) : column.value(row);
+          if (value instanceof Node) td.append(value);
+          else td.textContent = value === null || value === undefined ? '' : value;
+          tr.append(td);
+        }
+        tbody.append(tr);
+      }
+      table.append(tbody);
+      body.append(table);
+
+      if (found.length > DETAIL_LIMIT) {
+        const more = document.createElement('p');
+        more.className = 'hint';
+        more.textContent =
+          `Showing the first ${DETAIL_LIMIT}. Download for all ${Data.int(found.length)}.`;
+        body.append(more);
+      }
+    }
+    el('detail').hidden = false;
+  }
+
+  function hideDetail() {
+    detailRows = null;
+    el('detail').hidden = true;
   }
 
   function refresh() {
@@ -463,7 +552,7 @@
 
     /* ---- genomes ---- */
     views.genomes = {
-      title: 'Genomes',
+      title: 'Genomes', unit: 'genomes',
       mapTitle: 'Where these genomes were sampled',
       count: () => genomes.n,
       facets: [
@@ -565,7 +654,7 @@
 
     /* ---- phaC proteins ---- */
     views.proteins = {
-      title: 'phaC proteins',
+      title: 'phaC proteins', unit: 'proteins',
       mapTitle: 'Where these phaC proteins occur',
       count: () => proteins.n,
       facets: [
@@ -664,7 +753,7 @@
 
     /* ---- phaC clusters ---- */
     views.clusters = {
-      title: 'phaC clusters',
+      title: 'phaC clusters', unit: 'clusters',
       mapTitle: 'Where these phaC clusters occur',
       count: () => clusters.n,
       facets: [
@@ -727,9 +816,10 @@
 
   /* ------------------------------------------------------------- export */
 
-  function exportCSV() {
+  function exportCSV(which, tag) {
+    const target = which || rows;
     const columns = view.columns.map((column) => column.label);
-    const text = Data.toCSV(columns, rows, (row, index) => {
+    const text = Data.toCSV(columns, target, (row, index) => {
       const column = view.columns[index];
       if (column.exportValue) return column.exportValue(row);
       if (column.cell) return column.sortKey ? column.sortKey(row) : '';
@@ -739,7 +829,8 @@
         ? value.replace(/,/g, '') : value;
     });
     const stamp = new Date().toISOString().slice(0, 10);
-    Data.download(`${view.exportName}_${rows.length}rows_${stamp}.csv`, text);
+    const suffix = tag ? `_${tag}` : '';
+    Data.download(`${view.exportName}${suffix}_${target.length}rows_${stamp}.csv`, text);
   }
 
   /* ------------------------------------------------------------- about */
@@ -824,10 +915,21 @@
       searchTimer = setTimeout(() => { state.search = value; refresh(); }, 180);
     });
 
-    el('download').addEventListener('click', exportCSV);
+    el('download').addEventListener('click', () => exportCSV());
     el('map-scale').addEventListener('change', (event) => {
       state.scaleByCount = event.target.checked;
       map.setScaleByCount(state.scaleByCount);
+    });
+
+    el('zoom-in').addEventListener('click', () => { map.zoomBy(1.6); updateMapNote(); });
+    el('zoom-out').addEventListener('click', () => { map.zoomBy(1 / 1.6); updateMapNote(); });
+    el('zoom-reset').addEventListener('click', () => { map.resetView(); hideDetail(); updateMapNote(); });
+    el('map').addEventListener('wheel', () => requestAnimationFrame(updateMapNote), { passive: true });
+    el('map').addEventListener('dblclick', () => requestAnimationFrame(updateMapNote));
+
+    el('detail-close').addEventListener('click', () => { hideDetail(); map.clearSelection(); });
+    el('detail-download').addEventListener('click', () => {
+      if (detailRows && detailRows.length) exportCSV(detailRows, 'map_cell');
     });
 
     let scrollFrame = null;

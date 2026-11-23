@@ -92,15 +92,22 @@ const Data = (() => {
   const OCCURRENCE_TYPES = { p: 'str', c: 'str', g: 'i32' };
 
   async function load(onProgress) {
-    const [meta, lookups, land, genomeText, proteinText, clusterText, occurrenceText] =
+    // meta.json is small and read first without the cache, so that a rebuild is
+    // noticed immediately; its build stamp then versions every other data URL.
+    // Without this, Pages' long cache lifetime serves yesterday's tables after
+    // a deploy, and the mismatch is invisible until a count looks wrong.
+    const meta = JSON.parse(await (await fetch('data/meta.json', { cache: 'no-cache' })).text());
+    if (onProgress) onProgress('data/meta.json');
+    const v = `?v=${encodeURIComponent(meta.built)}`;
+
+    const [lookups, land, genomeText, proteinText, clusterText, occurrenceText] =
       await Promise.all([
-        fetchJSON('data/meta.json', onProgress),
-        fetchJSON('data/lookups.json', onProgress),
-        fetchJSON('data/land.json', onProgress),
-        fetchText('data/genomes.csv', onProgress),
-        fetchText('data/proteins.csv', onProgress),
-        fetchText('data/clusters.csv', onProgress),
-        fetchText('data/occurrences.csv', onProgress),
+        fetchJSON(`data/lookups.json${v}`, onProgress),
+        fetchJSON(`data/land.json${v}`, onProgress),
+        fetchText(`data/genomes.csv${v}`, onProgress),
+        fetchText(`data/proteins.csv${v}`, onProgress),
+        fetchText(`data/clusters.csv${v}`, onProgress),
+        fetchText(`data/occurrences.csv${v}`, onProgress),
       ]);
 
     const genomes = parseColumnar(genomeText, GENOME_TYPES);
@@ -118,9 +125,14 @@ const Data = (() => {
     const byProtein = groupOccurrences(occurrences, proteinRow, 'p');
     const byCluster = groupOccurrences(occurrences, clusterRow, 'c');
 
+    // ...and the reverse, so clicking a map cell can say which proteins and
+    // clusters are present in the genomes that fall in it.
+    const proteinsIn = groupByGenome(occurrences, proteinRow, 'p', genomes.n);
+    const clustersIn = groupByGenome(occurrences, clusterRow, 'c', genomes.n);
+
     // Genome names are 8 MB and only the table and CSV export need them, so they
     // arrive separately and the first paint does not wait on them.
-    const namesPromise = fetchText('data/genome_names.csv')
+    const namesPromise = fetchText(`data/genome_names.csv${v}`)
       .then((text) => {
         const names = text.split('\n');
         if (names.length && names[names.length - 1] === '') names.pop();
@@ -130,9 +142,49 @@ const Data = (() => {
 
     return {
       meta, lookups, land, genomes, proteins, clusters, occurrences,
-      proteinRow, clusterRow, byProtein, byCluster, namesPromise,
-      names: null,
+      proteinRow, clusterRow, byProtein, byCluster, proteinsIn, clustersIn,
+      namesPromise, names: null,
     };
+  }
+
+  /* genome row -> the protein (or cluster) rows found in that genome. */
+  function groupByGenome(occurrences, keyRow, keyColumn, genomeCount) {
+    const keys = occurrences.cols[keyColumn];
+    const genomeRows = occurrences.cols.g;
+    const offsets = new Int32Array(genomeCount + 1);
+    const resolved = new Int32Array(occurrences.n).fill(BLANK_INT);
+
+    for (let i = 0; i < occurrences.n; i++) {
+      const key = keyRow.get(keys[i]);
+      const genome = genomeRows[i];
+      if (key === undefined || genome === BLANK_INT || genome >= genomeCount) continue;
+      resolved[i] = key;
+      offsets[genome + 1]++;
+    }
+    for (let k = 1; k < offsets.length; k++) offsets[k] += offsets[k - 1];
+
+    const cursor = offsets.slice();
+    const items = new Int32Array(offsets[offsets.length - 1]);
+    for (let i = 0; i < occurrences.n; i++) {
+      if (resolved[i] === BLANK_INT) continue;
+      items[cursor[genomeRows[i]]++] = resolved[i];
+    }
+    return { offsets, items };
+  }
+
+  /* Distinct keys reachable from a set of genome rows, honouring an optional
+   * membership test so a click only reports rows the current filter kept. */
+  function keysIn(group, genomeRows, allowed) {
+    const seen = new Set();
+    for (let i = 0; i < genomeRows.length; i++) {
+      const genome = genomeRows[i];
+      for (let k = group.offsets[genome]; k < group.offsets[genome + 1]; k++) {
+        const key = group.items[k];
+        if (allowed && !allowed.has(key)) continue;
+        seen.add(key);
+      }
+    }
+    return [...seen];
   }
 
   /* Build a CSR-style grouping: offsets[k]..offsets[k+1] indexes items for key k. */
@@ -224,5 +276,5 @@ const Data = (() => {
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 
-  return { load, BLANK_INT, genomesFor, countFor, int, dec, label, toCSV, download };
+  return { load, BLANK_INT, genomesFor, keysIn, countFor, int, dec, label, toCSV, download };
 })();

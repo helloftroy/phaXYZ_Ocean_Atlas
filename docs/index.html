@@ -5,7 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PHA Ocean Atlas</title>
 <meta name="description" content="Explore polyhydroxyalkanoate biosynthesis genes across 274,282 ocean genomes: filter, map and download.">
-<link rel="stylesheet" href="style.css">
+<!-- ?v= is bumped whenever these files change. GitHub Pages sets a long cache
+     lifetime, so without it a returning visitor keeps the previous stylesheet
+     and scripts after a deploy. Data files are versioned separately, from the
+     build stamp in meta.json. -->
+<link rel="stylesheet" href="style.css?v=3">
 </head>
 <body>
 
@@ -44,12 +48,28 @@
         <h2 id="map-title">Occurrence map</h2>
         <div class="map-controls">
           <label class="inline"><input type="checkbox" id="map-scale" checked> Size by count</label>
-          <span class="hint" id="map-note"></span>
+          <div class="zoom" role="group" aria-label="Zoom">
+            <button type="button" id="zoom-out" class="ghost" aria-label="Zoom out">&minus;</button>
+            <span id="zoom-level">1.0&times;</span>
+            <button type="button" id="zoom-in" class="ghost" aria-label="Zoom in">+</button>
+            <button type="button" id="zoom-reset" class="ghost">Reset</button>
+          </div>
         </div>
       </div>
       <div class="map-wrap">
-        <canvas id="map" role="img" aria-label="World map of occurrences"></canvas>
+        <canvas id="map" aria-label="World map of occurrences. Scroll to zoom, drag to pan, click a cell for details."></canvas>
         <div id="tip" class="tip" hidden></div>
+      </div>
+      <p class="hint map-note" id="map-note"></p>
+      <div id="detail" class="detail" hidden>
+        <div class="detail-head">
+          <h3 id="detail-title"></h3>
+          <div class="detail-actions">
+            <button type="button" id="detail-download" class="ghost">Download these</button>
+            <button type="button" id="detail-close" class="ghost" aria-label="Close details">&times;</button>
+          </div>
+        </div>
+        <div id="detail-body"></div>
       </div>
     </div>
 
@@ -82,8 +102,8 @@
   Full archive on Zenodo (DOI pending). Predictions are not experimental measurements; see <a href="#about">About the data</a>.</p>
 </footer>
 
-<script src="map.js"></script>
-<script src="data.js"></script>
-<script src="app.js"></script>
+<script src="map.js?v=3"></script>
+<script src="data.js?v=3"></script>
+<script src="app.js?v=3"></script>
 </body>
 </html>
