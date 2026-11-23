@@ -1,0 +1,39 @@
+{
+  "built": "2026-11-23",
+  "target_prefix": "OMDBv2.0_AA_G_NR100_",
+  "counts": {
+    "genomes_in_matrix": 241864,
+    "genomes_with_coordinates": 226865,
+    "phac_positive_genomes": 38744,
+    "phac_positive_genomes_without_metadata": 1763,
+    "phac_proteins": 33770,
+    "phac_clusters": 4345,
+    "mappable_occurrences": 58951,
+    "unmappable_occurrences": 3047,
+    "proteins_with_qtm": 15867,
+    "family_genome_counts": {
+      "phaA": 184489,
+      "phaB": 174573,
+      "phaJ": 86056,
+      "phaZ": 156495,
+      "phaC": 36981,
+      "phaG": 4995,
+      "phaP": 16097,
+      "phaF": 19902,
+      "phaR_regulator": 20292,
+      "phaY": 18375,
+      "phaI": 5153,
+      "phaE": 3167,
+      "phaD": 823,
+      "phaQ": 6323,
+      "phaR_synthase": 464
+    }
+  },
+  "caveats": [
+    "phaC presence comes from the uncapped protein-to-genome membership list (38,744 genomes). Every other family comes from a metadata join capped at 5 genomes per identical protein, so those counts are lower bounds, not exact.",
+    "1,763 phaC-positive genomes have no row in the metadata matrix, so they carry no taxonomy, habitat or coordinates and cannot appear on the map.",
+    "qTM structural scores exist only for the 95%-dereplication representatives, 15,867 of 33,770 proteins. Blank means not measured, not low.",
+    "Catalytic-triad completeness is scored by HMM alignment columns, which produces false negatives on divergent sequences; treat it as a floor.",
+    "ESMFold models and TemStaPro thermostability are predictions, not experimental measurements."
+  ]
+}

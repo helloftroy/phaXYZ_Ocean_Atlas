@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PHA Ocean Atlas</title>
+<meta name="description" content="Explore polyhydroxyalkanoate biosynthesis genes across 274,282 ocean genomes: filter, map and download.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="top">
+  <div class="brand">
+    <h1>PHA Ocean Atlas</h1>
+    <p>Polyhydroxyalkanoate biosynthesis genes across <span data-stat="genomes">&hellip;</span> ocean genomes</p>
+  </div>
+  <nav class="tabs" role="tablist" aria-label="Choose what to explore">
+    <button role="tab" data-view="genomes" aria-selected="true">Genomes</button>
+    <button role="tab" data-view="proteins" aria-selected="false">phaC proteins</button>
+    <button role="tab" data-view="clusters" aria-selected="false">phaC clusters</button>
+  </nav>
+  <div class="links">
+    <a href="https://github.com/helloftroy/phaXYZ_Ocean_Atlas">Code</a>
+    <a href="#about">About the data</a>
+  </div>
+</header>
+
+<div id="loading" class="loading"><span class="spinner" aria-hidden="true"></span><span id="loading-text">Loading the atlas&hellip;</span></div>
+
+<main id="app" hidden>
+  <aside class="facets" aria-label="Filters">
+    <div class="facets-head">
+      <h2>Filters</h2>
+      <button id="reset" class="ghost" type="button">Reset all</button>
+    </div>
+    <div id="facet-list"></div>
+  </aside>
+
+  <section class="results">
+    <div class="summary" id="summary" role="status" aria-live="polite"></div>
+
+    <div class="panel map-panel">
+      <div class="panel-head">
+        <h2 id="map-title">Occurrence map</h2>
+        <div class="map-controls">
+          <label class="inline"><input type="checkbox" id="map-scale" checked> Size by count</label>
+          <span class="hint" id="map-note"></span>
+        </div>
+      </div>
+      <div class="map-wrap">
+        <canvas id="map" role="img" aria-label="World map of occurrences"></canvas>
+        <div id="tip" class="tip" hidden></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <h2 id="table-title">Records</h2>
+        <div class="table-controls">
+          <input type="search" id="search" placeholder="Search name or id&hellip;" aria-label="Search records">
+          <button id="download" class="primary" type="button">Download CSV</button>
+        </div>
+      </div>
+      <div class="table-scroll" id="table-scroll">
+        <table id="table">
+          <thead><tr id="thead-row"></tr></thead>
+          <tbody id="tbody"></tbody>
+        </table>
+        <div id="table-pad"></div>
+      </div>
+      <p class="hint" id="table-note"></p>
+    </div>
+  </section>
+</main>
+
+<section id="about" class="about" hidden>
+  <h2>About the data</h2>
+  <div id="about-body"></div>
+</section>
+
+<footer class="foot">
+  <p>Built <span data-stat="built">&hellip;</span> from the analysis pipeline — every value here is generated from the source tables, never entered by hand.
+  Full archive on Zenodo (DOI pending). Predictions are not experimental measurements; see <a href="#about">About the data</a>.</p>
+</footer>
+
+<script src="map.js"></script>
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

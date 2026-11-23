@@ -89,3 +89,9 @@ figures/_superposition_raw/
 structure_prediction/reference_pdb/*.chain*.pdb
 structure_prediction/docking/work/
 structure_prediction/docking/bin/
+
+# Zenodo deposit staging. The archive is rebuildable with
+# zenodo/build_deposit.py and far too large to version; only the README, the
+# manifest and the build script itself are committed.
+zenodo/*/
+*.partial
