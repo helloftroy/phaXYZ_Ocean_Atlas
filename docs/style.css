@@ -26,6 +26,12 @@
 
 * { box-sizing: border-box; }
 
+/* The hidden attribute only sets display:none from the UA stylesheet, so any
+   author display rule beats it. .loading is display:flex and main is
+   display:grid, which left both permanently visible however hidden was set.
+   This has to stay above those rules and carry !important. */
+[hidden] { display: none !important; }
+
 body {
   margin: 0;
   font-family: var(--sans);
@@ -340,7 +346,6 @@ td.wrap { white-space: normal; min-width: 150px; }
 
 .fam.c { background: var(--blue-5); color: #fff; }
 
-#table-pad { height: 0; }
 #table-note { padding: 8px 13px; }
 
 /* ---------------------------------------------------------------- about */
