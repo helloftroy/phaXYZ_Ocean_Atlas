@@ -957,3 +957,248 @@ They pattern with class I, not class III, despite 222 of 255 best-matching the c
 One limit, stated because the script reports it: the catalytic triad here is the alignment-column call from §13.1, not the geometric one. The PDB files stayed on the cluster, so `find_structural_triad.py` was not run on these; the verdicts read "active site not measured" rather than asserting a closed triad. Copying the structures back would close that.
 
 **Files:** `phac_recovery/build_novel_phac_query_set.py`, `novel_phac_query_representatives.faa`, `qualifying_genomes.txt`, `genome_download_manifest.tsv`, `extract_novel_phac_candidates.py`, `novel_phac_candidates.tsv`, `check_novel_phac_candidate_triads.py`, `novel_phac_candidate_triads.tsv`, `classify_novel_phac_candidates.py`, `novel_phac_candidate_verdicts.tsv`, `novel_phac_new_candidates.tsv`, `novel_phac_new_candidates.faa`; `cluster/run_phac_recovery_download_proteomes.sbatch`, `cluster/run_novel_phac_mmseqs_search.sbatch`; `phaatlas/pipeline/phac_recovery.py`. Structure step, ready to run: `structure_prediction/build_novel_phac_fold_input.py` → `novel_phac_candidates.faa` (registered in `fold_manifest.tsv` as its own query set), folded by `cluster/run_novel_phac_structure_prediction.sbatch`, compared by `cluster/run_foldseek.sbatch` with `QUERY_SETS=novel_phac_candidates`, read out by `structure_prediction/analyze_novel_phac_structures.py`.
+
+---
+
+## 14. Verification of manuscript sentences (2026-11-23)
+
+Each claim below was checked directly against the tables rather than against
+earlier prose in this document. Two were wrong and are corrected here.
+
+### 14.1 "the 4,170 genomes that lacked a detectable phaC but carried more than five other pha genes" — correct
+
+`phac_recovery/qualifying_genomes.txt` holds exactly **4,170 lines, all
+unique**. Consistent with §12/§13's target set. The 7,826 in
+`phac_recovery/README.md` remains stale (pre-dates the 2026-09-22 QC rebuild).
+Note for drafting: 4,170 is the set *searched*; hits came back in 3,857 of them.
+
+### 14.2 "[N] of 255 have a tight Cys-Asp-His triad" — this number does not exist
+
+The geometric triad check was **never run on the 255 novel candidates**. In
+`structure_prediction/novel_phac_structural_verdicts.tsv` the columns
+`triad_tight`, `nucleophile`, `nuc_his_dist_A`, `his_asp_dist_A` and
+`mean_plddt` are empty for all 255 rows, and every verdict reads "complete
+synthase fold (active site not measured)" (237) or "synthase fold, partial
+coverage of reference" (18). Cause: `structure_prediction/esmfold_out/novel_phac_candidates/`
+is empty — only the Foldseek summary came back from the cluster, not the
+per-candidate PDBs. To obtain the number, retrieve those PDBs and run
+`catalytic_domain/find_structural_triad.py` over them.
+
+Two further errors in that draft sentence:
+
+- **All 255 have Cys at the nucleophile column; none are Ser or Thr.** The
+  alternative-nucleophile result (11 Ser + 1 Thr of 59) is from the divergent35
+  population, §9.12 — a different set. "Cys/Ser-Asp-His" is wrong here.
+- The sequence-level answer is **255/255 `triad_complete=True`**, which is
+  circular: triad completeness was the filter used to build the set.
+
+### 14.3 The usable replacement: the lipase box
+
+Of the 255 candidates, only **3 carry the canonical G-x-C-x-G lipase box**
+(G at HMM column 305, Cys at 307, G at 309); **252 fall outside it**. This
+generalises the single Haliangium observation to the whole set and needs no
+structures. Also note `fully_covered=True` for all 255.
+
+Wording flag: "only the geometry identified it" overstates the case. The triad
+in all 255, Haliangium included, was identified by HMM alignment columns. The
+structure's contribution was showing the two triads superpose (Cα 0.49 / 1.67 /
+1.23 Å, catalytic Cys Sγ–Sγ 0.52 Å).
+
+### 14.4 Are singleton clusters technical artifacts? No — on coverage
+
+"Singleton" has two meanings in this project and they differ by a factor of
+three. Both computed; `best_tcov` (coverage of the best reference) is the
+fragment test, since query coverage cannot distinguish a fragment from a
+compact protein (§13.4).
+
+**Cluster level** — one of the 4,345 70%-identity clusters carried by exactly
+one genome, scored on cluster representatives:
+
+| | Singleton | Non-singleton |
+|---|---:|---:|
+| n | 1,752 (40.3%) | 2,593 |
+| covers ≥75% of reference | **89.0%** | 91.7% |
+| median reference coverage | 0.954 | 0.955 |
+| complete triad (alignment) | 67.2% | 85.5% |
+| both criteria | **63.2%** | 80.2% |
+| median identity to reference | 54.0% | 57.9% |
+| qTM ≥0.5 | 91.0% (n=1,601) | 95.3% (n=1,987) |
+
+Failure modes for the 1,752 singleton representatives: both pass 1,107 (63.2%),
+triad only fails 453 (25.9%), both fail 122 (7.0%), coverage only fails 70 (4.0%).
+
+**Fig. 4B representative level** — a representative whose cluster is carried by
+one genome:
+
+| | Singleton | Non-singleton |
+|---|---:|---:|
+| n | 1,841 (11.6% of panel) | 14,026 |
+| covers ≥75% of reference | **89.4%** | 93.9% |
+| median reference coverage | 0.955 | 0.980 |
+| qTM ≥0.5 | 91.7% | 95.1% |
+| complete triad (alignment) | 73.8% | 77.5% |
+| both criteria | 69.1% | 73.8% |
+| median identity to reference | 53.6% | 64.6% |
+
+**Conclusion.** Quote the coverage number (89.0% cluster level / 89.4%
+representative level), not the combined one. The combined figure is dragged
+down almost entirely by the triad call, and §9.11 already established that the
+alignment-column method produces false negatives on divergent sequences — the
+CARD22-1 copy `...184878` is the worked example (`triad_complete=False` by
+alignment, tight Cys175/Asp335/His374 at 3.19 Å / 2.73 Å geometrically).
+Singletons are the more divergent population, so they absorb more of that
+error; quoting 63% invites a reviewer to read a method artifact as evidence for
+the artifact hypothesis being dismissed. Median reference coverage is
+*identical* between singletons and non-singletons (0.954 vs 0.955), which is
+the strongest single statement available.
+
+Caveat to carry: coverage and triad completeness test truncation, not
+chimerism. qTM ≥0.5 is the closest available chimera test, since a fused
+chimera should fold poorly as one domain.
+
+### 14.5 Endemism, decoupled from rarity
+
+43.4% of clusters (1,882 of 4,340 in `figures/phac_cluster_landscape.tsv`) sit
+at a single location, and 1,488 of the 1,752 singletons are single-location —
+but for a singleton that is true by construction, since a cluster in one genome
+can only be at one place. The non-circular numbers:
+
+| Cluster occupancy | Clusters | Single-location | % |
+|---|---:|---:|---:|
+| ≥2 genomes | 2,358 | 394 | **16.7%** |
+| ≥5 genomes | 1,098 | 44 | 4.0% |
+
+Also worth stating in the manuscript: explanations "undersampling" and
+"technical artifact" are **not independent**. Chao2 is computed from the
+singleton count (Q1 = 1,752, exactly the singleton total; §7), so artifactual
+singletons would inflate Chao2 directly. The artifact check is a precondition
+for the undersampling argument, not a parallel alternative.
+
+### 14.6 Desulfoluna recurrence and copy accounting
+
+Verified correct for the Fig. 9A sentence: **11 genomes**, **3 studies**
+(CARD22-1 ×5, PELI21-1 ×4, RSGB23-1 ×2), **2 habitats** (Coral tissue ×5,
+Marine sediment ×4; the two RefSeq isolates carry `ecosystem_type=NA`),
+**9 shared paralog clusters**, and the cultured isolates are *D. butyratoxydans*
+(`RSGB23-1_GCF-900699765-V1`) and *D. spongiiphila* (`RSGB23-1_GCF-902498735-V1`).
+All 9 clusters are carried by more than one genome; **6 of the 9 cross study
+boundaries**, and `paralog 187468` spans all three studies and 8 of 11 genomes.
+
+**Corrected: four confident copies, not five.** The genome has 7 QC-passing
+copies. `...187467` (541 aa) fails the triad check by **both** methods —
+alignment columns say incomplete, and geometrically the triad is open
+(C183/D188/H184) with zero pocket volume — and `figures/scripts/_deep_dive_copies.py`
+excludes it as "not a functional synthase". That leaves **6 triad-complete
+copies**, matching Fig. S3 / §9.13's six. Two of those six are the
+phaC/phaZ-ambiguous long copies (708 aa `...184878`, 39.0 vs 44.8 phaZ;
+736 aa `...189118`, 41.0 vs 43.6 phaZ). So: **4 confident + 2 uncertain = 6**,
+with a seventh excluded. Writing "five confident and two uncertain" silently
+readmits `...187467` and contradicts the supplemental figure.
+
+Keep straight: `...184878` is `triad_complete=False` by alignment but has a
+**closed** triad structurally, so it is uncertain for the phaZ reason, not the
+triad reason.
+
+**Stale number in this document:** §9.10 still says the CARD22-1 circos has "46
+confirmed copies, 99 chords". The current `figures/card22_desulfoluna_circos_nodes.tsv`
+has **38 copies** across 11 genomes and 9 clusters, after the 2026-09-25 triad
+filter. The 9 clusters figure is unchanged.
+
+### 14.7 Genes vs genomes: 38,744 is a genome count
+
+A draft sentence read "identify 38,744 phaC genes in 31,464 genomes". Both
+numbers are genome counts — one correct, one superseded. What each quantity is:
+
+| Count | Quantity |
+|---:|---|
+| 61,998 | QC-passing protein–genome pairs (gene occurrences) |
+| 38,744 | phaC-positive genomes, uncapped — the figure to quote |
+| 33,770 | distinct NR100 protein sequences |
+| 15,867 | representatives after 95% dereplication (Fig. 4B) |
+| 4,345 | clusters at 70% identity |
+| 31,464 | capped genome count, superseded (§2) |
+
+Recommended phrasing: "identify phaC in 38,744 genomes, comprising 33,770
+distinct protein sequences." Avoid "genes": the catalogue is non-redundant at
+100% identity, so two identical copies in one genome collapse to one pair and
+61,998 is a lower bound. Do not confuse it with §7's 61,219 genome–cluster
+pairs, a different quantity.
+
+---
+
+## 15. Public data explorer and Zenodo deposit (2026-11-23)
+
+### 15.1 The site (`docs/`, commit 5849d3b)
+
+A static exploratory browser, deliberately **not** a reproduction of the
+paper's figures: it exists so a reader can ask their own question. Three views
+over three granularities, with faceted filters, a Robinson occurrence map and
+CSV export of any selection.
+
+Generated payload (`site_build/build_site_data.py`):
+
+| File | Rows | Size |
+|---|---:|---:|
+| `genomes.csv` | 241,864 | 13.88 MB |
+| `genome_names.csv` | 241,864 | 8.46 MB |
+| `proteins.csv` | 33,770 | 1.96 MB |
+| `occurrences.csv` | 58,951 | 1.50 MB |
+| `clusters.csv` | 4,345 | 0.12 MB |
+| `lookups.json` | — | 0.17 MB |
+| `land.json` | 128 rings, 5,129 points | 0.07 MB |
+
+About 26 MB raw, roughly 5–6 MB transferred since GitHub Pages gzips text in
+flight. No server, no WASM, no tile service: repeated strings are integer codes
+resolved through `lookups.json`, filtering is a linear scan over typed arrays,
+and the coastline is parsed out of `figures/assets/naturalearth/ne_110m_land.shp`
+directly by `site_build/build_land_outline.py` (pyshp is not installed).
+
+Coverage figures the site exposes: 226,865 of 241,864 genomes carry
+coordinates; 36,981 of the 38,744 phaC-positive genomes have a metadata row and
+can be mapped, leaving **1,763 with none**; 58,951 of 61,998 protein–genome
+pairs are mappable, so **3,047 occurrences cannot be plotted**. qTM exists for
+15,867 of 33,770 proteins. Triad complete for 27,575 of 33,770 (81.7%);
+691 proteins predicted stable at ≥60 °C.
+
+**The cap correction is applied in the generator, not inherited.** phaC
+presence comes from the uncapped membership list (38,744 genomes); the other 15
+families come from `genome_family_matrix.tsv` and are therefore lower bounds,
+which `meta.json` and the site's About panel state explicitly.
+
+Verification before commit: the browser loader parses every file with counts
+matching `meta.json` and no out-of-range row in the occurrence grouping; the
+JavaScript Robinson projection agrees with `figures/scripts/_simple_world_map.py`
+to six decimals on seven test points, including 39.02 °E / 22.18 °N →
+0.565381, 0.371926; and the generated data reproduces the Desulfoluna
+deep-dive genome (7 phaC copies, 5 triad-complete by alignment, Desulfobacterota
+/ *Desulfoluna* / Coral tissue at 22.18 °N 39.02 °E), 1,752 singleton clusters,
+1,882 single-location clusters, and a largest cluster of 1,201 genomes.
+
+Worked query, as an illustration of what the site is for: class I + triad
+complete + predicted stable ≥65 °C + qTM ≥0.85 returns **15 proteins** — a
+question currently unanswerable without writing Python against nine tables.
+
+**Not yet done:** GitHub Pages must be switched on manually (Settings → Pages →
+Deploy from branch → `main` / `/docs`). Until then the files are in the repo
+but unpublished.
+
+### 15.2 The deposit (`zenodo/`)
+
+`zenodo/build_deposit.py` stages **39 files, 293 MB** with
+`MANIFEST.tsv` carrying byte size, data-row count and SHA-256 per file. The
+payload is gitignored (`zenodo/*/`) and rebuildable; only README, manifest and
+script are committed. Contents by group: gene annotations 104 MB (13 families
+plus the family matrix and all-genome taxonomy), structure 129 MB (Foldseek
+hits, verdicts, pocket geometry, and 2,108 ESMFold models as a 123 MB tarball),
+thermostability 35 MB, clustering 14 MB, environment 5.7 MB, figure source
+tables 2.9 MB, catalytic site 2.5 MB, novel candidates 0.55 MB.
+
+Gzip ratios are high because these are repetitive TSVs — the 87 MB phaC
+metadata table compresses to 6.99 MB, 12:1.
+
+The README's Caveats section records, in order: the 5-genome cap and that all
+non-phaC family counts are lower bounds; that the WOA23 joins used the capped
+31,443-genome subset; that triad completeness is a floor; that structures and
+thermostability are predictions; that qTM covers representatives only; and that
+PhaC and PhaZ share a fold so an intact triad does not establish synthase
+function. Citation is a placeholder pending publication.
