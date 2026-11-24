@@ -842,7 +842,7 @@
 
     const intro = document.createElement('p');
     intro.textContent =
-      `This site indexes ${Data.int(counts.genomes_in_matrix)} ocean genomes carrying at least one ` +
+      `This site indexes ${Data.int(counts.genomes_total)} ocean genomes carrying at least one ` +
       `polyhydroxyalkanoate biosynthesis gene, drawn from a survey of 274,282 genomes in the Ocean ` +
       `Microbiomics Database. ${Data.int(counts.phac_positive_genomes)} carry a PHA synthase (phaC), ` +
       `represented by ${Data.int(counts.phac_proteins)} distinct protein sequences in ` +
@@ -959,7 +959,7 @@
     map.setLand(atlas.land);
 
     document.querySelectorAll('[data-stat="genomes"]').forEach((node) => {
-      node.textContent = Data.int(atlas.meta.counts.genomes_in_matrix);
+      node.textContent = Data.int(atlas.meta.counts.genomes_total);
     });
     document.querySelectorAll('[data-stat="built"]').forEach((node) => {
       node.textContent = atlas.meta.built;

@@ -23,12 +23,27 @@ Repeated strings (phylum, genus, habitat, study) are replaced by integer codes
 with lookup tables in lookups.json; this roughly halves the payload and costs
 one array index in the browser.
 
-A deliberate correction is applied here: the genome x family matrix is built
-from a metadata join capped at 5 genomes per identical protein, which records
-7,298 real phaC carriers as phaC-negative. The phaC presence column is therefore
-taken from the uncapped membership list (38,744 genomes), not the matrix. Every
-other family keeps the matrix value and is a lower bound -- stated in meta.json
-and surfaced in the site's UI.
+Where each field comes from, and why not all from one table:
+
+  family counts, architecture   genome_family_matrix.tsv -- the only source, and
+                                capped at 5 genomes per identical protein, so
+                                every count except phaC is a lower bound.
+  phaC presence                 the uncapped membership list, which is 38,744
+                                genomes against the matrix's 31,464.
+  taxonomy                      omdb_all_genome_taxonomy.tsv, which covers all
+                                274,282 genomes rather than the matrix's subset.
+  habitat, study, coordinates   omdb_all_genomes_with_locations.tsv, same full
+                                coverage. Using this instead of the matrix adds
+                                habitat for about 1,440 genomes and recovers the
+                                1,763 phaC carriers the matrix has no row for.
+  depth                         phaC_unique_targets_with_metadata_depth.tsv.
+                                The matrix has depth_m and depth_zone columns
+                                but they are empty in every one of its 241,864
+                                rows, so reading depth from it silently produced
+                                an atlas with no depth at all. Depth is a
+                                property of the sample rather than the genome,
+                                so a genome with no depth of its own inherits
+                                it from another genome of the same sample.
 
 Usage:
     python site_build/build_site_data.py
@@ -55,11 +70,21 @@ FAMILIES = ['phaA', 'phaB', 'phaC', 'phaE', 'phaR_synthase', 'phaJ', 'phaG',
             'phaR_regulator', 'phaQ']
 TEMP_THRESHOLDS = [40, 45, 50, 55, 60, 65, 70, 75, 80]
 
+# Placeholders that mean "not recorded". OMDB retires samples by writing
+# DEPRECATED into the environment field rather than removing the row.
+BLANK_VALUES = {'', 'NA', 'nan', 'None', 'Unknown', 'unknown',
+                'Unknown_environment', 'DEPRECATED', 'not applicable', 'missing'}
+
 
 def short(target_id):
     """Drop the catalogue prefix; the numeric tail is unique and much shorter."""
     return target_id[len(TARGET_PREFIX):].lstrip('0') or '0' \
         if target_id.startswith(TARGET_PREFIX) else target_id
+
+
+def clean(value):
+    value = (value or '').strip()
+    return '' if value in BLANK_VALUES else value
 
 
 class Codes:
@@ -69,8 +94,8 @@ class Codes:
         self.index, self.labels = {}, []
 
     def __call__(self, value):
-        value = (value or '').strip()
-        if value in ('', 'NA', 'nan', 'None', 'Unknown'):
+        value = clean(value)
+        if not value:
             return ''
         code = self.index.get(value)
         if code is None:
@@ -81,8 +106,8 @@ class Codes:
 
 def num(value, places=None):
     """Format a numeric field, or '' when absent -- never a literal 'nan'."""
-    value = (value or '').strip()
-    if value in ('', 'NA', 'nan', 'None'):
+    value = clean(value)
+    if not value:
         return ''
     try:
         f = float(value)
@@ -115,45 +140,141 @@ with open(ROOT / 'phaC_all_genomes_from_nr100_clusters.tsv', newline='') as f:
         protein_genomes[target_id].add(genome)
 print(f'  {len(phac_genomes):,} phaC-positive genomes, {len(protein_genomes):,} proteins')
 
+# ---------------------------------------------------------------- metadata
+print('reading taxonomy for all genomes')
+taxonomy = {}
+with open(RESULTS / 'omdb_all_genome_taxonomy.tsv', newline='') as f:
+    for row in csv.DictReader(f, delimiter='\t'):
+        taxonomy[row['genome']] = (row.get('gtdb_phylum'), row.get('gtdb_genus'))
+print(f'  {len(taxonomy):,} genomes')
+
+print('reading sample provenance for all genomes')
+provenance = {}
+with open(ROOT / 'omdb_all_genomes_with_locations.tsv', newline='') as f:
+    for row in csv.DictReader(f, delimiter='\t'):
+        provenance[row['genome']] = row
+print(f'  {len(provenance):,} genomes')
+
+print('reading depth')
+genome_depth, sample_depth = {}, {}
+with open(RESULTS / 'phaC_unique_targets_with_metadata_depth.tsv', newline='') as f:
+    for row in csv.DictReader(f, delimiter='\t'):
+        metres = clean(row.get('depth_m'))
+        if not metres:
+            continue
+        record = (metres, clean(row.get('depth_zone')))
+        genome_depth.setdefault(row['genome'], record)
+        sample = clean(row.get('sample_id'))
+        if sample:
+            sample_depth.setdefault(sample, record)
+print(f'  {len(genome_depth):,} genomes with a depth of their own, '
+      f'{len(sample_depth):,} samples with a known depth')
+
+
+def depth_for(genome):
+    """A genome's own depth, else the depth of another genome from its sample."""
+    record = genome_depth.get(genome)
+    if record:
+        return record, 'own'
+    sample = clean((provenance.get(genome) or {}).get('sample_id'))
+    record = sample_depth.get(sample) if sample else None
+    return (record, 'sample') if record else (('', ''), '')
+
+
 # ---------------------------------------------------------------- genomes
 print('writing genomes.csv')
-GENOME_COLS = ['id', 'lat', 'lon', 'ph', 'gn', 'hb', 'eco', 'st', 'dep', 'dz', 'fam', 'arch', 'phac']
-names, n_genomes, with_coords = [], 0, 0
+GENOME_COLS = ['id', 'lat', 'lon', 'ph', 'gn', 'hb', 'eco', 'st', 'dep', 'dz',
+               'fam', 'arch', 'phac', 'prof']
+names, with_coords, with_habitat = [], 0, 0
+depth_counts = Counter()
 family_genomes = Counter()
-with open(RESULTS / 'genome_family_matrix.tsv', newline='') as f, \
-        open(OUT / 'genomes.csv', 'w', newline='') as out:
+rows_out = []
+
+matrix_rows = {}
+with open(RESULTS / 'genome_family_matrix.tsv', newline='') as f:
+    for row in csv.DictReader(f, delimiter='\t'):
+        matrix_rows[row['genome']] = row
+
+# Genomes the matrix never profiled but that the uncapped list proves carry
+# phaC. They are real carriers and belong in the atlas; only their counts for
+# the other families are unknown, which `prof` records.
+extra = sorted(phac_genomes - set(matrix_rows))
+order = list(matrix_rows) + extra
+print(f'  {len(matrix_rows):,} profiled genomes + {len(extra):,} phaC carriers '
+      f'the matrix has no row for')
+
+with open(OUT / 'genomes.csv', 'w', newline='') as out:
     w = csv.writer(out, lineterminator='\n')
     w.writerow(GENOME_COLS)
-    for row in csv.DictReader(f, delimiter='\t'):
-        genome = row['genome']
+    for index, genome in enumerate(order):
+        matrix = matrix_rows.get(genome)
+        place = provenance.get(genome, {})
+        tax_phylum, tax_genus = taxonomy.get(genome, (None, None))
+        if tax_phylum is None and matrix:
+            tax_phylum, tax_genus = matrix.get('gtdb_phylum'), matrix.get('gtdb_genus')
+
         counts = []
-        for fam in FAMILIES:
-            n = row.get(f'n_{fam}', '0') or '0'
-            try:
-                n = int(float(n))
-            except ValueError:
-                n = 0
-            if fam == 'phaC':
+        for family in FAMILIES:
+            n = 0
+            if matrix:
+                try:
+                    n = int(float(matrix.get(f'n_{family}', '0') or '0'))
+                except ValueError:
+                    n = 0
+            if family == 'phaC':
                 n = max(n, 1) if genome in phac_genomes else 0
             if n:
-                family_genomes[fam] += 1
+                family_genomes[family] += 1
             counts.append(str(min(n, 9)))
-        lat, lon = num(row['latitude_degN'], 3), num(row['longitude_degE'], 3)
-        with_coords += bool(lat and lon)
-        w.writerow([n_genomes, lat, lon, phylum(row['gtdb_phylum']), genus(row['gtdb_genus']),
-                    habitat(row['ecosystem_compartment']), ecosystem(row['ecosystem_type']),
-                    study(row['study_id']), num(row.get('depth_m'), 1),
-                    zone(row.get('depth_zone')), ''.join(counts),
-                    arch(row.get('architecture')), '1' if genome in phac_genomes else '0'])
-        names.append(genome)
-        n_genomes += 1
-(OUT / 'genome_names.csv').write_text('\n'.join(names) + '\n')
-print(f'  {n_genomes:,} genomes, {with_coords:,} with coordinates')
 
-# phaC carriers absent from the matrix entirely: real, but no metadata row
-matrix_genomes = set(names)
-unlisted = len(phac_genomes - matrix_genomes)
-print(f'  phaC-positive genomes with no matrix row: {unlisted:,}')
+        latitude = num(place.get('latitude_degN'), 3)
+        longitude = num(place.get('longitude_degE'), 3)
+        if not (latitude and longitude) and matrix:
+            latitude = num(matrix.get('latitude_degN'), 3)
+            longitude = num(matrix.get('longitude_degE'), 3)
+        with_coords += bool(latitude and longitude)
+
+        compartment = clean(place.get('ecosystem_compartment')) or (
+            clean(matrix.get('ecosystem_compartment')) if matrix else '')
+        with_habitat += bool(compartment)
+
+        (metres, depth_zone), source = depth_for(genome)
+        if metres:
+            depth_counts[source] += 1
+
+        w.writerow([
+            index, latitude, longitude, phylum(tax_phylum), genus(tax_genus),
+            habitat(compartment),
+            ecosystem(clean(place.get('ecosystem_type')) or
+                      (clean(matrix.get('ecosystem_type')) if matrix else '')),
+            study(clean(place.get('study_id')) or
+                  (clean(matrix.get('study_id')) if matrix else '')),
+            num(metres, 1), zone(depth_zone), ''.join(counts),
+            arch(matrix.get('architecture') if matrix else ''),
+            '1' if genome in phac_genomes else '0',
+            '1' if matrix else '0',
+        ])
+        names.append(genome)
+
+(OUT / 'genome_names.csv').write_text('\n'.join(names) + '\n')
+n_genomes = len(names)
+print(f'  {n_genomes:,} genomes | {with_coords:,} with coordinates '
+      f'({100 * with_coords / n_genomes:.1f}%) | {with_habitat:,} with a habitat '
+      f'({100 * with_habitat / n_genomes:.1f}%)')
+print(f'  depth: {depth_counts["own"]:,} from the genome, '
+      f'{depth_counts["sample"]:,} inherited from its sample, '
+      f'{sum(depth_counts.values()):,} total')
+
+phac_habitat = sum(1 for g in phac_genomes if clean(
+    (provenance.get(g) or {}).get('ecosystem_compartment')))
+phac_coords = sum(1 for g in phac_genomes
+                  if clean((provenance.get(g) or {}).get('latitude_degN'))
+                  and clean((provenance.get(g) or {}).get('longitude_degE')))
+phac_depth = sum(1 for g in phac_genomes if depth_for(g)[0][0])
+print(f'  of the {len(phac_genomes):,} phaC-positive genomes: '
+      f'{phac_habitat:,} have a habitat ({100 * phac_habitat / len(phac_genomes):.1f}%), '
+      f'{phac_coords:,} coordinates ({100 * phac_coords / len(phac_genomes):.1f}%), '
+      f'{phac_depth:,} depth ({100 * phac_depth / len(phac_genomes):.1f}%)')
 
 # ---------------------------------------------------------------- phaC proteins
 print('reading phaC protein annotations')
@@ -190,16 +311,24 @@ with open(RESULTS / 'phaC_cluster0.7_cluster.tsv', newline='') as f:
         cluster_of[target_id] = cluster_id
 
 print('aggregating per-protein taxonomy and best hit')
-prot_phylum, prot_genus, best = defaultdict(Counter), defaultdict(Counter), {}
+best = {}
 with open(RESULTS / 'phaC_unique_targets_with_metadata.tsv', newline='') as f:
     for row in csv.DictReader(f, delimiter='\t'):
         tid = row['target_id']
-        if tid in bad:
+        if tid in bad or tid in best:
             continue
-        prot_phylum[tid][row['gtdb_phylum']] += 1
-        prot_genus[tid][row['gtdb_genus']] += 1
-        if tid not in best:
-            best[tid] = (num(row['best_pident'], 1), num(row['best_tcov'], 3), row['best_query'])
+        best[tid] = (num(row['best_pident'], 1), num(row['best_tcov'], 3), row['best_query'])
+
+# Per-protein taxonomy from the genomes that carry it, using the full-coverage
+# taxonomy table rather than the capped annotation rows.
+prot_phylum, prot_genus = defaultdict(Counter), defaultdict(Counter)
+for tid, genomes in protein_genomes.items():
+    for genome in genomes:
+        tax_phylum, tax_genus = taxonomy.get(genome, (None, None))
+        if clean(tax_phylum):
+            prot_phylum[tid][clean(tax_phylum)] += 1
+        if clean(tax_genus):
+            prot_genus[tid][clean(tax_genus)] += 1
 
 PROTEIN_COLS = ['id', 'len', 'cl', 'cls', 'clsok', 'tr', 'pid', 'tcov', 'qtm', 'th', 'ng', 'ph', 'gn', 'ref']
 n_proteins = 0
@@ -220,7 +349,7 @@ with open(OUT / 'proteins.csv', 'w', newline='') as out:
         n_proteins += 1
 print(f'  {n_proteins:,} phaC proteins')
 
-# ---------------------------------------------------------------- clusters
+# ---------------------------------------------------------------- occurrences
 print('writing occurrences.csv')
 genome_index = {name: i for i, name in enumerate(names)}
 OCCURRENCE_COLS = ['p', 'c', 'g']
@@ -234,12 +363,13 @@ with open(OUT / 'occurrences.csv', 'w', newline='') as out:
         for genome in sorted(protein_genomes[tid]):
             row = genome_index.get(genome)
             if row is None:
-                n_unmapped += 1   # phaC carrier with no metadata row; cannot be mapped
+                n_unmapped += 1
                 continue
             w.writerow([pid, cid, row])
             n_occurrences += 1
-print(f'  {n_occurrences:,} mappable occurrences, {n_unmapped:,} without a metadata row')
+print(f'  {n_occurrences:,} occurrences, {n_unmapped:,} unplaceable')
 
+# ---------------------------------------------------------------- clusters
 print('writing clusters.csv')
 cluster_genomes, cluster_proteins, cluster_phyla, cluster_classes = (
     defaultdict(set), Counter(), defaultdict(Counter), defaultdict(set))
@@ -287,10 +417,18 @@ print(f'  {len(cluster_genomes):,} clusters')
     'built': date.today().isoformat(),
     'target_prefix': TARGET_PREFIX,
     'counts': {
-        'genomes_in_matrix': n_genomes,
+        'genomes_total': n_genomes,
+        'genomes_profiled': len(matrix_rows),
+        'genomes_unprofiled': len(extra),
         'genomes_with_coordinates': with_coords,
+        'genomes_with_habitat': with_habitat,
+        'genomes_with_depth': sum(depth_counts.values()),
+        'depth_from_own_record': depth_counts['own'],
+        'depth_from_sample': depth_counts['sample'],
         'phac_positive_genomes': len(phac_genomes),
-        'phac_positive_genomes_without_metadata': unlisted,
+        'phac_with_habitat': phac_habitat,
+        'phac_with_coordinates': phac_coords,
+        'phac_with_depth': phac_depth,
         'phac_proteins': n_proteins,
         'phac_clusters': len(cluster_genomes),
         'mappable_occurrences': n_occurrences,
@@ -303,8 +441,16 @@ print(f'  {len(cluster_genomes):,} clusters')
         f'({len(phac_genomes):,} genomes). Every other family comes from a metadata '
         'join capped at 5 genomes per identical protein, so those counts are lower '
         'bounds, not exact.',
-        f'{unlisted:,} phaC-positive genomes have no row in the metadata matrix, so '
-        'they carry no taxonomy, habitat or coordinates and cannot appear on the map.',
+        f'{len(extra):,} genomes are known phaC carriers but were never profiled for '
+        'the other PHA families, so their counts for those families read as zero '
+        'rather than unknown.',
+        f'{len(phac_genomes) - phac_habitat:,} of the {len(phac_genomes):,} '
+        'phaC-positive genomes have no habitat recorded, almost all of them samples '
+        'OMDB has since marked deprecated; they also carry no coordinates.',
+        'Depth is a property of the sample, not the genome. A genome without a depth '
+        'of its own inherits the depth of another genome from the same sample, which '
+        f'is where {depth_counts["sample"]:,} of the {sum(depth_counts.values()):,} '
+        'depth values come from.',
         'qTM structural scores exist only for the 95%-dereplication representatives, '
         f'{len(qtm):,} of {n_proteins:,} proteins. Blank means not measured, not low.',
         'Catalytic-triad completeness is scored by HMM alignment columns, which '

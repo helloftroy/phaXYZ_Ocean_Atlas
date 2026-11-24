@@ -1202,3 +1202,94 @@ non-phaC family counts are lower bounds; that the WOA23 joins used the capped
 thermostability are predictions; that qTM covers representatives only; and that
 PhaC and PhaZ share a fold so an intact triad does not establish synthase
 function. Citation is a placeholder pending publication.
+
+### 14.8 Habitat metadata coverage of the phaC-positive genomes
+
+Denominator is the uncapped 38,744, and the source is
+`omdb_all_genomes_with_locations.tsv`, which has a row for all 274,282 OMDB
+genomes.
+
+| | Genomes | % of 38,744 |
+|---|---:|---:|
+| Habitat label present | **35,303** | **91.1%** |
+| No habitat label | 3,441 | 8.9% |
+
+`ecosystem_compartment`, `ecosystem_name`, `ecosystem_type` and `sample_source`
+have **identical** coverage — they travel as a block, so there is no partial
+tier to recover. The 8.9% gap is not scattered missingness: **3,391 of the
+3,441 carry `DEPRECATED` in the environment field** and the other 50 are blank,
+and **none of the 3,441 has coordinates**. It is one block of samples OMDB has
+withdrawn, which is a cleaner thing to state than a bare percentage.
+
+| Habitat | Genomes | % of 38,744 |
+|---|---:|---:|
+| Seawater | 25,937 | 66.9% |
+| Marine Porifera tissue | 2,676 | 6.9% |
+| Marine sediment | 1,873 | 4.8% |
+| Marine biofilm | 1,049 | 2.7% |
+| Brackish sea water | 712 | 1.8% |
+| Marine Hydrozoa tissue | 443 | 1.1% |
+| Marine algae thallus | 257 | 0.7% |
+| Coral tissue | 238 | 0.6% |
+| Animal bone biofilm | 238 | 0.6% |
+| Sea ice | 215 | 0.6% |
+| Estuarine sediment | 199 | 0.5% |
+
+**Source matters here**, and §15.1's original build used the weaker one:
+
+| Source | Covers | With habitat | With coordinates |
+|---|---:|---:|---:|
+| `genome_family_matrix.tsv` | 36,981 (95.4%) | 33,863 (87.4%) | — |
+| `omdb_all_genomes_with_locations.tsv` | **38,744 (100%)** | **35,303 (91.1%)** | 34,799 (89.8%) |
+
+The earlier statement that 1,763 phaC-positive genomes "have no metadata row"
+is true only of the matrix. All 1,763 have a locations row; 1,475 have a
+habitat and 1,474 have coordinates. Quote **35,303 / 91.1%** for habitat.
+
+---
+
+## 16. Explorer rebuilt on the full-coverage metadata sources (2026-11-24)
+
+Supersedes the coverage figures in §15.1. Three source changes, one of which
+fixed a silent bug.
+
+**Taxonomy and provenance** now come from `omdb_all_genome_taxonomy.tsv` and
+`omdb_all_genomes_with_locations.tsv` (274,282 genomes each) rather than
+`genome_family_matrix.tsv` (241,864). Family counts and the architecture label
+still come from the matrix, which is their only source.
+
+**Depth was broken and is now real.** `genome_family_matrix.tsv` carries
+`depth_m` and `depth_zone` columns that are **empty in all 241,864 rows**, so
+the site's depth filter had no data behind it from launch until this rebuild.
+Depth now comes from `phaC_unique_targets_with_metadata_depth.tsv`, and because
+depth is a property of the *sample* rather than the genome, a genome without a
+depth of its own inherits the depth of another genome from the same sample.
+That lookup is what §5 of this document predicted would raise phaC depth
+coverage to 14,155, and it lands exactly there.
+
+**The 1,763 matrix-less phaC carriers are now in the atlas**, flagged `prof=0`
+because their counts for families other than phaC were never measured.
+
+| | Before (§15.1) | After |
+|---|---:|---:|
+| Genomes in the site | 241,864 | **243,627** |
+| With coordinates | 226,865 (93.8%) | **228,339 (93.7%)** |
+| With a habitat | not recorded | **230,566 (94.6%)** |
+| With a depth | **0** | **106,113** |
+| Mappable occurrences | 58,951 | **61,998** |
+| Unplaceable occurrences | 3,047 | **0** |
+
+Of the 38,744 phaC-positive genomes: 35,303 have a habitat (91.1%), 34,799
+coordinates (89.8%), 14,155 depth (36.5% — 34,222 of the atlas total from the
+genome's own record and 71,891 inherited from its sample).
+
+Payload grew from 26.0 MB to 27.2 MB raw (`genomes.csv` 13.88 → 14.86 MB), still
+roughly 5–6 MB transferred after Pages' gzip.
+
+**Checks moved into the repo.** `site_build/check_site.mjs` runs the real
+`docs/*.js` in a Node vm against the generated files and covers data-versus-
+manifest agreement, index integrity (the reverse occurrence index is verified
+an exact inverse over all 61,998 edges), the project facts in §14.6, page
+wiring, the Robinson projection against `figures/scripts/_simple_world_map.py`,
+and map interaction driven by synthetic pointer events. Run it after every
+rebuild: `node site_build/check_site.mjs`.

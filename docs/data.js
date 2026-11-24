@@ -75,7 +75,7 @@ const Data = (() => {
 
   const GENOME_TYPES = {
     lat: 'f32', lon: 'f32', ph: 'i32', gn: 'i32', hb: 'i32', eco: 'i32',
-    st: 'i32', dep: 'f32', dz: 'i32', fam: 'fam', arch: 'i32', phac: 'i32',
+    st: 'i32', dep: 'f32', dz: 'i32', fam: 'fam', arch: 'i32', phac: 'i32', prof: 'i32',
   };
 
   const PROTEIN_TYPES = {
